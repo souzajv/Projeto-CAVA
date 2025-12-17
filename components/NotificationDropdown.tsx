@@ -1,6 +1,7 @@
 import React from 'react';
 import { Notification } from '../types';
 import { Check, Info, AlertTriangle, CheckCircle, Bell, X } from 'lucide-react';
+import { useLanguage } from '../contexts/LanguageContext';
 
 interface NotificationDropdownProps {
   notifications: Notification[];
@@ -15,6 +16,7 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
   onMarkRead,
   onClose 
 }) => {
+  const { t } = useLanguage();
   const sortedNotifications = [...notifications].sort((a, b) => 
     new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
   );
@@ -34,7 +36,7 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
       <div className="bg-slate-50 px-4 py-3 border-b border-slate-100 flex justify-between items-center">
         <h3 className="font-bold text-slate-800 flex items-center">
           <Bell className="w-4 h-4 mr-2 text-slate-500" />
-          Notifications
+          {t('notif.title')}
         </h3>
         <div className="flex items-center space-x-2">
           {notifications.some(n => !n.read) && (
@@ -42,7 +44,7 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
               onClick={onMarkAllRead}
               className="text-[10px] font-bold uppercase tracking-wider text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 px-2 py-1 rounded transition-colors"
             >
-              Mark all read
+              {t('notif.mark_all')}
             </button>
           )}
           <button onClick={onClose} className="text-slate-400 hover:text-slate-600">
@@ -56,14 +58,14 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
         {sortedNotifications.length === 0 ? (
           <div className="py-12 px-6 text-center text-slate-400">
             <Bell className="w-8 h-8 mx-auto mb-2 opacity-20" />
-            <p className="text-sm">No notifications yet.</p>
+            <p className="text-sm">{t('notif.empty')}</p>
           </div>
         ) : (
           <div className="divide-y divide-slate-50">
             {sortedNotifications.map(n => (
               <div 
                 key={n.id} 
-                className={`p-4 hover:bg-slate-50 transition-colors flex gap-3 ${!n.read ? 'bg-blue-50/30' : ''}`}
+                className={`p-4 hover:bg-slate-50 transition-colors flex gap-3 cursor-pointer ${!n.read ? 'bg-blue-50/30' : ''}`}
                 onClick={() => !n.read && onMarkRead(n.id)}
               >
                 <div className="mt-1 shrink-0">

@@ -99,6 +99,9 @@ export interface OfferLink {
   
   createdAt: string; 
   expiresAt?: string; 
+  
+  // Analytics
+  viewLog: { timestamp: string }[]; // New: Track when the link was accessed
 }
 
 // RF-008: Notifications

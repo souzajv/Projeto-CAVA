@@ -1,6 +1,7 @@
 import React from 'react';
 import { Search, Filter, SlidersHorizontal } from 'lucide-react';
 import { StoneTypology } from '../types';
+import { useLanguage } from '../contexts/LanguageContext';
 
 interface InventoryFiltersProps {
   searchTerm: string;
@@ -21,6 +22,8 @@ export const InventoryFilters: React.FC<InventoryFiltersProps> = ({
   onTypologyFilterChange,
   typologies
 }) => {
+  const { t } = useLanguage();
+
   return (
     <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm mb-6 animate-in fade-in slide-in-from-top-2">
       <div className="flex flex-col md:flex-row gap-4">
@@ -32,7 +35,7 @@ export const InventoryFilters: React.FC<InventoryFiltersProps> = ({
           </div>
           <input 
             type="text"
-            placeholder="Search by Lot ID, Name..."
+            placeholder={t('inv.search_placeholder')}
             value={searchTerm}
             onChange={(e) => onSearchChange(e.target.value)}
             className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-slate-900 focus:border-transparent outline-none transition-all"
@@ -52,7 +55,7 @@ export const InventoryFilters: React.FC<InventoryFiltersProps> = ({
               onChange={(e) => onTypologyFilterChange(e.target.value)}
               className="w-full pl-10 pr-8 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-700 focus:ring-2 focus:ring-slate-900 outline-none appearance-none cursor-pointer"
             >
-              <option value="all">All Typologies</option>
+              <option value="all">{t('inv.filter.all_types')}</option>
               {typologies.map(t => (
                 <option key={t.id} value={t.id}>{t.name}</option>
               ))}
@@ -69,10 +72,10 @@ export const InventoryFilters: React.FC<InventoryFiltersProps> = ({
               onChange={(e) => onStatusFilterChange(e.target.value)}
               className="w-full pl-10 pr-8 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-700 focus:ring-2 focus:ring-slate-900 outline-none appearance-none cursor-pointer"
             >
-              <option value="all">All Status</option>
-              <option value="available">Available Stock</option>
-              <option value="reserved">Reserved/Delegated</option>
-              <option value="sold">Sold Out</option>
+              <option value="all">{t('inv.filter.all_status')}</option>
+              <option value="available">{t('inv.status.available')}</option>
+              <option value="reserved">{t('inv.status.reserved')}</option>
+              <option value="sold">{t('inv.status.sold_out')}</option>
             </select>
           </div>
         </div>

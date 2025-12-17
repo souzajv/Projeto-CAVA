@@ -1,6 +1,7 @@
 import React from 'react';
 import { OfferLink, StoneItem } from '../types';
 import { AlertTriangle, X } from 'lucide-react';
+import { useLanguage } from '../contexts/LanguageContext';
 
 interface CancelLinkModalProps {
   offer: OfferLink;
@@ -10,9 +11,16 @@ interface CancelLinkModalProps {
 }
 
 export const CancelLinkModal: React.FC<CancelLinkModalProps> = ({ offer, stone, onClose, onConfirm }) => {
+  const { t } = useLanguage();
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-      <div className="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden flex flex-col animate-in zoom-in-95 duration-200">
+    <div 
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200"
+      onClick={onClose}
+    >
+      <div 
+        className="bg-white rounded-xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col animate-in zoom-in-95 duration-200"
+        onClick={(e) => e.stopPropagation()}
+      >
         
         <div className="p-6 pb-0 flex items-start justify-between">
           <div className="p-3 bg-rose-100 rounded-full">
@@ -24,19 +32,19 @@ export const CancelLinkModal: React.FC<CancelLinkModalProps> = ({ offer, stone, 
         </div>
 
         <div className="p-6">
-          <h2 className="text-lg font-bold text-slate-900 mb-2">Cancel Active Link?</h2>
+          <h2 className="text-lg font-bold text-slate-900 mb-2">{t('modal.cancel.title')}</h2>
           <p className="text-sm text-slate-600 mb-4">
-            You are about to cancel the link for <span className="font-bold text-slate-900">{offer.clientName}</span> regarding <span className="font-semibold">{stone.typology.name}</span>.
+            {t('modal.cancel.msg')} <span className="font-bold text-slate-900">{offer.clientName}</span> - <span className="font-semibold">{stone.typology.name}</span>.
           </p>
           
           <div className="bg-slate-50 border border-slate-100 rounded-lg p-3 text-xs text-slate-500 mb-4">
             <ul className="list-disc pl-4 space-y-1">
-              <li>The client will no longer be able to access the offer.</li>
-              <li>The <strong>{offer.quantityOffered} {stone.quantity.unit}</strong> reserved for this link will be released back to available stock immediately.</li>
+              <li>{t('modal.cancel.bullet1')}</li>
+              <li>{t('modal.cancel.bullet2')}</li>
             </ul>
           </div>
 
-          <p className="text-sm font-medium text-slate-900">This action cannot be undone.</p>
+          <p className="text-sm font-medium text-slate-900">{t('modal.cancel.undone')}</p>
         </div>
 
         <div className="p-4 bg-slate-50 border-t border-slate-100 flex gap-3 justify-end">
@@ -44,13 +52,13 @@ export const CancelLinkModal: React.FC<CancelLinkModalProps> = ({ offer, stone, 
             onClick={onClose}
             className="px-4 py-2 bg-white border border-slate-200 text-slate-700 rounded-lg text-sm font-medium hover:bg-slate-50 transition-colors"
           >
-            Keep Active
+            {t('modal.cancel.keep')}
           </button>
           <button 
             onClick={onConfirm}
             className="px-4 py-2 bg-rose-600 text-white rounded-lg text-sm font-medium hover:bg-rose-700 shadow-sm transition-colors"
           >
-            Yes, Cancel Link
+            {t('modal.cancel.confirm')}
           </button>
         </div>
       </div>

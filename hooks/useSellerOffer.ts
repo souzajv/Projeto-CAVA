@@ -28,7 +28,7 @@ export interface UseSellerOfferReturn {
  * Application Layer Hook: useSellerOffer
  * Manages the "Create Offer" use case for a Seller.
  */
-export const useSellerOffer = (delegation: SalesDelegation): UseSellerOfferReturn => {
+export const useSellerOffer = (delegation: SalesDelegation, maxQuantity: number): UseSellerOfferReturn => {
   // Initialize price with a default margin (e.g., 15% above floor)
   const [salePrice, setSalePrice] = useState<number>(delegation.agreedMinPrice * 1.15);
   const [quantity, setQuantity] = useState<number>(1);
@@ -54,9 +54,9 @@ export const useSellerOffer = (delegation: SalesDelegation): UseSellerOfferRetur
       errs.quantity = "Quantity must be at least 1";
     }
 
-    // New Check: Cannot sell more than you have
-    if (quantity > delegation.delegatedQuantity) {
-      errs.quantity = `You only have ${delegation.delegatedQuantity} units available.`;
+    // Critical: Prevent overselling
+    if (quantity > maxQuantity) {
+      errs.quantity = `You only have ${maxQuantity} units remaining available.`;
     }
 
     if (!clientName.trim()) {
@@ -64,7 +64,7 @@ export const useSellerOffer = (delegation: SalesDelegation): UseSellerOfferRetur
     }
 
     return errs;
-  }, [salePrice, quantity, clientName, delegation.agreedMinPrice, delegation.delegatedQuantity]);
+  }, [salePrice, quantity, clientName, delegation.agreedMinPrice, maxQuantity]);
 
   const isValid = Object.keys(errors).length === 0;
 
@@ -90,7 +90,8 @@ export const useSellerOffer = (delegation: SalesDelegation): UseSellerOfferRetur
       status: 'active',
       clientViewToken: token,
       createdAt: new Date().toISOString(),
-      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString() // +7 days
+      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), // +7 days
+      viewLog: [] // Initialize empty access log
     };
 
     setGeneratedUrl(mockUrl);
