@@ -250,7 +250,7 @@ export const AnalyticsDetailView: React.FC<AnalyticsDetailViewProps> = ({
                            <span className="bg-slate-100 px-2 py-0.5 rounded border border-slate-200 mr-2 font-mono text-slate-600">
                              {item.stone.lotId}
                            </span>
-                           <span className="font-medium">{item.offer.quantityOffered} {item.stone.quantity.unit}</span>
+                           <span className="font-medium">{item.offer.quantityOffered} {t(`unit.${item.stone.quantity.unit}`)}</span>
                         </div>
                       </td>
 

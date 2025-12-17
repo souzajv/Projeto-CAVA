@@ -27,7 +27,6 @@ export const TypologyModal: React.FC<TypologyModalProps> = ({ typology, onClose,
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // In a real app, validation would happen here
     onSave({
       id: typology?.id || `type-${Date.now()}`,
       name: formData.name!,
@@ -88,7 +87,7 @@ export const TypologyModal: React.FC<TypologyModalProps> = ({ typology, onClose,
                    value={formData.imageUrl}
                    onChange={e => handleChange('imageUrl', e.target.value)}
                    className="w-full px-4 py-3 bg-white border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-slate-900 outline-none"
-                   placeholder="https://..."
+                   placeholder={t('modal.type.placeholder_image')}
                  />
                </div>
             </div>
@@ -107,7 +106,7 @@ export const TypologyModal: React.FC<TypologyModalProps> = ({ typology, onClose,
                     value={formData.name}
                     onChange={e => handleChange('name', e.target.value)}
                     className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-lg text-base font-medium focus:ring-2 focus:ring-slate-900 outline-none"
-                    placeholder="e.g. Granito Preto São Gabriel"
+                    placeholder={t('modal.type.placeholder_name')}
                   />
                 </div>
 
@@ -123,7 +122,7 @@ export const TypologyModal: React.FC<TypologyModalProps> = ({ typology, onClose,
                         value={formData.origin}
                         onChange={e => handleChange('origin', e.target.value)}
                         className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-slate-900 outline-none"
-                        placeholder="e.g. Brazil"
+                        placeholder={t('modal.type.placeholder_origin')}
                       />
                    </div>
                    {/* Hardness */}
@@ -137,7 +136,7 @@ export const TypologyModal: React.FC<TypologyModalProps> = ({ typology, onClose,
                         value={formData.hardness}
                         onChange={e => handleChange('hardness', e.target.value)}
                         className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-slate-900 outline-none"
-                        placeholder="e.g. Mohs 7"
+                        placeholder={t('modal.type.placeholder_hardness')}
                       />
                    </div>
                 </div>
@@ -152,7 +151,7 @@ export const TypologyModal: React.FC<TypologyModalProps> = ({ typology, onClose,
                     value={formData.description}
                     onChange={e => handleChange('description', e.target.value)}
                     className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-slate-900 outline-none resize-none flex-1 min-h-[100px]"
-                    placeholder="Detailed description of the stone features..."
+                    placeholder={t('modal.type.placeholder_desc')}
                   />
                 </div>
               </div>

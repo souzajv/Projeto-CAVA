@@ -167,7 +167,7 @@ export const OfferModal: React.FC<OfferModalProps> = ({ delegation, stone, maxQu
                           type="text"
                           value={clientName}
                           onChange={e => setClientName(e.target.value)}
-                          placeholder="Client Name"
+                          placeholder={t('modal.offer.placeholder_client')}
                           className="w-full bg-transparent font-semibold text-lg text-slate-900 outline-none placeholder:font-normal"
                         />
                       </div>

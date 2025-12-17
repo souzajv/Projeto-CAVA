@@ -16,7 +16,6 @@ interface StoneCardProps {
 }
 
 const formatDim = (d: Dimensions) => `${d.width}x${d.height}x${d.thickness} ${d.unit}`;
-const formatCurrency = (val: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(val);
 
 export const StoneCard: React.FC<StoneCardProps> = ({ 
   stone, 
@@ -29,7 +28,7 @@ export const StoneCard: React.FC<StoneCardProps> = ({
   onViewHistory,
   onClick
 }) => {
-  const { t } = useLanguage();
+  const { t, formatCurrency } = useLanguage();
   const isAvailable = stone.quantity.available > 0;
   
   // Percentage Calculation for Visual Bar (RF-003)
@@ -128,7 +127,7 @@ export const StoneCard: React.FC<StoneCardProps> = ({
                     <div className="flex justify-between items-center text-xs text-blue-800">
                        <span className="font-semibold flex items-center"><Layers className="w-3 h-3 mr-1"/> {t('card.your_stock')}</span>
                        <span className="font-mono bg-white px-1.5 rounded border border-blue-200">
-                         {delegation.delegatedQuantity} {stone.quantity.unit}
+                         {delegation.delegatedQuantity} {t(`unit.${stone.quantity.unit}`)}
                        </span>
                     </div>
                     <div className="flex justify-between items-center text-xs text-blue-600">

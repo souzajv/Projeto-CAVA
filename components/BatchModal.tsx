@@ -125,7 +125,7 @@ export const BatchModal: React.FC<BatchModalProps> = ({ typologies, onClose, onS
                 onChange={(e) => setSelectedTypologyId(e.target.value)}
                 className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-xl text-base font-medium focus:ring-2 focus:ring-emerald-900 outline-none transition-shadow"
               >
-                <option value="">-- Select --</option>
+                <option value="">{t('common.select_placeholder')}</option>
                 {typologies.map(t => (
                   <option key={t.id} value={t.id}>{t.name} ({t.origin})</option>
                 ))}
@@ -164,7 +164,7 @@ export const BatchModal: React.FC<BatchModalProps> = ({ typologies, onClose, onS
                 value={lotId}
                 onChange={e => setLotId(e.target.value)}
                 className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-xl text-base focus:ring-2 focus:ring-emerald-900 outline-none font-mono tracking-wide"
-                placeholder="Select stone to generate ID..."
+                placeholder={t('modal.batch.placeholder_lot')}
               />
             </div>
           </div>
@@ -212,8 +212,11 @@ export const BatchModal: React.FC<BatchModalProps> = ({ typologies, onClose, onS
                     value={quantity}
                     onChange={e => setQuantity(Number(e.target.value))}
                     className="w-full px-5 py-3 bg-slate-50 border border-slate-200 rounded-xl text-lg focus:ring-2 focus:ring-emerald-900 outline-none font-bold text-slate-900"
-                    placeholder="Total slabs"
+                    placeholder={t('modal.batch.placeholder_qty')}
                   />
+                  <div className="text-xs text-slate-400 text-right mt-1">
+                    {t(`unit.${unit === 'm' ? 'm2' : 'slabs'}`)}
+                  </div>
                </div>
             </div>
           </div>
@@ -271,7 +274,7 @@ export const BatchModal: React.FC<BatchModalProps> = ({ typologies, onClose, onS
               value={batchImageUrl}
               onChange={e => setBatchImageUrl(e.target.value)}
               className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-emerald-900 outline-none"
-              placeholder="https://... (Leave blank to use Catalog image)"
+              placeholder={t('modal.batch.placeholder_image')}
             />
           </div>
 

@@ -12,6 +12,7 @@ interface TransactionDetailsModalProps {
   };
   role: UserRole;
   onClose: () => void;
+  // Fix: Removed duplicate onFinalizeSale declaration
   onFinalizeSale?: (offer: OfferLink) => void;
   onCancelLink?: (offer: OfferLink) => void;
 }
@@ -137,7 +138,7 @@ export const TransactionDetailsModal: React.FC<TransactionDetailsModalProps> = (
                 </div>
                 <div className="space-y-1">
                   <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">{t('modal.tx.qty')}</p>
-                  <p className="text-3xl font-bold text-slate-900">{offer.quantityOffered} <span className="text-sm font-medium text-slate-500">{stone.quantity.unit}</span></p>
+                  <p className="text-3xl font-bold text-slate-900">{offer.quantityOffered} <span className="text-sm font-medium text-slate-500">{t(`unit.${stone.quantity.unit}`)}</span></p>
                 </div>
               </div>
 

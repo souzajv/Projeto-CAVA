@@ -67,7 +67,7 @@ export const ClientView: React.FC<ClientViewProps> = ({ offer, stone, seller }) 
               </div>
               <div className="flex justify-between items-center">
                  <span className="text-slate-500 font-medium">{t('client.qty_offered')}</span>
-                 <span className="text-lg font-medium text-slate-900">{offer.quantityOffered} {stone.quantity.unit}</span>
+                 <span className="text-lg font-medium text-slate-900">{offer.quantityOffered} {t(`unit.${stone.quantity.unit}`)}</span>
               </div>
               <div className="flex justify-between items-center pt-2">
                  <span className="text-slate-500 font-medium">{t('client.total_value')}</span>

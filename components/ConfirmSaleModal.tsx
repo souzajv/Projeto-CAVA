@@ -11,8 +11,7 @@ interface ConfirmSaleModalProps {
 }
 
 export const ConfirmSaleModal: React.FC<ConfirmSaleModalProps> = ({ offer, stone, onClose, onConfirm }) => {
-  const { t } = useLanguage();
-  const formatCurrency = (val: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(val);
+  const { t, formatCurrency } = useLanguage();
   const totalValue = offer.finalPrice * offer.quantityOffered;
 
   return (
@@ -47,7 +46,7 @@ export const ConfirmSaleModal: React.FC<ConfirmSaleModalProps> = ({ offer, stone
             </div>
             <div className="flex justify-between items-center text-sm">
               <span className="text-slate-500">{t('modal.offer.qty')}</span>
-              <span className="font-medium text-slate-900">{offer.quantityOffered} {stone.quantity.unit}</span>
+              <span className="font-medium text-slate-900">{offer.quantityOffered} {t(`unit.${stone.quantity.unit}`)}</span>
             </div>
             <div className="border-t border-slate-200 my-2"></div>
             <div className="flex justify-between items-center">

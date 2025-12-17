@@ -126,7 +126,7 @@ export const SellerInventoryModal: React.FC<SellerInventoryModalProps> = ({
                       <div className="grid grid-cols-2 gap-4">
                         <div className="p-3 bg-blue-50 rounded-lg border border-blue-100">
                            <p className="text-xs text-blue-600 font-bold uppercase mb-1">{t('modal.seller_inv.your_stock')}</p>
-                           <p className="text-xl font-bold text-blue-900">{delegation.delegatedQuantity} <span className="text-sm font-normal text-blue-700">{stone.quantity.unit}</span></p>
+                           <p className="text-xl font-bold text-blue-900">{delegation.delegatedQuantity} <span className="text-sm font-normal text-blue-700">{t(`unit.${stone.quantity.unit}`)}</span></p>
                         </div>
                         <div className="p-3 bg-slate-50 rounded-lg border border-slate-200">
                            <p className="text-xs text-slate-500 font-bold uppercase mb-1">{t('modal.seller_inv.floor_price')}</p>
@@ -203,7 +203,7 @@ export const SellerInventoryModal: React.FC<SellerInventoryModalProps> = ({
                                </td>
                                <td className="px-6 py-4">
                                  <div className="font-bold text-slate-900 text-base">{offer.clientName}</div>
-                                 <div className="text-xs text-slate-500 font-medium mt-0.5">{offer.quantityOffered} {stone.quantity.unit}</div>
+                                 <div className="text-xs text-slate-500 font-medium mt-0.5">{offer.quantityOffered} {t(`unit.${stone.quantity.unit}`)}</div>
                                </td>
                                <td className="px-6 py-4 text-slate-500 text-sm font-medium">
                                  {formatDate(offer.createdAt)}

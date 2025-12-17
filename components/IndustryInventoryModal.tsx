@@ -359,7 +359,7 @@ export const IndustryInventoryModal: React.FC<IndustryInventoryModalProps> = ({
                                              </td>
                                              <td className="px-6 py-4 font-medium text-slate-800">
                                                 {offer.clientName}
-                                                <div className="text-xs text-slate-400 font-normal">{offer.quantityOffered} units</div>
+                                                <div className="text-xs text-slate-400 font-normal">{offer.quantityOffered} {t(`unit.${stone.quantity.unit}`)}</div>
                                              </td>
                                              <td className="px-6 py-4 text-right font-mono text-slate-700">
                                                 {formatCurrency(offer.finalPrice)}
@@ -435,7 +435,7 @@ export const IndustryInventoryModal: React.FC<IndustryInventoryModalProps> = ({
                                        <div className="flex gap-8 text-sm">
                                           <div className="text-center">
                                              <p className="text-xs text-slate-400 font-bold uppercase">{t('modal.ind_inv.assigned')}</p>
-                                             <p className="font-bold text-slate-900">{del.delegatedQuantity} {stone.quantity.unit}</p>
+                                             <p className="font-bold text-slate-900">{del.delegatedQuantity} {t(`unit.${stone.quantity.unit}`)}</p>
                                           </div>
                                           <div className="text-center">
                                              <p className="text-xs text-slate-400 font-bold uppercase">{t('card.sold')}</p>
