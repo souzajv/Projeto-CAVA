@@ -83,7 +83,7 @@ export const BatchModal: React.FC<BatchModalProps> = ({ typologies, onClose, onS
         available: quantity, // Initially all are available
         reserved: 0,
         sold: 0,
-        unit: 'slabs' // Defaulting to slabs for this MVP
+        unit: unit === 'm' ? 'm2' : 'slabs'
       }
     };
 
