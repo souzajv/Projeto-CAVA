@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { OfferLink, Seller, StoneItem, SalesDelegation, UserRole } from '../types';
-import { DollarSign, BarChart3, Activity, Users, ExternalLink, CheckSquare, BadgeCheck, ChevronRight, Trash2, Calendar, Filter, X } from 'lucide-react';
+import { DollarSign, BarChart3, Link as LinkIcon, Users, ExternalLink, CheckSquare, BadgeCheck, ChevronRight, Trash2, Calendar, Filter, X } from 'lucide-react';
 import { PageView } from './Sidebar';
 import { useLanguage } from '../contexts/LanguageContext';
 
@@ -159,7 +159,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                <h3 className="text-3xl font-bold text-slate-900 mt-2">{formatCurrency(kpi.pipelineRevenue)}</h3>
              </div>
              <div className="p-2 bg-blue-50 rounded-lg text-blue-600 group-hover:bg-blue-100 transition-colors">
-               <Activity className="w-5 h-5" />
+               <LinkIcon className="w-5 h-5" />
              </div>
           </div>
           <div className="mt-4 flex items-center text-xs text-slate-500 font-medium">

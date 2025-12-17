@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { OfferLink, StoneItem, Seller, SalesDelegation, UserRole } from '../types';
-import { Search, ArrowUpRight, DollarSign, Calendar, TrendingUp, Filter, Download } from 'lucide-react';
+import { Search, Link as LinkIcon, DollarSign, Calendar, TrendingUp, Filter, Download } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 
 export type AnalyticsMode = 'pipeline' | 'sales' | 'profit';
@@ -92,7 +92,7 @@ export const AnalyticsDetailView: React.FC<AnalyticsDetailViewProps> = ({
            <div className="flex items-center gap-3 mb-1">
              <div className={`p-2 rounded-lg ${mode === 'profit' ? 'bg-emerald-100 text-emerald-600' : mode === 'pipeline' ? 'bg-blue-100 text-blue-600' : 'bg-indigo-100 text-indigo-600'}`}>
                 {mode === 'profit' && <TrendingUp className="w-6 h-6" />}
-                {mode === 'pipeline' && <ArrowUpRight className="w-6 h-6" />}
+                {mode === 'pipeline' && <LinkIcon className="w-6 h-6" />}
                 {mode === 'sales' && <DollarSign className="w-6 h-6" />}
              </div>
              <h1 className="text-2xl font-bold text-slate-900">{title}</h1>

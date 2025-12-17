@@ -1,5 +1,5 @@
 import React from 'react';
-import { LayoutGrid, BarChart3, TrendingUp, DollarSign, Activity, Package, UserCircle, LogOut } from 'lucide-react';
+import { LayoutGrid, BarChart3, TrendingUp, DollarSign, Link as LinkIcon, Package, UserCircle, LogOut } from 'lucide-react';
 import { UserRole } from '../types';
 import { useLanguage } from '../contexts/LanguageContext';
 
@@ -67,7 +67,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           {t('nav.analytics')}
         </div>
         <NavItem page="dashboard" icon={LayoutGrid} label={t('nav.dashboard')} />
-        <NavItem page="pipeline" icon={Activity} label={t('nav.pipeline')} />
+        <NavItem page="pipeline" icon={LinkIcon} label={t('nav.pipeline')} />
         <NavItem page="sales" icon={DollarSign} label={t('nav.sales')} />
         <NavItem page="financials" icon={TrendingUp} label={role === 'industry_admin' ? t('nav.financials_admin') : t('nav.financials_seller')} />
       </div>
