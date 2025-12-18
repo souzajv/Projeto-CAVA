@@ -1,9 +1,9 @@
 import React from 'react';
-import { LayoutGrid, BarChart3, TrendingUp, DollarSign, Link as LinkIcon, Package, UserCircle, LogOut } from 'lucide-react';
+import { LayoutGrid, BarChart3, TrendingUp, DollarSign, Link as LinkIcon, Package, UserCircle, LogOut, Archive } from 'lucide-react';
 import { UserRole } from '../types';
 import { useLanguage } from '../contexts/LanguageContext';
 
-export type PageView = 'inventory' | 'dashboard' | 'pipeline' | 'sales' | 'financials';
+export type PageView = 'inventory' | 'lot_history' | 'dashboard' | 'pipeline' | 'sales' | 'financials';
 
 interface SidebarProps {
   activePage: PageView;
@@ -62,6 +62,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
           {t('nav.operations')}
         </div>
         <NavItem page="inventory" icon={Package} label={t('nav.inventory')} />
+        
+        {role === 'industry_admin' && (
+          <NavItem page="lot_history" icon={Archive} label={t('nav.lot_history')} />
+        )}
         
         <div className="px-4 py-2 text-xs font-bold text-slate-400 uppercase tracking-wider mt-8 mb-2">
           {t('nav.analytics')}
