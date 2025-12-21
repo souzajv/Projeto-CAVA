@@ -109,7 +109,9 @@ export const AnalyticsDetailView: React.FC<AnalyticsDetailViewProps> = ({
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
          <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
-            <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">{t('dash.kpi.revenue')}</p>
+            <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">
+               {mode === 'pipeline' ? t('dash.kpi.potential_revenue') : t('dash.kpi.revenue')}
+            </p>
             <p className="text-2xl font-bold text-slate-900">{formatCurrency(totals.revenue)}</p>
          </div>
          {mode === 'profit' && (

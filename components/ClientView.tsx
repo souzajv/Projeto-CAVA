@@ -1,6 +1,7 @@
-import React from 'react';
+
+import React, { useEffect, useRef } from 'react';
 import { OfferLink, StoneItem, Seller } from '../types';
-import { Ruler, CheckCircle2, Phone, ShieldCheck, ArrowRight } from 'lucide-react';
+import { Ruler, CheckCircle2, Phone, ShieldCheck, ArrowRight, Clock } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { LanguageSwitcher } from './LanguageSwitcher';
 
@@ -8,13 +9,23 @@ interface ClientViewProps {
   offer: OfferLink;
   stone: StoneItem;
   seller?: Seller;
+  onExit?: (durationMs: number) => void;
 }
 
-export const ClientView: React.FC<ClientViewProps> = ({ offer, stone, seller }) => {
+export const ClientView: React.FC<ClientViewProps> = ({ offer, stone, seller, onExit }) => {
   const { t, formatDate, formatCurrency } = useLanguage();
+  const startTimeRef = useRef<number>(Date.now());
+
+  useEffect(() => {
+    // Quando o componente for desmontado (cliente sair da página)
+    return () => {
+      const duration = Date.now() - startTimeRef.current;
+      if (onExit) onExit(duration);
+    };
+  }, [onExit]);
 
   return (
-    <div className="min-h-screen bg-white font-sans text-slate-900">
+    <div className="min-h-screen bg-white font-sans text-slate-900 animate-in fade-in duration-700">
       <nav className="border-b border-slate-100 sticky top-0 bg-white/80 backdrop-blur-md z-40">
         <div className="max-w-5xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="text-xl font-bold tracking-tighter">CAVA</div>
@@ -88,7 +99,7 @@ export const ClientView: React.FC<ClientViewProps> = ({ offer, stone, seller }) 
               )}
             </div>
 
-            <div className="bg-slate-50 p-4 rounded-lg flex items-start space-x-3 text-sm text-slate-600">
+            <div className="bg-slate-50 p-4 rounded-lg flex items-start space-x-3 text-sm text-slate-600 border border-slate-100">
                <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" />
                <p>
                  {t('client.validity')} <span className="font-semibold">{offer.clientName}</span> {t('client.until')} {formatDate(offer.expiresAt || '')}. 

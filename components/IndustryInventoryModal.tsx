@@ -31,6 +31,9 @@ export const IndustryInventoryModal: React.FC<IndustryInventoryModalProps> = ({
   const [activeTab, setActiveTab] = useState<'links' | 'delegations' | 'stock'>('links');
   const [redirectOffer, setRedirectOffer] = useState<OfferLink | null>(null);
   
+  // A lot is fully closed if there is no available or reserved stock left
+  const isFullyClosed = stone.quantity.available === 0 && stone.quantity.reserved === 0;
+
   // Local state for Stock Tab editing
   const [formData, setFormData] = useState({
     totalQuantity: stone.quantity.total,
@@ -177,31 +180,33 @@ export const IndustryInventoryModal: React.FC<IndustryInventoryModalProps> = ({
                      </div>
                   </div>
 
-                  {/* Actions: Direct & Delegate */}
-                  <div className="grid grid-cols-2 gap-3">
-                      <button 
-                        onClick={onDirectLink}
-                        disabled={!isAvailable}
-                        className={`flex items-center justify-center px-4 py-3 rounded-xl text-sm font-bold transition-all shadow-sm border
-                          ${isAvailable 
-                            ? 'bg-white hover:bg-slate-50 text-slate-700 border-slate-200 border-slate-300' 
-                            : 'bg-slate-50 text-slate-400 border-slate-100 cursor-not-allowed'}`}
-                      >
-                         <Zap className="w-4 h-4 mr-2" />
-                         {t('modal.ind_inv.direct')}
-                      </button>
-                      <button 
-                        onClick={onDelegate}
-                        disabled={!isAvailable}
-                        className={`flex items-center justify-center px-4 py-3 rounded-xl text-sm font-bold transition-all shadow-sm
-                          ${isAvailable 
-                            ? 'bg-slate-900 hover:bg-slate-800 text-white border border-transparent' 
-                            : 'bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed'}`}
-                      >
-                         <UserPlus className="w-4 h-4 mr-2" />
-                         {t('modal.ind_inv.delegate')}
-                      </button>
-                  </div>
+                  {/* Actions: Direct & Delegate - Hidden for fully closed lots */}
+                  {!isFullyClosed && (
+                    <div className="grid grid-cols-2 gap-3 animate-in fade-in slide-in-from-top-2">
+                        <button 
+                          onClick={onDirectLink}
+                          disabled={!isAvailable}
+                          className={`flex items-center justify-center px-4 py-3 rounded-xl text-sm font-bold transition-all shadow-sm border
+                            ${isAvailable 
+                              ? 'bg-white hover:bg-slate-50 text-slate-700 border-slate-200' 
+                              : 'bg-slate-50 text-slate-400 border-slate-100 cursor-not-allowed'}`}
+                        >
+                           <Zap className="w-4 h-4 mr-2" />
+                           {t('modal.ind_inv.direct')}
+                        </button>
+                        <button 
+                          onClick={onDelegate}
+                          disabled={!isAvailable}
+                          className={`flex items-center justify-center px-4 py-3 rounded-xl text-sm font-bold transition-all shadow-sm
+                            ${isAvailable 
+                              ? 'bg-slate-900 hover:bg-slate-800 text-white border border-transparent' 
+                              : 'bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed'}`}
+                        >
+                           <UserPlus className="w-4 h-4 mr-2" />
+                           {t('modal.ind_inv.delegate')}
+                        </button>
+                    </div>
+                  )}
 
                   {/* Stock Breakdown */}
                   <div className="space-y-4">
@@ -289,17 +294,21 @@ export const IndustryInventoryModal: React.FC<IndustryInventoryModalProps> = ({
                      {t('modal.ind_inv.tab.delegations')}
                      <span className="ml-2 bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full text-xs">{delegations.length}</span>
                   </button>
-                  <button 
-                     onClick={() => setActiveTab('stock')}
-                     className={`pb-4 text-sm font-bold flex items-center transition-colors border-b-2 ${
-                        activeTab === 'stock' 
-                        ? 'border-emerald-600 text-emerald-900' 
-                        : 'border-transparent text-slate-500 hover:text-slate-700'
-                     }`}
-                  >
-                     <Settings className="w-4 h-4 mr-2" />
-                     {t('modal.ind_inv.tab.stock')}
-                  </button>
+                  
+                  {/* Stock Tab only visible if NOT fully sold */}
+                  {!isFullyClosed && (
+                    <button 
+                       onClick={() => setActiveTab('stock')}
+                       className={`pb-4 text-sm font-bold flex items-center transition-colors border-b-2 animate-in fade-in duration-300 ${
+                          activeTab === 'stock' 
+                          ? 'border-emerald-600 text-emerald-900' 
+                          : 'border-transparent text-slate-500 hover:text-slate-700'
+                       }`}
+                    >
+                       <Settings className="w-4 h-4 mr-2" />
+                       {t('modal.ind_inv.tab.stock')}
+                    </button>
+                  )}
                </div>
 
                {/* Content Area */}
@@ -454,7 +463,7 @@ export const IndustryInventoryModal: React.FC<IndustryInventoryModalProps> = ({
                      </div>
                   )}
 
-                  {activeTab === 'stock' && (
+                  {activeTab === 'stock' && !isFullyClosed && (
                      <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-300">
                         <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-5 flex items-start gap-4">
                            <div className="p-2 bg-white rounded-full border border-emerald-100 text-emerald-600 shadow-sm">
@@ -463,7 +472,7 @@ export const IndustryInventoryModal: React.FC<IndustryInventoryModalProps> = ({
                            <div>
                               <h3 className="text-lg font-bold text-emerald-900">{t('modal.ind_inv.inv_correction')}</h3>
                               <p className="text-sm text-emerald-700/80 mt-1">
-                                 Update total physical quantities and financial parameters. Changes here directly affect available stock and profit calculations.
+                                 {t('modal.ind_inv.inv_correction_desc')}
                               </p>
                            </div>
                         </div>
@@ -492,9 +501,10 @@ export const IndustryInventoryModal: React.FC<IndustryInventoryModalProps> = ({
                                     <label className="text-xs font-bold text-slate-500 uppercase mb-1 block">{t('card.lot')} / ID</label>
                                     <input 
                                        type="text"
+                                       readOnly
+                                       disabled
                                        value={formData.lotId}
-                                       onChange={(e) => setFormData({...formData, lotId: e.target.value})}
-                                       className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-lg text-base font-medium text-slate-900 focus:ring-2 focus:ring-emerald-500 outline-none"
+                                       className="w-full px-4 py-3 bg-slate-100 border border-slate-200 rounded-lg text-base font-medium text-slate-500 focus:ring-0 outline-none cursor-not-allowed select-none"
                                     />
                                  </div>
                               </div>

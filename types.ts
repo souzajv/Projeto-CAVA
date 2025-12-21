@@ -1,18 +1,15 @@
+
 /**
  * Domain Layer Definitions for CAVA Platform
- * 
- * Defines the core entities and their relationships within the stone sales lifecycle:
- * Industry (Owner) -> Seller (Delegate) -> Client (Buyer).
  */
 
-// RF-001: Stone Typology (The "Catalog" Template)
 export interface StoneTypology {
   id: string;
-  name: string;         // e.g., "Granito Preto São Gabriel"
+  name: string;
   description: string;
-  origin: string;       // e.g., "Espírito Santo, Brazil"
-  hardness: string;     // e.g., "High", "Mohs 7"
-  imageUrl: string;     // Added for Catalog visual
+  origin: string;
+  hardness: string;
+  imageUrl: string;
   technicalFileUrl?: string;
 }
 
@@ -23,33 +20,19 @@ export interface Dimensions {
   unit: 'cm' | 'mm' | 'm';
 }
 
-// RF-002 & RF-003: Inventory Item (The Real Batch/Lot)
 export interface StoneItem {
   id: string;
-  typology: StoneTypology; // Linked to Catalog
-  
-  // Batch/Lot Identification
-  lotId: string;       // e.g., "BLOCK-2024-X99"
-  
+  typology: StoneTypology;
+  lotId: string;
   dimensions: Dimensions;
-  imageUrl: string; // Real photo of the slab/batch
-  
-  /** 
-   * The production or acquisition cost per unit.
-   */
+  imageUrl: string;
   baseCost: number;
-
-  /** 
-   * The absolute floor price set by the Industry per unit.
-   */
   minPrice: number;
-  
-  // Quantitative Inventory Management
   quantity: {
-    total: number;      // Initial physical entry
-    available: number;  // Free to sell/delegate
-    reserved: number;   // Locked in delegations or negotiations
-    sold: number;       // Finalized sales
+    total: number;
+    available: number;
+    reserved: number;
+    sold: number;
     unit: 'slabs' | 'm2';
   };
 }
@@ -67,15 +50,8 @@ export interface SalesDelegation {
   id: string;
   stoneId: string;
   sellerId: string;
-  
-  /**
-   * The quantity delegated to this seller.
-   * This subtracts from StoneItem.quantity.available and adds to reserved.
-   */
   delegatedQuantity: number; 
-
   agreedMinPrice: number;
-  
   createdAt: string; 
 }
 
@@ -83,39 +59,31 @@ export type OfferStatus = 'active' | 'sold' | 'expired';
 
 export interface OfferLink {
   id: string;
-  
-  // RF-004 & RF-005: Dual Mode Support
   delegationId?: string; 
   stoneId: string; 
-  
   clientName: string;
-  
-  // Offer details
   finalPrice: number;
   quantityOffered: number;
-  status: OfferStatus; // Added for RF-009
-  
+  status: OfferStatus;
   clientViewToken: string;
-  
   createdAt: string; 
   expiresAt?: string; 
-  
-  // Analytics
-  viewLog: { timestamp: string }[]; // New: Track when the link was accessed
+  // RF-008: Track access and duration
+  viewLog: { 
+    timestamp: string; 
+    durationMs?: number; // How long they stayed
+  }[];
 }
 
-// RF-008: Notifications
 export interface Notification {
   id: string;
-  recipientId: string; // Seller ID or 'industry'
+  recipientId: string;
   message: string;
   type: 'info' | 'success' | 'alert';
   timestamp: string;
   read: boolean;
-  isToast?: boolean; // Control if it shows as a transient popup
+  isToast?: boolean;
 }
-
-// -- Application State --
 
 export type UserRole = 'industry_admin' | 'seller';
 
@@ -124,11 +92,8 @@ export interface AppState {
   sellers: Seller[];
   delegations: SalesDelegation[];
   offers: OfferLink[];
-  notifications: Notification[]; // Added for RF-008
-  
+  notifications: Notification[];
   currentUserRole: UserRole;
   currentSellerId?: string; 
-  
-  // Navigation State (Mock Router)
   currentView: 'dashboard' | { type: 'client_view', token: string };
 }

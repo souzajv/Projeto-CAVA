@@ -1,6 +1,7 @@
+
 import React from 'react';
 import { OfferLink, StoneItem, Seller, UserRole, SalesDelegation } from '../types';
-import { X, Calendar, User, DollarSign, Layers, MapPin, ShieldCheck, ExternalLink, Trash2, BadgeCheck, Copy, Clock, Eye, TrendingUp, Wallet } from 'lucide-react';
+import { X, Calendar, User, DollarSign, Layers, MapPin, ShieldCheck, ExternalLink, Trash2, BadgeCheck, Copy, Clock, Eye, TrendingUp, Wallet, Timer } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 
 interface TransactionDetailsModalProps {
@@ -12,7 +13,6 @@ interface TransactionDetailsModalProps {
   };
   role: UserRole;
   onClose: () => void;
-  // Fix: Removed duplicate onFinalizeSale declaration
   onFinalizeSale?: (offer: OfferLink) => void;
   onCancelLink?: (offer: OfferLink) => void;
 }
@@ -32,7 +32,6 @@ export const TransactionDetailsModal: React.FC<TransactionDetailsModalProps> = (
   const isActive = offer.status === 'active';
   const totalValue = offer.finalPrice * offer.quantityOffered;
 
-  // --- Profit Calculation Logic ---
   let costBasis = 0;
   let profitLabel = '';
   let profitIcon = TrendingUp;
@@ -50,39 +49,43 @@ export const TransactionDetailsModal: React.FC<TransactionDetailsModalProps> = (
   const marginPercent = totalValue > 0 ? (profitValue / totalValue) * 100 : 0;
 
   const handleCopyLink = () => {
-    const url = `https://cava.platform/view/${offer.clientViewToken}`;
-    navigator.clipboard.writeText(url);
+    navigator.clipboard.writeText(`https://cava.platform/view/${offer.clientViewToken}`);
     alert('Link copied to clipboard!');
+  };
+
+  const formatDuration = (ms?: number) => {
+    if (!ms) return null;
+    const sec = Math.round(ms / 1000);
+    if (sec < 60) return `${sec}s`;
+    const min = Math.floor(sec / 60);
+    const remSec = sec % 60;
+    return `${min}m ${remSec}s`;
   };
 
   const timelineEvents = [
     { type: 'created', date: new Date(offer.createdAt), label: t('modal.tx.created') },
-    ...(offer.viewLog || []).map(v => ({ type: 'viewed', date: new Date(v.timestamp), label: t('modal.tx.viewed') })),
+    ...(offer.viewLog || []).map(v => ({ 
+      type: 'viewed', 
+      date: new Date(v.timestamp), 
+      label: t('modal.tx.viewed'),
+      duration: formatDuration(v.durationMs)
+    })),
   ];
 
   if (isSold) {
     timelineEvents.push({ type: 'sold', date: new Date(), label: t('modal.tx.finalized') }); 
-  } else if (offer.expiresAt) {
-    timelineEvents.push({ type: 'expiry', date: new Date(offer.expiresAt), label: t('modal.tx.expiry') });
   }
 
   timelineEvents.sort((a, b) => a.date.getTime() - b.date.getTime());
 
   return (
-    <div 
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-2 sm:p-4 animate-in fade-in duration-200"
-      onClick={onClose}
-    >
-      <div 
-        className="bg-white rounded-2xl shadow-2xl w-full max-w-6xl h-[90vh] overflow-hidden flex flex-col animate-in zoom-in-95 duration-200"
-        onClick={(e) => e.stopPropagation()}
-      >
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-2 sm:p-4 animate-in fade-in duration-200" onClick={onClose}>
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-6xl h-[90vh] overflow-hidden flex flex-col animate-in zoom-in-95 duration-200" onClick={(e) => e.stopPropagation()}>
         <div className="px-8 py-6 border-b border-slate-100 flex justify-between items-start bg-slate-50/50">
           <div>
             <div className="flex items-center space-x-3 mb-2">
               <h2 className="text-2xl font-bold text-slate-900">{offer.clientName}</h2>
               {isSold && <span className="px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold uppercase tracking-wider border border-emerald-200">{t('modal.tx.sold')}</span>}
-              {isExpired && <span className="px-3 py-1 rounded-full bg-slate-100 text-slate-600 text-xs font-bold uppercase tracking-wider border border-slate-200">{t('modal.tx.expired')}</span>}
               {isActive && <span className="px-3 py-1 rounded-full bg-blue-100 text-blue-700 text-xs font-bold uppercase tracking-wider border border-blue-200 flex items-center"><Clock className="w-3 h-3 mr-1" /> {t('modal.tx.active')}</span>}
             </div>
             <p className="text-sm text-slate-500 font-mono">Transaction ID: {offer.id}</p>
@@ -95,15 +98,14 @@ export const TransactionDetailsModal: React.FC<TransactionDetailsModalProps> = (
         <div className="flex-1 overflow-y-auto">
           <div className="flex flex-col lg:flex-row h-full">
             <div className="lg:w-5/12 p-8 bg-slate-50 border-r border-slate-100 flex flex-col">
-               <div className="aspect-square rounded-xl overflow-hidden bg-white shadow-sm border border-slate-200 mb-6 relative group max-h-[400px]">
+               <div className="aspect-square rounded-xl overflow-hidden bg-white shadow-sm border border-slate-200 mb-6 max-h-[400px]">
                   <img src={stone.imageUrl} alt={stone.typology.name} className="w-full h-full object-cover" />
                </div>
                <div className="space-y-6 flex-1">
                  <div>
                    <h3 className="font-bold text-slate-900 text-xl">{stone.typology.name}</h3>
                    <div className="flex items-center text-sm text-slate-500 mt-2">
-                     <MapPin className="w-4 h-4 mr-1.5 text-slate-400" />
-                     {stone.typology.origin}
+                     <MapPin className="w-4 h-4 mr-1.5 text-slate-400" /> {stone.typology.origin}
                    </div>
                  </div>
                  <div className="p-5 bg-white rounded-lg border border-slate-200 space-y-4 shadow-sm">
@@ -148,31 +150,20 @@ export const TransactionDetailsModal: React.FC<TransactionDetailsModalProps> = (
                     <span className="text-slate-400 text-sm font-bold uppercase tracking-wide">{t('modal.tx.total_val')}</span>
                     <DollarSign className="w-6 h-6 text-emerald-400" />
                   </div>
-                  <div className="text-5xl font-bold tracking-tight mb-2">
-                    {formatCurrency(totalValue)}
-                  </div>
+                  <div className="text-5xl font-bold tracking-tight mb-2">{formatCurrency(totalValue)}</div>
                 </div>
-                {!isExpired && (
-                   <div className="bg-slate-800 px-8 py-5 border-t border-slate-700">
-                      <div className="flex items-center justify-between mb-2">
-                         <span className="text-slate-300 text-sm font-medium flex items-center">
-                           {React.createElement(profitIcon, { className: "w-5 h-5 mr-2 text-emerald-400" })} 
-                           {profitLabel}
-                         </span>
-                         <span className="text-emerald-400 font-bold text-xl">{formatCurrency(profitValue)}</span>
-                      </div>
-                      <div className="w-full bg-slate-700 rounded-full h-2 mt-3">
-                        <div 
-                           className="bg-emerald-500 h-2 rounded-full" 
-                           style={{ width: `${Math.min(marginPercent, 100)}%` }}
-                        ></div>
-                      </div>
-                      <div className="flex justify-between mt-2">
-                        <span className="text-xs text-slate-500 font-medium uppercase">{t('modal.tx.margin')}</span>
-                        <span className="text-xs text-emerald-500 font-mono font-bold">{marginPercent.toFixed(1)}%</span>
-                      </div>
+                <div className="bg-slate-800 px-8 py-5 border-t border-slate-700">
+                   <div className="flex items-center justify-between mb-2">
+                      <span className="text-slate-300 text-sm font-medium flex items-center">
+                        {React.createElement(profitIcon, { className: "w-5 h-5 mr-2 text-emerald-400" })} {profitLabel}
+                      </span>
+                      <span className="text-emerald-400 font-bold text-xl">{formatCurrency(profitValue)}</span>
                    </div>
-                )}
+                   <div className="flex justify-between mt-2">
+                     <span className="text-xs text-slate-500 font-medium uppercase">{t('modal.tx.margin')}</span>
+                     <span className="text-xs text-emerald-500 font-mono font-bold">{marginPercent.toFixed(1)}%</span>
+                   </div>
+                </div>
               </div>
 
               <div className="space-y-5 pt-4">
@@ -184,19 +175,14 @@ export const TransactionDetailsModal: React.FC<TransactionDetailsModalProps> = (
                     let colorClass = 'bg-slate-100 border-slate-300';
                     let textClass = 'text-slate-900';
                     let Icon = null;
-                    if (event.type === 'created') {
-                      colorClass = 'bg-blue-100 border-blue-500';
-                    } else if (event.type === 'viewed') {
+                    if (event.type === 'created') colorClass = 'bg-blue-100 border-blue-500';
+                    else if (event.type === 'viewed') {
                       colorClass = 'bg-indigo-100 border-indigo-500';
                       textClass = 'text-indigo-900';
                       Icon = Eye;
                     } else if (event.type === 'sold') {
                       colorClass = 'bg-emerald-100 border-emerald-500';
                       textClass = 'text-emerald-700';
-                    } else if (event.type === 'expiry') {
-                       const isFuture = event.date > new Date();
-                       colorClass = isFuture ? 'bg-slate-50 border-slate-200' : 'bg-amber-100 border-amber-500';
-                       textClass = isFuture ? 'text-slate-400' : 'text-amber-700';
                     }
                     return (
                       <div key={index} className="relative group">
@@ -206,12 +192,13 @@ export const TransactionDetailsModal: React.FC<TransactionDetailsModalProps> = (
                              <p className={`text-base font-bold ${textClass} flex items-center`}>
                                {Icon && <Icon className="w-4 h-4 mr-2" />}
                                {event.label}
+                               {(event as any).duration && (
+                                 <span className="ml-3 px-2 py-0.5 bg-indigo-50 text-indigo-600 text-[10px] rounded flex items-center font-bold">
+                                   <Timer className="w-3 h-3 mr-1" /> {(event as any).duration}
+                                 </span>
+                               )}
                              </p>
-                             <p className="text-sm text-slate-500 mt-1">
-                               {event.type === 'viewed' || event.type === 'created' 
-                                  ? formatDateTime(event.date) 
-                                  : formatDate(event.date, { weekday: 'short', day: '2-digit', month: 'long', year: 'numeric' })}
-                             </p>
+                             <p className="text-sm text-slate-500 mt-1">{formatDateTime(event.date)}</p>
                            </div>
                         </div>
                       </div>
@@ -223,37 +210,17 @@ export const TransactionDetailsModal: React.FC<TransactionDetailsModalProps> = (
           </div>
         </div>
 
-        <div className="px-8 py-6 bg-white border-t border-slate-100 flex items-center justify-end gap-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-10">
-           <button 
-             onClick={handleCopyLink}
-             className="flex items-center px-5 py-3 bg-white border border-slate-200 text-slate-700 rounded-lg text-sm font-bold hover:bg-slate-50 hover:text-slate-900 transition-colors"
-           >
-             <Copy className="w-4 h-4 mr-2" />
-             {t('modal.tx.copy')}
+        <div className="px-8 py-6 bg-white border-t border-slate-100 flex items-center justify-end gap-4 z-10">
+           <button onClick={handleCopyLink} className="flex items-center px-5 py-3 bg-white border border-slate-200 text-slate-700 rounded-lg text-sm font-bold hover:bg-slate-50 transition-colors">
+             <Copy className="w-4 h-4 mr-2" /> {t('modal.tx.copy')}
            </button>
-           <a 
-              href={`#${offer.clientViewToken}`} 
-              className="flex items-center px-5 py-3 bg-white border border-slate-200 text-slate-700 rounded-lg text-sm font-bold hover:bg-slate-50 hover:text-slate-900 transition-colors"
-           >
-              <ExternalLink className="w-4 h-4 mr-2" />
-              {t('modal.tx.open')}
-           </a>
            {!isSold && !isExpired && (
              <>
-                <div className="w-px h-8 bg-slate-200 mx-1"></div>
-                <button 
-                  onClick={() => onCancelLink?.(offer)}
-                  className="flex items-center px-5 py-3 bg-rose-50 text-rose-600 border border-rose-100 rounded-lg text-sm font-bold hover:bg-rose-100 hover:border-rose-200 transition-colors"
-                >
-                  <Trash2 className="w-4 h-4 mr-2" />
-                  {t('modal.tx.cancel')}
+                <button onClick={() => onCancelLink?.(offer)} className="flex items-center px-5 py-3 bg-rose-50 text-rose-600 border border-rose-100 rounded-lg text-sm font-bold hover:bg-rose-100 transition-colors">
+                  <Trash2 className="w-4 h-4 mr-2" /> {t('modal.tx.cancel')}
                 </button>
-                <button 
-                  onClick={() => onFinalizeSale?.(offer)}
-                  className="flex items-center px-8 py-3 bg-emerald-600 text-white rounded-lg text-sm font-bold hover:bg-emerald-700 shadow-md hover:shadow-lg transition-all"
-                >
-                  <BadgeCheck className="w-5 h-5 mr-2" />
-                  {t('modal.tx.finalize')}
+                <button onClick={() => onFinalizeSale?.(offer)} className="flex items-center px-8 py-3 bg-emerald-600 text-white rounded-lg text-sm font-bold hover:bg-emerald-700 shadow-md transition-all">
+                  <BadgeCheck className="w-5 h-5 mr-2" /> {t('modal.tx.finalize')}
                 </button>
              </>
            )}

@@ -1,3 +1,4 @@
+
 import { StoneItem, Seller } from './types';
 
 export const MOCK_STONES: StoneItem[] = [
@@ -90,6 +91,29 @@ export const MOCK_STONES: StoneItem[] = [
       available: 15,
       reserved: 5,
       sold: 0,
+      unit: 'slabs'
+    }
+  },
+  {
+    id: 'inv-005',
+    lotId: 'BLK-2023-HIST-01',
+    typology: {
+      id: 'type-01',
+      name: 'Carrara Marble Premium',
+      description: 'Classic Italian marble with soft grey veining.',
+      origin: 'Tuscany, Italy',
+      hardness: 'Mohs 3',
+      imageUrl: 'https://picsum.photos/id/1036/800/600'
+    },
+    dimensions: { width: 285, height: 165, thickness: 2, unit: 'cm' },
+    imageUrl: 'https://picsum.photos/id/1036/800/600',
+    baseCost: 1100,
+    minPrice: 1900,
+    quantity: {
+      total: 8,
+      available: 0,
+      reserved: 0,
+      sold: 8,
       unit: 'slabs'
     }
   }
