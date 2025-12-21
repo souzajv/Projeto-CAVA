@@ -10,6 +10,7 @@ interface SellerInventoryModalProps {
   onClose: () => void;
   onCreateOffer: () => void;
   onViewTransaction: (offer: OfferLink) => void;
+  onViewClientPage?: (token: string) => void;
 }
 
 export const SellerInventoryModal: React.FC<SellerInventoryModalProps> = ({ 
@@ -18,7 +19,8 @@ export const SellerInventoryModal: React.FC<SellerInventoryModalProps> = ({
   offers, 
   onClose, 
   onCreateOffer,
-  onViewTransaction
+  onViewTransaction,
+  onViewClientPage
 }) => {
   const { t, formatCurrency, formatDate } = useLanguage();
   const [redirectOffer, setRedirectOffer] = useState<OfferLink | null>(null);
@@ -230,12 +232,12 @@ export const SellerInventoryModal: React.FC<SellerInventoryModalProps> = ({
                                    >
                                      <Copy className="w-4 h-4" />
                                    </button>
-                                   <a 
-                                     href={`#${offer.clientViewToken}`}
+                                   <button 
+                                     onClick={() => onViewClientPage?.(offer.clientViewToken)}
                                      className="p-2 hover:bg-white hover:shadow-sm text-slate-500 hover:text-slate-900 rounded-lg transition-all border border-transparent hover:border-slate-200"
                                    >
                                      <ExternalLink className="w-4 h-4" />
-                                   </a>
+                                   </button>
                                  </div>
                                </td>
                              </tr>

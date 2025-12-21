@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { OfferLink, StoneItem, Seller, UserRole, SalesDelegation } from '../types';
 import { X, Calendar, User, DollarSign, Layers, MapPin, ShieldCheck, ExternalLink, Trash2, BadgeCheck, Copy, Clock, Eye, TrendingUp, Wallet, Timer } from 'lucide-react';
@@ -15,6 +14,7 @@ interface TransactionDetailsModalProps {
   onClose: () => void;
   onFinalizeSale?: (offer: OfferLink) => void;
   onCancelLink?: (offer: OfferLink) => void;
+  onViewClientPage?: (token: string) => void;
 }
 
 export const TransactionDetailsModal: React.FC<TransactionDetailsModalProps> = ({ 
@@ -22,7 +22,8 @@ export const TransactionDetailsModal: React.FC<TransactionDetailsModalProps> = (
   role, 
   onClose,
   onFinalizeSale,
-  onCancelLink
+  onCancelLink,
+  onViewClientPage
 }) => {
   const { t, formatCurrency, formatDate, formatDateTime } = useLanguage();
   const { offer, stone, seller, delegation } = transaction;
@@ -211,6 +212,9 @@ export const TransactionDetailsModal: React.FC<TransactionDetailsModalProps> = (
         </div>
 
         <div className="px-8 py-6 bg-white border-t border-slate-100 flex items-center justify-end gap-4 z-10">
+           <button onClick={() => onViewClientPage?.(offer.clientViewToken)} className="flex items-center px-5 py-3 bg-blue-50 text-blue-700 border border-blue-100 rounded-lg text-sm font-bold hover:bg-blue-100 transition-colors">
+             <ExternalLink className="w-4 h-4 mr-2" /> Ver Página
+           </button>
            <button onClick={handleCopyLink} className="flex items-center px-5 py-3 bg-white border border-slate-200 text-slate-700 rounded-lg text-sm font-bold hover:bg-slate-50 transition-colors">
              <Copy className="w-4 h-4 mr-2" /> {t('modal.tx.copy')}
            </button>

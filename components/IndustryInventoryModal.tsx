@@ -13,6 +13,7 @@ interface IndustryInventoryModalProps {
   onUpdateStone: (updatedStone: StoneItem) => void;
   onDelegate: () => void;
   onDirectLink: () => void;
+  onViewClientPage?: (token: string) => void;
 }
 
 export const IndustryInventoryModal: React.FC<IndustryInventoryModalProps> = ({ 
@@ -24,7 +25,8 @@ export const IndustryInventoryModal: React.FC<IndustryInventoryModalProps> = ({
   onViewTransaction,
   onUpdateStone,
   onDelegate,
-  onDirectLink
+  onDirectLink,
+  onViewClientPage
 }) => {
   const { t, formatCurrency, formatDate } = useLanguage();
   
@@ -124,7 +126,7 @@ export const IndustryInventoryModal: React.FC<IndustryInventoryModalProps> = ({
         {/* Redirect Confirmation Modal (Nested) */}
         {redirectOffer && (
           <div className="absolute inset-0 z-[60] flex items-center justify-center bg-white/60 backdrop-blur-md p-4 animate-in fade-in duration-200">
-             <div className="bg-white rounded-2xl shadow-2xl border border-slate-100 p-8 w-full max-w-sm text-center animate-in zoom-in-95" onClick={e => e.stopPropagation()}>
+             <div className="bg-white rounded-2xl shadow-2xl border border-slate-100 p-8 w-full max-sm text-center animate-in zoom-in-95" onClick={e => e.stopPropagation()}>
                <div className="w-16 h-16 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
                   <ArrowUpRight className="w-8 h-8" />
                </div>
@@ -394,13 +396,13 @@ export const IndustryInventoryModal: React.FC<IndustryInventoryModalProps> = ({
                                                    >
                                                       <Copy className="w-4 h-4" />
                                                    </button>
-                                                   <a 
-                                                      href={`#${offer.clientViewToken}`}
+                                                   <button 
+                                                      onClick={() => onViewClientPage?.(offer.clientViewToken)}
                                                       className="p-2 hover:bg-white hover:shadow-sm text-slate-500 hover:text-slate-900 rounded-lg transition-all border border-transparent hover:border-slate-200"
                                                       title="Open Client View"
                                                    >
                                                       <ExternalLink className="w-4 h-4" />
-                                                   </a>
+                                                   </button>
                                                 </div>
                                              </td>
                                           </tr>
@@ -436,6 +438,7 @@ export const IndustryInventoryModal: React.FC<IndustryInventoryModalProps> = ({
                                              )}
                                           </div>
                                           <div>
+                                             {/* Fixed broken h3 tag by adding missing opening bracket */}
                                              <h3 className="font-bold text-slate-900">{del.seller?.name}</h3>
                                              <p className="text-xs text-slate-500">Since {formatDate(del.createdAt)}</p>
                                           </div>

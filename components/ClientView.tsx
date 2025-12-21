@@ -1,6 +1,5 @@
-
 import React, { useEffect, useRef } from 'react';
-import { OfferLink, StoneItem, Seller } from '../types';
+import { OfferLink, StoneItem, Seller, UserRole } from '../types';
 import { Ruler, CheckCircle2, Phone, ShieldCheck, ArrowRight, Clock } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { LanguageSwitcher } from './LanguageSwitcher';
@@ -10,17 +9,21 @@ interface ClientViewProps {
   stone: StoneItem;
   seller?: Seller;
   onExit?: (durationMs: number) => void;
+  onSwitchPersona?: (role: UserRole | 'client') => void;
 }
 
-export const ClientView: React.FC<ClientViewProps> = ({ offer, stone, seller, onExit }) => {
+export const ClientView: React.FC<ClientViewProps> = ({ offer, stone, seller, onExit, onSwitchPersona }) => {
   const { t, formatDate, formatCurrency } = useLanguage();
   const startTimeRef = useRef<number>(Date.now());
 
+  // Registramos o tempo apenas quando o componente for destruído de fato por uma navegação externa
   useEffect(() => {
-    // Quando o componente for desmontado (cliente sair da página)
     return () => {
       const duration = Date.now() - startTimeRef.current;
-      if (onExit) onExit(duration);
+      // Só notificamos se a visita durou mais de 1 segundo para evitar falsos positivos de re-render
+      if (onExit && duration > 1000) {
+        onExit(duration);
+      }
     };
   }, [onExit]);
 
@@ -29,9 +32,31 @@ export const ClientView: React.FC<ClientViewProps> = ({ offer, stone, seller, on
       <nav className="border-b border-slate-100 sticky top-0 bg-white/80 backdrop-blur-md z-40">
         <div className="max-w-5xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="text-xl font-bold tracking-tighter">CAVA</div>
+          
+          {/* Persona Switcher para Demo */}
+          <div className="hidden md:flex items-center bg-slate-100 rounded-full p-1 mx-4 border border-slate-200">
+              <button 
+                onClick={() => onSwitchPersona?.('industry_admin')} 
+                className="px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-tight text-slate-500 hover:text-slate-700 transition-all"
+              >
+                {t('role.industry')}
+              </button>
+              <button 
+                onClick={() => onSwitchPersona?.('seller')} 
+                className="px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-tight text-slate-500 hover:text-slate-700 transition-all"
+              >
+                {t('role.seller')}
+              </button>
+              <button 
+                className="px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-tight bg-white shadow-sm text-slate-900 border border-slate-200/50"
+              >
+                {t('role.client')}
+              </button>
+          </div>
+
           <div className="flex items-center space-x-4">
              <LanguageSwitcher />
-             <div className="text-sm font-medium text-slate-500 hidden sm:block">{t('client.nav.secure')}</div>
+             <div className="text-sm font-medium text-slate-500 hidden lg:block">{t('client.nav.secure')}</div>
           </div>
         </div>
       </nav>

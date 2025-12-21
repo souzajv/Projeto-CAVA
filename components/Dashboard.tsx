@@ -25,6 +25,7 @@ interface DashboardProps {
   onCancelLink?: (offer: OfferLink) => void;
   onNavigate?: (page: PageView) => void;
   onSelectTransaction?: (transaction: any) => void;
+  onViewClientPage?: (token: string) => void;
 }
 
 type DateFilterType = 'all' | 'today' | 'week' | 'month' | 'year' | 'custom';
@@ -39,7 +40,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
   onFinalizeSale,
   onCancelLink,
   onNavigate,
-  onSelectTransaction
+  onSelectTransaction,
+  onViewClientPage
 }) => {
   const { t, formatCurrency, formatDate } = useLanguage();
   
@@ -372,12 +374,12 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                <div className="w-px h-4 bg-slate-200 mx-1"></div>
                              </>
                            )}
-                           <a 
-                             href={`#${offer.clientViewToken}`} 
+                           <button 
+                             onClick={() => onViewClientPage?.(offer.clientViewToken)}
                              className="text-slate-400 hover:text-slate-900 hover:bg-slate-50 p-1.5 rounded-lg transition-colors"
                            >
                              <ExternalLink className="w-4 h-4" />
-                           </a>
+                           </button>
                          </div>
                       </td>
                     </tr>

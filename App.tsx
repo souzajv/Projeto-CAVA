@@ -1,6 +1,5 @@
-
 import React, { useState, useMemo, useEffect } from 'react';
-import { AppState, SalesDelegation, OfferLink, StoneItem, Notification, StoneTypology } from './types';
+import { AppState, SalesDelegation, OfferLink, StoneItem, Notification, StoneTypology, UserRole } from './types';
 import { MOCK_STONES, MOCK_SELLERS } from './constants';
 import { StoneCard } from './components/StoneCard';
 import { DelegateModal } from './components/DelegateModal';
@@ -372,15 +371,21 @@ function AppContent() {
                         return del?.stoneId === s.id;
                       });
                       
-        notifications.push({
-           id: `notif-view-${Date.now()}`,
-           recipientId,
-           message: `Atenção: ${offer.clientName} acabou de abrir sua oferta de ${stone?.typology.name || 'Pedra'}!`,
-           type: 'info',
-           timestamp: new Date().toISOString(),
-           read: false,
-           isToast: true
-        });
+        // Evitamos disparar múltiplas notificações de visualização em um curto período para o mesmo token
+        const lastViewNotif = notifications.filter(n => n.id.startsWith('notif-view-')).pop();
+        const isSpam = lastViewNotif && (Date.now() - new Date(lastViewNotif.timestamp).getTime() < 5000);
+
+        if (!isSpam) {
+            notifications.push({
+               id: `notif-view-${Date.now()}`,
+               recipientId,
+               message: `Atenção: ${offer.clientName} acabou de abrir sua oferta de ${stone?.typology.name || 'Pedra'}!`,
+               type: 'info',
+               timestamp: new Date().toISOString(),
+               read: false,
+               isToast: true
+            });
+        }
       }
       return { ...prev, offers, notifications, currentView: { type: 'client_view', token } };
     });
@@ -481,6 +486,16 @@ function AppContent() {
     };
   }, [state.offers, state.delegations, state.stones, state.currentUserRole, dashboardSellerFilter, t]);
 
+  const handleSwitchPersona = (role: UserRole | 'client') => {
+    if (role === 'client') {
+      const active = state.offers.find(o => o.status === 'active');
+      if (active) navigateToClientView(active.clientViewToken);
+    } else {
+      setState(s => ({ ...s, currentUserRole: role, currentView: 'dashboard' }));
+      setActivePage('inventory');
+    }
+  };
+
   if (typeof state.currentView === 'object' && state.currentView.type === 'client_view') {
     const offer = state.offers.find(o => o.clientViewToken === (state.currentView as any).token)!;
     const delegation = state.delegations.find(d => d.id === offer.delegationId);
@@ -494,8 +509,8 @@ function AppContent() {
         seller={seller} 
         onExit={(duration) => {
           handleClientViewExit(duration);
-          navigateHome();
         }}
+        onSwitchPersona={handleSwitchPersona}
       />
     );
   }
@@ -578,7 +593,6 @@ function AppContent() {
   };
 
   const renderLotHistory = () => {
-    // A lot is in history if it's fully sold (available = 0 AND reserved = 0 AND sold > 0)
     const historyStones = state.stones.filter(s => s.quantity.available === 0 && s.quantity.reserved === 0 && s.quantity.sold > 0);
     
     const filteredStones = historyStones.filter(stone => {
@@ -663,9 +677,9 @@ function AppContent() {
         <header className="bg-white border-b border-slate-200 h-16 shrink-0 flex items-center justify-between px-8">
            <div className="text-sm text-slate-500">{t('header.welcome')} <span className="font-semibold text-slate-900">{currentUserName}</span></div>
            <div className="flex items-center bg-slate-100 rounded-full p-1 mx-4">
-              <button onClick={() => { setState(s => ({ ...s, currentUserRole: 'industry_admin' })); setActivePage('inventory'); }} className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all ${state.currentUserRole === 'industry_admin' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-500'}`}>{t('role.industry')}</button>
-              <button onClick={() => { setState(s => ({ ...s, currentUserRole: 'seller' })); setActivePage('inventory'); }} className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all ${state.currentUserRole === 'seller' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-500'}`}>{t('role.seller')}</button>
-              <button onClick={() => { const active = state.offers.find(o => o.status === 'active'); if (active) navigateToClientView(active.clientViewToken); }} className={`px-4 py-1.5 rounded-full text-xs font-medium text-slate-500`}>{t('role.client')}</button>
+              <button onClick={() => handleSwitchPersona('industry_admin')} className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all ${state.currentUserRole === 'industry_admin' && state.currentView === 'dashboard' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-500'}`}>{t('role.industry')}</button>
+              <button onClick={() => handleSwitchPersona('seller')} className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all ${state.currentUserRole === 'seller' && state.currentView === 'dashboard' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-500'}`}>{t('role.seller')}</button>
+              <button onClick={() => handleSwitchPersona('client')} className={`px-4 py-1.5 rounded-full text-xs font-medium ${typeof state.currentView === 'object' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-500'}`}>{t('role.client')}</button>
            </div>
            <div className="flex items-center space-x-4">
               <LanguageSwitcher />
@@ -683,7 +697,7 @@ function AppContent() {
              {activePage === 'inventory' ? renderInventory() : 
               activePage === 'lot_history' ? renderLotHistory() :
               activePage === 'dashboard' ? (
-               <Dashboard role={state.currentUserRole} kpi={dashboardData.metrics} offers={dashboardData.rows} sellers={state.sellers} selectedSellerId={dashboardSellerFilter} onFilterSeller={setDashboardSellerFilter} onFinalizeSale={handleRequestFinalizeSale} onCancelLink={handleCancelLink} onNavigate={setActivePage} onSelectTransaction={handleSelectTransaction} />
+               <Dashboard role={state.currentUserRole} kpi={dashboardData.metrics} offers={dashboardData.rows} sellers={state.sellers} selectedSellerId={dashboardSellerFilter} onFilterSeller={setDashboardSellerFilter} onFinalizeSale={handleRequestFinalizeSale} onCancelLink={handleCancelLink} onNavigate={setActivePage} onSelectTransaction={handleSelectTransaction} onViewClientPage={navigateToClientView} />
              ) : (
                <AnalyticsDetailView title={getAnalyticsTitle(activePage)} mode={activePage === 'financials' ? 'profit' : activePage === 'pipeline' ? 'pipeline' : 'sales'} data={dashboardData.rows.filter(r => activePage === 'pipeline' ? r.offer.status === 'active' : r.offer.status === 'sold')} role={state.currentUserRole} onTransactionClick={handleSelectTransaction} />
              )}
@@ -693,11 +707,12 @@ function AppContent() {
       {activeModal?.type === 'delegate' && <DelegateModal stone={activeModal.data} sellers={state.sellers} onClose={() => setActiveModal(null)} onConfirm={confirmDelegate} />}
       {activeModal?.type === 'offer' && <OfferModal delegation={activeModal.data} stone={state.stones.find(s => s.id === activeModal.data.stoneId)!} maxQuantity={activeModal.data.delegatedQuantity} onClose={() => setActiveModal(null)} onSuccess={handleOfferSuccess} />}
       {activeModal?.type === 'direct_link' && <DirectLinkModal stone={activeModal.data} onClose={() => setActiveModal(null)} onGenerate={confirmDirectLink} />}
-      {activeModal?.type === 'industry_inventory' && <IndustryInventoryModal stone={activeModal.data} delegations={state.delegations.filter(d => d.stoneId === activeModal.data.id)} offers={state.offers.filter(o => o.stoneId === activeModal.data.id || state.delegations.find(d => d.id === o.delegationId)?.stoneId === activeModal.data.id)} sellers={state.sellers} onClose={() => setActiveModal(null)} onViewTransaction={handleDeepDive} onUpdateStone={handleUpdateStone} onDelegate={() => { const s = activeModal.data; setActiveModal(null); setTimeout(() => handleDelegate(s), 0); }} onDirectLink={() => { const s = activeModal.data; setActiveModal(null); setTimeout(() => handleDirectLink(s), 0); }} />}
-      {activeModal?.type === 'transaction_details' && <TransactionDetailsModal transaction={activeModal.data} role={state.currentUserRole} onClose={() => setActiveModal(null)} onFinalizeSale={h => { setActiveModal(null); handleRequestFinalizeSale(h); }} onCancelLink={h => { setActiveModal(null); handleCancelLink(h); }} />}
+      {activeModal?.type === 'industry_inventory' && <IndustryInventoryModal stone={activeModal.data} delegations={state.delegations.filter(d => d.stoneId === activeModal.data.id)} offers={state.offers.filter(o => o.stoneId === activeModal.data.id || state.delegations.find(d => d.id === o.delegationId)?.stoneId === activeModal.data.id)} sellers={state.sellers} onClose={() => setActiveModal(null)} onViewTransaction={handleDeepDive} onUpdateStone={handleUpdateStone} onDelegate={() => { const s = activeModal.data; setActiveModal(null); setTimeout(() => handleDelegate(s), 0); }} onDirectLink={() => { const s = activeModal.data; setActiveModal(null); setTimeout(() => handleDirectLink(s), 0); }} onViewClientPage={navigateToClientView} />}
+      {activeModal?.type === 'transaction_details' && <TransactionDetailsModal transaction={activeModal.data} role={state.currentUserRole} onClose={() => setActiveModal(null)} onFinalizeSale={h => { setActiveModal(null); handleRequestFinalizeSale(h); }} onCancelLink={h => { setActiveModal(null); handleCancelLink(h); }} onViewClientPage={navigateToClientView} />}
       {activeModal?.type === 'confirm_sale' && <ConfirmSaleModal offer={activeModal.data} stone={state.stones.find(s => s.id === activeModal.data.stoneId || state.delegations.find(d => d.id === activeModal.data.delegationId)?.stoneId === s.id)!} onClose={() => setActiveModal(null)} onConfirm={confirmFinalizeSale} />}
       {(activeModal?.type === 'add_typology' || activeModal?.type === 'edit_typology') && <TypologyModal typology={activeModal.data} onClose={() => setActiveModal(null)} onSave={handleSaveTypology} />}
       {activeModal?.type === 'add_batch' && <BatchModal typologies={typologies} onClose={() => setActiveModal(null)} onSave={handleSaveBatch} />}
+      {activeModal?.type === 'seller_inventory' && <SellerInventoryModal delegation={activeModal.data} stone={state.stones.find(s => s.id === activeModal.data.stoneId)!} offers={state.offers.filter(o => o.delegationId === activeModal.data.id)} onClose={() => setActiveModal(null)} onCreateOffer={() => { const d = activeModal.data; setActiveModal(null); setTimeout(() => handleCreateOffer(d), 0); }} onViewTransaction={handleDeepDive} onViewClientPage={navigateToClientView} />}
     </div>
   );
 }
