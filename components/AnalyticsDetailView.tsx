@@ -1,6 +1,7 @@
+
 import React, { useState, useMemo } from 'react';
 import { OfferLink, StoneItem, Seller, SalesDelegation, UserRole } from '../types';
-import { Search, Link as LinkIcon, DollarSign, Calendar, TrendingUp, Filter, Download } from 'lucide-react';
+import { Search, Link as LinkIcon, DollarSign, Calendar, TrendingUp, Download } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 
 export type AnalyticsMode = 'pipeline' | 'sales' | 'profit';
@@ -32,24 +33,18 @@ export const AnalyticsDetailView: React.FC<AnalyticsDetailViewProps> = ({
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
 
-  // Filter Data
   const filteredData = useMemo(() => {
     return data.filter(item => {
       const itemDate = new Date(item.offer.createdAt);
-      
-      // Date Range Filter
       if (startDate) {
         const start = new Date(startDate);
         if (itemDate < start) return false;
       }
-      
       if (endDate) {
         const end = new Date(endDate);
         end.setHours(23, 59, 59, 999); 
         if (itemDate > end) return false;
       }
-
-      // Text Search Filter
       const searchLower = searchTerm.toLowerCase();
       return (
         item.offer.clientName.toLowerCase().includes(searchLower) ||
@@ -60,167 +55,132 @@ export const AnalyticsDetailView: React.FC<AnalyticsDetailViewProps> = ({
     });
   }, [data, searchTerm, startDate, endDate]);
 
-  // Calculate Totals for Header Cards
   const totals = useMemo(() => {
     return filteredData.reduce((acc, item) => {
       const revenue = item.offer.finalPrice * item.offer.quantityOffered;
-      
       let cost = 0;
       if (role === 'industry_admin') {
         cost = item.stone.baseCost * item.offer.quantityOffered;
       } else {
         cost = (item.delegation?.agreedMinPrice || 0) * item.offer.quantityOffered;
       }
-      
-      const profit = revenue - cost;
-
       return {
         revenue: acc.revenue + revenue,
-        profit: acc.profit + profit,
+        profit: acc.profit + (revenue - cost),
         count: acc.count + 1,
         units: acc.units + item.offer.quantityOffered
       };
     }, { revenue: 0, profit: 0, count: 0, units: 0 });
   }, [filteredData, role]);
 
+  const handleExport = () => {
+      alert(`Exporting ${filteredData.length} rows to CSV... (Simulation)`);
+  };
+
   return (
-    <div className="space-y-6 animate-in fade-in duration-500">
+    <div className="space-y-12 animate-in fade-in duration-500">
       
       {/* Header Section */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-slate-200 pb-6">
         <div>
-           <div className="flex items-center gap-3 mb-1">
-             <div className={`p-2 rounded-lg ${mode === 'profit' ? 'bg-emerald-100 text-emerald-600' : mode === 'pipeline' ? 'bg-blue-100 text-blue-600' : 'bg-indigo-100 text-indigo-600'}`}>
-                {mode === 'profit' && <TrendingUp className="w-6 h-6" />}
-                {mode === 'pipeline' && <LinkIcon className="w-6 h-6" />}
-                {mode === 'sales' && <DollarSign className="w-6 h-6" />}
-             </div>
-             <h1 className="text-2xl font-bold text-slate-900">{title}</h1>
-           </div>
-           <p className="text-slate-500">{t('analytics.desc')}</p>
+           <h1 className="text-4xl font-serif text-[#121212] tracking-tight mb-2">{title}</h1>
+           <p className="text-slate-500 font-light">{t('analytics.desc')}</p>
         </div>
         
-        <button className="flex items-center px-4 py-2 bg-white border border-slate-200 text-slate-700 rounded-lg text-sm font-medium hover:bg-slate-50 transition-colors shadow-sm">
+        <button onClick={handleExport} className="flex items-center px-6 py-3 bg-[#121212] text-white text-xs font-bold uppercase tracking-widest hover:bg-[#C5A059] transition-all shadow-lg">
            <Download className="w-4 h-4 mr-2" />
            {t('analytics.export')}
         </button>
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-         <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
-            <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+         <div className="p-8 bg-white border border-slate-100 shadow-sm">
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-4">
                {mode === 'pipeline' ? t('dash.kpi.potential_revenue') : t('dash.kpi.revenue')}
             </p>
-            <p className="text-2xl font-bold text-slate-900">{formatCurrency(totals.revenue)}</p>
+            <p className="text-3xl font-serif text-[#121212]">{formatCurrency(totals.revenue)}</p>
          </div>
          {mode === 'profit' && (
-           <div className="bg-white p-5 rounded-xl border border-emerald-100 shadow-sm bg-emerald-50/30">
-              <p className="text-xs font-bold text-emerald-600 uppercase tracking-wider mb-1">{t('dash.kpi.profit')}</p>
-              <p className="text-2xl font-bold text-emerald-700">{formatCurrency(totals.profit)}</p>
+           <div className="p-8 bg-[#121212] text-white shadow-xl">
+              <p className="text-[10px] font-bold text-[#C5A059] uppercase tracking-[0.2em] mb-4">{t('dash.kpi.profit')}</p>
+              <p className="text-3xl font-serif text-white">{formatCurrency(totals.profit)}</p>
            </div>
          )}
-         <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
-            <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">{t('dash.kpi.transactions')}</p>
-            <p className="text-2xl font-bold text-slate-900">{totals.count}</p>
+         <div className="p-8 bg-white border border-slate-100 shadow-sm">
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-4">{t('dash.kpi.transactions')}</p>
+            <p className="text-3xl font-serif text-[#121212]">{totals.count}</p>
          </div>
-         <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
-            <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">{t('dash.kpi.volume')}</p>
-            <p className="text-2xl font-bold text-slate-900">{totals.units} <span className="text-sm font-medium text-slate-500">{t('dash.kpi.units')}</span></p>
+         <div className="p-8 bg-white border border-slate-100 shadow-sm">
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-4">{t('dash.kpi.volume')}</p>
+            <p className="text-3xl font-serif text-[#121212]">{totals.units} <span className="text-sm font-sans font-bold text-slate-400 tracking-normal">{t('dash.kpi.units')}</span></p>
          </div>
       </div>
 
       {/* Main Content Area */}
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col">
+      <div className="bg-white border border-slate-200 shadow-sm">
         
         {/* Filters */}
-        <div className="p-4 border-b border-slate-200 bg-slate-50/50">
-          <div className="flex flex-col md:flex-row gap-4 items-center">
+        <div className="p-6 border-b border-slate-100 bg-[#FAFAFA]">
+          <div className="flex flex-col md:flex-row gap-6 items-center">
             
-            {/* Search Input */}
             <div className="relative flex-1 w-full">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                <Search className="w-4 h-4" />
-              </div>
+              <Search className="absolute left-0 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
               <input 
                 type="text"
                 placeholder={t('common.search_placeholder')}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-slate-900 focus:border-transparent outline-none transition-all shadow-sm"
+                className="w-full pl-8 py-2 bg-transparent border-b border-slate-300 text-sm focus:border-[#121212] outline-none transition-all placeholder:text-slate-400"
               />
             </div>
 
-            {/* Date Filters */}
-            <div className="flex items-center gap-2 w-full md:w-auto">
-               <div className="relative group flex-1 md:w-40">
-                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                   <Calendar className="w-4 h-4" />
-                 </div>
+            <div className="flex items-center gap-3">
                  <input 
                    type="date"
                    value={startDate}
                    onChange={(e) => setStartDate(e.target.value)}
-                   className="w-full pl-10 pr-2 py-2.5 bg-white border border-slate-300 rounded-lg text-sm text-slate-600 focus:ring-2 focus:ring-slate-900 outline-none shadow-sm"
+                   className="bg-white border border-slate-200 text-[10px] uppercase font-bold px-3 py-2 rounded-sm outline-none"
                  />
-               </div>
-               <span className="text-slate-400 font-medium">-</span>
-               <div className="relative group flex-1 md:w-40">
-                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                   <Calendar className="w-4 h-4" />
-                 </div>
+                 <span className="text-slate-300">-</span>
                  <input 
                    type="date"
                    value={endDate}
                    onChange={(e) => setEndDate(e.target.value)}
-                   className="w-full pl-10 pr-2 py-2.5 bg-white border border-slate-300 rounded-lg text-sm text-slate-600 focus:ring-2 focus:ring-slate-900 outline-none shadow-sm"
+                   className="bg-white border border-slate-200 text-[10px] uppercase font-bold px-3 py-2 rounded-sm outline-none"
                  />
-               </div>
             </div>
-
-            {/* Clear Filters */}
-            {(searchTerm || startDate || endDate) && (
-              <button 
-                onClick={() => { setSearchTerm(''); setStartDate(''); setEndDate(''); }}
-                className="text-xs font-medium text-slate-500 hover:text-slate-800 underline px-2"
-              >
-                {t('common.clear')}
-              </button>
-            )}
           </div>
         </div>
 
         {/* Table */}
         <div className="overflow-x-auto">
-          <table className="w-full text-sm text-left">
-            <thead className="text-xs text-slate-500 uppercase bg-slate-50 border-b border-slate-100">
+          <table className="w-full text-left">
+            <thead className="text-[10px] text-slate-400 uppercase font-bold tracking-widest border-b border-slate-100">
               <tr>
-                <th className="px-6 py-4 font-bold tracking-wider">{t('dash.table.created')}</th>
-                <th className="px-6 py-4 font-bold tracking-wider">{t('dash.table.client')}</th>
-                <th className="px-6 py-4 font-bold tracking-wider">{t('dash.table.stone')}</th>
-                {role === 'industry_admin' && <th className="px-6 py-4 font-bold tracking-wider">{t('dash.table.seller')}</th>}
-                <th className="px-6 py-4 font-bold tracking-wider text-right">{t('dash.table.value')}</th>
+                <th className="px-8 py-6">{t('dash.table.created')}</th>
+                <th className="px-8 py-6">{t('dash.table.client')}</th>
+                <th className="px-8 py-6">{t('dash.table.stone')}</th>
+                {role === 'industry_admin' && <th className="px-8 py-6">{t('dash.table.seller')}</th>}
+                <th className="px-8 py-6 text-right">{t('dash.table.value')}</th>
                 {mode === 'profit' && (
                    <>
-                     <th className="px-6 py-4 font-bold tracking-wider text-right text-slate-400">Base</th>
-                     <th className="px-6 py-4 font-bold tracking-wider text-right text-emerald-700">{t('dash.kpi.profit')}</th>
+                     <th className="px-8 py-6 text-right text-slate-300">Base</th>
+                     <th className="px-8 py-6 text-right text-emerald-600">{t('dash.kpi.profit')}</th>
                    </>
                 )}
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-slate-50">
               {filteredData.length === 0 ? (
                 <tr>
-                  <td colSpan={mode === 'profit' ? 7 : 5} className="px-6 py-20 text-center flex flex-col items-center justify-center text-slate-400 italic w-full">
-                    <Filter className="w-12 h-12 mb-4 opacity-20" />
-                    <p className="text-lg font-medium">{t('inv.no_results')}</p>
+                  <td colSpan={7} className="px-8 py-32 text-center text-slate-400 font-serif italic">
+                    {t('inv.no_results')}
                   </td>
                 </tr>
               ) : (
                 filteredData.map((item) => {
                   const revenue = item.offer.finalPrice * item.offer.quantityOffered;
-                  
-                  // Calculate specific metrics for row
                   let costBasis = 0;
                   if (role === 'industry_admin') {
                     costBasis = item.stone.baseCost * item.offer.quantityOffered;
@@ -233,56 +193,39 @@ export const AnalyticsDetailView: React.FC<AnalyticsDetailViewProps> = ({
                     <tr 
                       key={item.offer.id} 
                       onClick={() => onTransactionClick?.(item)}
-                      className="hover:bg-blue-50/50 cursor-pointer transition-colors group"
+                      className="hover:bg-[#FAFAFA] cursor-pointer transition-colors group"
                     >
-                      <td className="px-6 py-4 whitespace-nowrap text-slate-500 font-medium">
+                      <td className="px-8 py-6 text-slate-500 text-xs font-bold uppercase tracking-wider">
                         {formatDate(item.offer.createdAt)}
                       </td>
                       
-                      <td className="px-6 py-4">
-                        <div className="font-bold text-slate-900 text-base group-hover:text-blue-700 transition-colors">{item.offer.clientName}</div>
-                        <div className="text-xs text-slate-400 mt-1 font-mono">
-                           ID: {item.offer.id.split('-').pop()}
-                        </div>
+                      <td className="px-8 py-6">
+                        <div className="font-bold text-[#121212] text-sm group-hover:text-[#C5A059] transition-colors">{item.offer.clientName}</div>
                       </td>
 
-                      <td className="px-6 py-4">
-                        <div className="font-medium text-slate-800">{item.stone.typology.name}</div>
-                        <div className="text-xs text-slate-500 flex items-center mt-1">
-                           <span className="bg-slate-100 px-2 py-0.5 rounded border border-slate-200 mr-2 font-mono text-slate-600">
-                             {item.stone.lotId}
-                           </span>
-                           <span className="font-medium">{item.offer.quantityOffered} {t(`unit.${item.stone.quantity.unit}`)}</span>
+                      <td className="px-8 py-6">
+                        <div className="font-serif text-lg text-[#121212]">{item.stone.typology.name}</div>
+                        <div className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">
+                           {item.stone.lotId} • {item.offer.quantityOffered} {t(`unit.${item.stone.quantity.unit}`)}
                         </div>
                       </td>
 
                       {role === 'industry_admin' && (
-                        <td className="px-6 py-4">
-                          {item.seller ? (
-                            <div className="flex items-center text-slate-700">
-                              <div className="w-6 h-6 rounded-full bg-slate-200 flex items-center justify-center mr-2 text-xs font-bold text-slate-500">
-                                {item.seller.name.charAt(0)}
-                              </div>
-                              {item.seller.name}
-                            </div>
-                          ) : (
-                            <span className="inline-flex items-center px-2 py-1 rounded bg-slate-100 text-slate-500 text-xs font-medium">
-                              {t('common.direct_sale')}
-                            </span>
-                          )}
+                        <td className="px-8 py-6 text-sm font-medium text-slate-600">
+                          {item.seller ? item.seller.name : t('common.direct_sale')}
                         </td>
                       )}
 
-                      <td className="px-6 py-4 text-right">
-                        <span className="font-bold text-slate-900 text-base">{formatCurrency(revenue)}</span>
+                      <td className="px-8 py-6 text-right">
+                        <span className="font-serif text-lg text-[#121212]">{formatCurrency(revenue)}</span>
                       </td>
 
                       {mode === 'profit' && (
                         <>
-                          <td className="px-6 py-4 text-right text-slate-400 text-sm">
+                          <td className="px-8 py-6 text-right text-slate-400 text-sm font-medium">
                              {formatCurrency(costBasis)}
                           </td>
-                          <td className="px-6 py-4 text-right font-bold text-emerald-600 bg-emerald-50/50 group-hover:bg-emerald-100/50 transition-colors">
+                          <td className="px-8 py-6 text-right font-bold text-emerald-600">
                              {formatCurrency(profit)}
                           </td>
                         </>

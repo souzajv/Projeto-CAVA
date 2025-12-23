@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Search, Filter, SlidersHorizontal } from 'lucide-react';
 import { StoneTypology } from '../types';
@@ -24,21 +25,24 @@ export const InventoryFilters: React.FC<InventoryFiltersProps> = ({
 }) => {
   const { t } = useLanguage();
 
+  const selectClass = "appearance-none bg-white border border-slate-200 text-slate-700 text-sm pl-10 pr-8 py-3 rounded-sm focus:outline-none focus:ring-1 focus:ring-[#121212] focus:border-[#121212] transition-all cursor-pointer font-medium hover:border-slate-300";
+  const iconClass = "absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400";
+
   return (
-    <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm mb-6 animate-in fade-in slide-in-from-top-2">
+    <div className="mb-10 animate-in fade-in slide-in-from-top-2 duration-500">
       <div className="flex flex-col md:flex-row gap-4">
         
         {/* Search Input */}
-        <div className="flex-1 relative">
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-            <Search className="w-4 h-4" />
+        <div className="flex-1 relative group">
+          <div className={iconClass}>
+            <Search className="w-4 h-4 group-focus-within:text-[#121212] transition-colors" />
           </div>
           <input 
             type="text"
             placeholder={t('inv.search_placeholder')}
             value={searchTerm}
             onChange={(e) => onSearchChange(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-slate-900 focus:border-transparent outline-none transition-all"
+            className="w-full pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-sm text-sm focus:ring-1 focus:ring-[#121212] focus:border-[#121212] outline-none transition-all placeholder:text-slate-400 font-medium"
           />
         </div>
 
@@ -46,14 +50,14 @@ export const InventoryFilters: React.FC<InventoryFiltersProps> = ({
         <div className="flex gap-4">
           
           {/* Typology Filter */}
-          <div className="relative min-w-[160px]">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-              <Filter className="w-4 h-4" />
+          <div className="relative min-w-[200px] group">
+            <div className={iconClass}>
+              <Filter className="w-4 h-4 group-focus-within:text-[#121212] transition-colors" />
             </div>
             <select
               value={typologyFilter}
               onChange={(e) => onTypologyFilterChange(e.target.value)}
-              className="w-full pl-10 pr-8 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-700 focus:ring-2 focus:ring-slate-900 outline-none appearance-none cursor-pointer"
+              className={`${selectClass} w-full`}
             >
               <option value="all">{t('inv.filter.all_types')}</option>
               {typologies.map(t => (
@@ -63,14 +67,14 @@ export const InventoryFilters: React.FC<InventoryFiltersProps> = ({
           </div>
 
           {/* Status Filter */}
-          <div className="relative min-w-[160px]">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-              <SlidersHorizontal className="w-4 h-4" />
+          <div className="relative min-w-[200px] group">
+            <div className={iconClass}>
+              <SlidersHorizontal className="w-4 h-4 group-focus-within:text-[#121212] transition-colors" />
             </div>
             <select
               value={statusFilter}
               onChange={(e) => onStatusFilterChange(e.target.value)}
-              className="w-full pl-10 pr-8 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-700 focus:ring-2 focus:ring-slate-900 outline-none appearance-none cursor-pointer"
+              className={`${selectClass} w-full`}
             >
               <option value="all">{t('inv.filter.all_status')}</option>
               <option value="available">{t('inv.status.available')}</option>

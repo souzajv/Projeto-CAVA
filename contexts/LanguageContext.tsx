@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, ReactNode, useMemo } from 'react';
 
 type Language = 'en' | 'pt';
@@ -5,7 +6,7 @@ type Language = 'en' | 'pt';
 interface LanguageContextType {
   language: Language;
   setLanguage: (lang: Language) => void;
-  t: (key: string) => string;
+  t: (key: string, params?: Record<string, string | number>) => string;
   formatDate: (date: string | Date, options?: Intl.DateTimeFormatOptions) => string;
   formatDateTime: (date: string | Date) => string;
   formatCurrency: (value: number) => string;
@@ -138,6 +139,9 @@ const translations: Record<Language, Record<string, string>> = {
     'modal.ind_inv.stock_params': 'Physical Stock Parameters',
     'modal.ind_inv.min_locked': 'Minimum Locked by Active/Sold',
     'modal.ind_inv.no_delegations': 'No active delegations. All stock is controlled by HQ.',
+    'modal.ind_inv.revoke_remaining': 'Reclaim Stock',
+    'modal.ind_inv.remove_access': 'Remove Access',
+    'modal.ind_inv.tooltip_active': 'Cannot revoke: Active offers exist',
     'modal.seller_inv.redirect_title': 'Redirect to Active Links?',
     'modal.seller_inv.redirect_msg': 'You are leaving the inventory view to manage the transaction details for',
     'modal.seller_inv.proceed': 'Proceed',
@@ -159,13 +163,15 @@ const translations: Record<Language, Record<string, string>> = {
     'modal.tx.qty': 'Quantity',
     'modal.tx.total_val': 'Total Value',
     'modal.tx.margin': 'Margin',
+    'modal.tx.est_profit': 'Est. Net Profit',
+    'modal.tx.est_comm': 'Est. Commission',
     'modal.tx.timeline': 'Activity Timeline',
     'modal.tx.created': 'Offer Created',
     'modal.tx.viewed': 'Link Accessed',
     'modal.tx.finalized': 'Sale Finalized',
     'modal.tx.expiry': 'Expiration',
     'modal.tx.copy': 'Copy Link',
-    'modal.tx.open': 'Open Page',
+    'modal.tx.open': 'View Page',
     'modal.tx.cancel': 'Cancel Link',
     'modal.tx.finalize': 'Finalize Sale',
     'modal.delegate.title': 'Delegate Inventory',
@@ -262,6 +268,28 @@ const translations: Record<Language, Record<string, string>> = {
     'client.contact': 'Questions? Contact',
     'client.validity': 'This offer is valid for',
     'client.until': 'until',
+    'nav.thermometer': 'Interest Thermometer',
+    'interest.title': 'Interest Thermometer',
+    'interest.subtitle': 'Gauge client engagement with real-time tracking.',
+    'interest.level.ice': 'Cold',
+    'interest.level.neutral': 'Neutral',
+    'interest.level.hot': 'Hot',
+    'interest.level.boiling': 'Boiling',
+    'interest.tooltip.ice': 'Low engagement. Few views, short duration.',
+    'interest.tooltip.neutral': 'Moderate engagement. Regular views.',
+    'interest.tooltip.hot': 'High engagement. Frequent return visits.',
+    'interest.tooltip.boiling': 'Very high interest. Immediate action recommended.',
+    'interest.table_title': 'Engagement Ranking',
+    'interest.search_placeholder': 'Search Client...',
+    'interest.table.rank': 'Rank',
+    'interest.table.engagement': 'Engagement Metrics',
+    'interest.metrics.views': 'Views',
+    'interest.metrics.time': 'Time',
+    'interest.empty': 'No data available yet.',
+    'msg.revoke_block_active': 'Cannot revoke: This partner has active offer links for this stone. Please ask them to cancel the links or wait for expiration.',
+    'msg.confirm_reclaim': 'Partner has sold items. Reclaim the remaining {qty} units to your global inventory?',
+    'msg.nothing_to_reclaim': 'Partner has sold all delegated units. Nothing to reclaim.',
+    'msg.confirm_delete_delegation': 'No sales made. Remove this delegation entirely and reclaim full stock?',
   },
   pt: {
     'role.industry': 'Admin Indústria',
@@ -389,6 +417,9 @@ const translations: Record<Language, Record<string, string>> = {
     'modal.ind_inv.stock_params': 'Parâmetros de Estoque Físico',
     'modal.ind_inv.min_locked': 'Mínimo travado por Ativos/Vendidos',
     'modal.ind_inv.no_delegations': 'Nenhuma delegação ativa. Todo o estoque é controlado pela HQ.',
+    'modal.ind_inv.revoke_remaining': 'Retomar Saldo',
+    'modal.ind_inv.remove_access': 'Remover Acesso',
+    'modal.ind_inv.tooltip_active': 'Não é possível revogar: Existem ofertas ativas',
     'modal.seller_inv.redirect_title': 'Redirecionar para Links Ativos?',
     'modal.seller_inv.redirect_msg': 'Você está saindo da visão de inventário para gerenciar os detalhes da transação para',
     'modal.seller_inv.proceed': 'Prosseguir',
@@ -410,13 +441,15 @@ const translations: Record<Language, Record<string, string>> = {
     'modal.tx.qty': 'Quantidade',
     'modal.tx.total_val': 'Valor Total',
     'modal.tx.margin': 'Margem',
+    'modal.tx.est_profit': 'Lucro Líquido Est.',
+    'modal.tx.est_comm': 'Comissão Est.',
     'modal.tx.timeline': 'Linha do Tempo',
     'modal.tx.created': 'Oferta Criada',
     'modal.tx.viewed': 'Link Acessado',
     'modal.tx.finalized': 'Venda Finalizada',
     'modal.tx.expiry': 'Expiração',
     'modal.tx.copy': 'Copiar Link',
-    'modal.tx.open': 'Abrir Página',
+    'modal.tx.open': 'Ver Página',
     'modal.tx.cancel': 'Cancelar Link',
     'modal.tx.finalize': 'Finalizar Venda',
     'modal.delegate.title': 'Delegar Estoque',
@@ -513,6 +546,28 @@ const translations: Record<Language, Record<string, string>> = {
     'client.contact': 'Dúvidas? Contate',
     'client.validity': 'Esta oferta é válida para',
     'client.until': 'até',
+    'nav.thermometer': 'Termômetro de Interesse',
+    'interest.title': 'Termômetro de Interesse',
+    'interest.subtitle': 'Meça o engajamento do cliente em tempo real.',
+    'interest.level.ice': 'Frio',
+    'interest.level.neutral': 'Neutro',
+    'interest.level.hot': 'Quente',
+    'interest.level.boiling': 'Fervendo',
+    'interest.tooltip.ice': 'Baixo engajamento. Poucas visualizações.',
+    'interest.tooltip.neutral': 'Engajamento moderado. Visualizações regulares.',
+    'interest.tooltip.hot': 'Alto engajamento. Visitas frequentes.',
+    'interest.tooltip.boiling': 'Interesse muito alto. Ação imediata recomendada.',
+    'interest.table_title': 'Ranking de Engajamento',
+    'interest.search_placeholder': 'Buscar Cliente...',
+    'interest.table.rank': 'Ranking',
+    'interest.table.engagement': 'Métricas',
+    'interest.metrics.views': 'Visitas',
+    'interest.metrics.time': 'Tempo',
+    'interest.empty': 'Sem dados disponíveis.',
+    'msg.revoke_block_active': 'Impossível revogar: Existem ofertas ativas para este parceiro. Peça que cancelem os links primeiro.',
+    'msg.confirm_reclaim': 'Parceiro realizou vendas. Deseja retomar as {qty} unidades restantes para seu estoque global?',
+    'msg.nothing_to_reclaim': 'O parceiro vendeu todas as unidades delegadas. Nada a retomar.',
+    'msg.confirm_delete_delegation': 'Nenhuma venda realizada. Remover esta delegação e retomar todo o estoque?',
   }
 };
 
@@ -529,8 +584,14 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }
   const locale = useMemo(() => language === 'pt' ? 'pt-BR' : 'en-US', [language]);
   const currency = useMemo(() => language === 'pt' ? 'BRL' : 'USD', [language]);
 
-  const t = (key: string): string => {
-    return translations[language][key] || key;
+  const t = (key: string, params?: Record<string, string | number>): string => {
+    let text = translations[language][key] || key;
+    if (params) {
+      Object.entries(params).forEach(([k, v]) => {
+        text = text.replace(`{${k}}`, String(v));
+      });
+    }
+    return text;
   };
 
   const formatDate = (date: string | Date, options?: Intl.DateTimeFormatOptions): string => {

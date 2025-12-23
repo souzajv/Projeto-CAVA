@@ -1,9 +1,10 @@
+
 import React from 'react';
-import { LayoutGrid, BarChart3, TrendingUp, DollarSign, Link as LinkIcon, Package, UserCircle, LogOut, Archive } from 'lucide-react';
+import { LayoutGrid, TrendingUp, DollarSign, Link as LinkIcon, Package, UserCircle, Archive, Thermometer } from 'lucide-react';
 import { UserRole } from '../types';
 import { useLanguage } from '../contexts/LanguageContext';
 
-export type PageView = 'inventory' | 'lot_history' | 'dashboard' | 'pipeline' | 'sales' | 'financials';
+export type PageView = 'inventory' | 'lot_history' | 'dashboard' | 'pipeline' | 'sales' | 'financials' | 'thermometer';
 
 interface SidebarProps {
   activePage: PageView;
@@ -11,7 +12,7 @@ interface SidebarProps {
   role: UserRole;
   currentUserName: string;
   currentUserRoleLabel: string;
-  onLogout?: () => void; // Optional demo logout/switch
+  onLogout?: () => void; 
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({ 
@@ -28,37 +29,43 @@ export const Sidebar: React.FC<SidebarProps> = ({
     return (
       <button
         onClick={() => onNavigate(page)}
-        className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 group ${
+        className={`relative w-full flex items-center space-x-3 px-4 py-3.5 rounded-xl transition-all duration-300 group overflow-hidden ${
           isActive 
-            ? 'bg-slate-900 text-white shadow-lg shadow-slate-900/20' 
-            : 'text-slate-500 hover:bg-slate-100 hover:text-slate-900'
+            ? 'text-white bg-white/10 shadow-[0_0_20px_rgba(255,255,255,0.05)]' 
+            : 'text-slate-400 hover:text-white hover:bg-white/5'
         }`}
       >
-        <Icon className={`w-5 h-5 ${isActive ? 'text-white' : 'text-slate-400 group-hover:text-slate-900'}`} />
-        <span className="font-medium text-sm">{label}</span>
+        {isActive && (
+          <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-[#C5A059] rounded-r-full shadow-[0_0_10px_#C5A059]" />
+        )}
+        <Icon className={`w-5 h-5 transition-colors duration-300 ${isActive ? 'text-[#C5A059]' : 'text-slate-500 group-hover:text-slate-300'}`} />
+        <span className={`font-medium text-sm tracking-wide ${isActive ? 'font-semibold' : ''}`}>{label}</span>
       </button>
     );
   };
 
   return (
-    <aside className="w-72 bg-white border-r border-slate-200 h-screen sticky top-0 flex flex-col hidden lg:flex shadow-xl shadow-slate-200/50 z-40">
+    <aside className="w-72 bg-[#121212] border-r border-white/5 h-screen sticky top-0 flex flex-col hidden lg:flex shadow-2xl z-40 text-white relative overflow-hidden">
       
+      {/* Background Texture Effect */}
+      <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-white/5 via-transparent to-transparent pointer-events-none" />
+
       {/* Brand */}
-      <div className="p-6 pb-8">
-        <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 bg-slate-900 rounded-xl flex items-center justify-center shadow-lg shadow-slate-900/20">
-            <span className="text-white font-bold text-xl">C</span>
+      <div className="p-8 pb-10 relative z-10">
+        <div className="flex items-center space-x-4">
+          <div className="w-10 h-10 bg-[#C5A059] rounded-sm flex items-center justify-center shadow-lg shadow-[#C5A059]/20 rotate-3 transition-transform hover:rotate-0">
+            <span className="text-[#121212] font-serif font-bold text-2xl">C</span>
           </div>
           <div>
-            <h1 className="text-xl font-bold tracking-tight text-slate-900">CAVA</h1>
-            <p className="text-[10px] uppercase tracking-widest text-slate-400 font-semibold">Platform</p>
+            <h1 className="text-2xl font-serif font-bold tracking-tight text-white">CAVA.</h1>
+            <p className="text-[9px] uppercase tracking-[0.3em] text-[#C5A059] font-medium opacity-80">Architecture</p>
           </div>
         </div>
       </div>
 
       {/* Navigation */}
-      <div className="flex-1 px-4 space-y-1">
-        <div className="px-4 py-2 text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
+      <div className="flex-1 px-4 space-y-1 relative z-10 overflow-y-auto custom-scrollbar">
+        <div className="px-4 py-2 text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] mb-2 mt-2">
           {t('nav.operations')}
         </div>
         <NavItem page="inventory" icon={Package} label={t('nav.inventory')} />
@@ -67,24 +74,25 @@ export const Sidebar: React.FC<SidebarProps> = ({
           <NavItem page="lot_history" icon={Archive} label={t('nav.lot_history')} />
         )}
         
-        <div className="px-4 py-2 text-xs font-bold text-slate-400 uppercase tracking-wider mt-8 mb-2">
+        <div className="px-4 py-2 text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] mt-8 mb-2">
           {t('nav.analytics')}
         </div>
         <NavItem page="dashboard" icon={LayoutGrid} label={t('nav.dashboard')} />
         <NavItem page="pipeline" icon={LinkIcon} label={t('nav.pipeline')} />
         <NavItem page="sales" icon={DollarSign} label={t('nav.sales')} />
         <NavItem page="financials" icon={TrendingUp} label={role === 'industry_admin' ? t('nav.financials_admin') : t('nav.financials_seller')} />
+        <NavItem page="thermometer" icon={Thermometer} label={t('nav.thermometer')} />
       </div>
 
       {/* User Footer */}
-      <div className="p-4 border-t border-slate-100">
-        <div className="bg-slate-50 rounded-xl p-3 flex items-center space-x-3">
-          <div className="w-10 h-10 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-400">
+      <div className="p-4 border-t border-white/5 relative z-10">
+        <div className="bg-white/5 rounded-xl p-3 flex items-center space-x-3 hover:bg-white/10 transition-colors cursor-pointer border border-white/5">
+          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-slate-700 to-slate-900 border border-white/10 flex items-center justify-center text-slate-300">
             <UserCircle className="w-6 h-6" />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-bold text-slate-900 truncate">{currentUserName}</p>
-            <p className="text-xs text-slate-500 truncate capitalize">{currentUserRoleLabel}</p>
+            <p className="text-sm font-bold text-white truncate font-serif tracking-wide">{currentUserName}</p>
+            <p className="text-xs text-[#C5A059] truncate capitalize tracking-wider">{currentUserRoleLabel}</p>
           </div>
         </div>
       </div>

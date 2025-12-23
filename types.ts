@@ -87,6 +87,8 @@ export interface Notification {
 
 export type UserRole = 'industry_admin' | 'seller';
 
+export type InterestLevel = 'ice' | 'neutral' | 'hot' | 'boiling';
+
 export interface AppState {
   stones: StoneItem[];
   sellers: Seller[];
