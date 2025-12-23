@@ -389,19 +389,29 @@ const AppContent = () => {
                   <p className="text-slate-500 mt-2 font-light">{t('inv.your_inventory')}</p>
                </div>
                
-               <div className="flex bg-slate-100 p-1 rounded-sm gap-1">
-                  <button 
-                    onClick={() => setInventoryTab('stock')}
-                    className="px-4 py-2 text-xs font-bold uppercase tracking-widest text-slate-500 hover:text-[#121212] transition-colors"
-                  >
-                    {t('inv.tab.stock')}
-                  </button>
-                  <button 
-                    onClick={() => setInventoryTab('catalog')}
-                    className="px-4 py-2 bg-white text-[#121212] shadow-sm text-xs font-bold uppercase tracking-widest rounded-sm"
-                  >
-                    {t('inv.tab.catalog')}
-                  </button>
+               <div className="flex gap-4 items-center">
+                   <div className="flex bg-slate-100 p-1 rounded-sm gap-1">
+                      <button 
+                        onClick={() => setInventoryTab('stock')}
+                        className="px-4 py-2 text-xs font-bold uppercase tracking-widest text-slate-500 hover:text-[#121212] transition-colors"
+                      >
+                        {t('inv.tab.stock')}
+                      </button>
+                      <button 
+                        onClick={() => setInventoryTab('catalog')}
+                        className="px-4 py-2 bg-white text-[#121212] shadow-sm text-xs font-bold uppercase tracking-widest rounded-sm"
+                      >
+                        {t('inv.tab.catalog')}
+                      </button>
+                   </div>
+
+                   <button 
+                      onClick={() => setActiveModal({ type: 'typology', data: null })}
+                      className="px-5 py-3 bg-[#121212] text-white text-xs font-bold uppercase tracking-widest hover:bg-[#C5A059] shadow-lg transition-all flex items-center"
+                   >
+                      <Plus className="w-4 h-4 mr-2" />
+                      {t('cat.add_btn')}
+                   </button>
                </div>
             </div>
 
@@ -412,7 +422,6 @@ const AppContent = () => {
                onSearchChange={setInvSearch}
                typologyFilter={invTypologyFilter}
                onTypologyFilterChange={setInvTypologyFilter}
-               onAddTypology={() => setActiveModal({ type: 'typology', data: null })}
                onEditTypology={(t) => setActiveModal({ type: 'typology', data: t })}
             />
          </div>

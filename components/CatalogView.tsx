@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { StoneTypology } from '../types';
-import { Plus, ShieldCheck, FileText, Pencil, Search, Filter } from 'lucide-react';
+import { Pencil, Search, Filter } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 
 interface CatalogViewProps {
@@ -11,7 +11,6 @@ interface CatalogViewProps {
   onSearchChange: (val: string) => void;
   typologyFilter: string;
   onTypologyFilterChange: (val: string) => void;
-  onAddTypology: () => void;
   onEditTypology: (typology: StoneTypology) => void;
 }
 
@@ -22,7 +21,6 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
   onSearchChange,
   typologyFilter,
   onTypologyFilterChange,
-  onAddTypology, 
   onEditTypology 
 }) => {
   const { t } = useLanguage();
@@ -30,21 +28,6 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
   return (
     <div className="animate-in fade-in duration-500">
       
-      {/* Header Action */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
-        <div>
-          <h2 className="text-3xl font-serif font-bold text-[#121212] tracking-tight">{t('cat.title')}</h2>
-          <p className="text-slate-500 mt-1 font-light">{t('cat.subtitle')}</p>
-        </div>
-        <button 
-          onClick={onAddTypology}
-          className="flex items-center px-6 py-3 bg-[#121212] hover:bg-[#C5A059] text-white rounded-sm text-xs font-bold uppercase tracking-widest transition-all shadow-lg"
-        >
-          <Plus className="w-4 h-4 mr-2" />
-          {t('cat.add_btn')}
-        </button>
-      </div>
-
       {/* Search & Filter Bar - Obsidian Style */}
       <div className="mb-10 flex flex-col md:flex-row gap-4">
           {/* Search Input */}
