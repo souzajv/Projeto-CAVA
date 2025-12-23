@@ -1,4 +1,5 @@
 
+
 import React, { createContext, useContext, useState, ReactNode, useMemo } from 'react';
 
 type Language = 'en' | 'pt';
@@ -110,6 +111,12 @@ const translations: Record<Language, Record<string, string>> = {
     'toast.dismiss': 'Dismiss',
     'toast.copy': 'Copy',
     'toast.view': 'View',
+    'toast.delegated': 'Delegated {qty} {unit} of {stone}',
+    'toast.sale_confirmed': 'Sale confirmed: {client} - {value}',
+    'toast.link_cancelled': 'Link for {client} cancelled',
+    'toast.delegation_revoked': 'Delegation revoked. Stock returned to pool.',
+    'toast.batch_added': 'New batch {id} added.',
+    'toast.error_avail': 'Error: Only {qty} available.',
     'unit.slabs': 'slabs',
     'unit.m2': 'm²',
     'common.select_placeholder': '-- Select --',
@@ -187,7 +194,7 @@ const translations: Record<Language, Record<string, string>> = {
     'modal.offer.title': 'Create Private Offer',
     'modal.offer.subtitle': 'Configure pricing and client details.',
     'modal.offer.sale_price': 'Sale Price (Total)',
-    'modal.offer.floor': 'Floor',
+    'modal.offer.floor': 'Piso',
     'modal.offer.potential_comm': 'Potential Commission',
     'modal.offer.qty': 'Quantity',
     'modal.offer.available': 'Available',
@@ -207,7 +214,7 @@ const translations: Record<Language, Record<string, string>> = {
     'modal.history.active': 'Active',
     'modal.history.expired': 'Expired',
     'modal.history.sold': 'Sold',
-    'modal.history.copy': 'Copy',
+    'modal.history.copy': 'Copiar',
     'modal.history.view': 'View',
     'modal.history.displaying': 'Displaying',
     'modal.type.edit_title': 'Edit Stone Typology',
@@ -269,7 +276,7 @@ const translations: Record<Language, Record<string, string>> = {
     'client.btn.reserve': 'Reserve Now',
     'client.contact': 'Questions? Contact',
     'client.validity': 'This offer is valid for',
-    'client.until': 'until',
+    'client.until': 'até',
     'client.produced_by': 'Produced by',
     'client.view_catalog': 'View Catalog',
     'client.catalog_title': 'Official Collection Catalog',
@@ -394,6 +401,12 @@ const translations: Record<Language, Record<string, string>> = {
     'toast.dismiss': 'Fechar',
     'toast.copy': 'Copiar',
     'toast.view': 'Ver',
+    'toast.delegated': 'Delegado {qty} {unit} de {stone}',
+    'toast.sale_confirmed': 'Venda confirmada: {client} - {value}',
+    'toast.link_cancelled': 'Link para {client} cancelado',
+    'toast.delegation_revoked': 'Delegação revogada. Estoque retornado.',
+    'toast.batch_added': 'Novo lote {id} adicionado.',
+    'toast.error_avail': 'Erro: Apenas {qty} disponíveis.',
     'unit.slabs': 'chapas',
     'unit.m2': 'm²',
     'common.select_placeholder': '-- Selecione --',

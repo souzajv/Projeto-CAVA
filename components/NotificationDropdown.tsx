@@ -54,7 +54,7 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
       </div>
 
       {/* List */}
-      <div className="max-h-[400px] overflow-y-auto custom-scrollbar">
+      <div className="max-h-[400px] overflow-y-auto">
         {sortedNotifications.length === 0 ? (
           <div className="py-16 px-6 text-center text-slate-400 flex flex-col items-center">
             <Bell className="w-10 h-10 mb-4 opacity-10" />

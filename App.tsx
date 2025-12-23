@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { 
   AppState, StoneItem, Seller, SalesDelegation, OfferLink, Notification, 
@@ -191,7 +192,7 @@ const AppContent = () => {
     
     // Strict availability check
     if (stone.quantity.available < quantity) {
-        addNotification(`Error: Only ${stone.quantity.available} available.`, 'alert');
+        addNotification(t('toast.error_avail', { qty: stone.quantity.available }), 'alert');
         return;
     }
 
@@ -206,7 +207,10 @@ const AppContent = () => {
     };
 
     setDelegations(prev => [...prev, newDelegation]);
-    addNotification(`Delegated ${quantity} ${stone.quantity.unit} of ${stone.typology.name}`, 'success');
+    addNotification(
+      t('toast.delegated', { qty: quantity, unit: t(`unit.${stone.quantity.unit}`), stone: stone.typology.name }), 
+      'success'
+    );
     setActiveModal({ type: null });
   };
 
@@ -236,7 +240,10 @@ const AppContent = () => {
         setDelegations(updatedDelegations);
     }
 
-    addNotification(`Sale confirmed: ${offer.clientName} - ${formatCurrency(offer.finalPrice * offer.quantityOffered)}`, 'success');
+    addNotification(
+      t('toast.sale_confirmed', { client: offer.clientName, value: formatCurrency(offer.finalPrice * offer.quantityOffered) }), 
+      'success'
+    );
     setActiveModal({ type: null });
   };
 
@@ -246,7 +253,7 @@ const AppContent = () => {
     // Note: Reconcile logic handles the rest. If it was a Direct Link (active), it occupied Reserved stock. 
     // Now it's expired, so it frees up stock automatically in reconcileInventory.
     
-    addNotification(`Link for ${offer.clientName} cancelled`, 'alert');
+    addNotification(t('toast.link_cancelled', { client: offer.clientName }), 'alert');
     setActiveModal({ type: null });
   };
 
@@ -263,7 +270,7 @@ const AppContent = () => {
 
       // Safe to remove
       setDelegations(prev => prev.filter(d => d.id !== delegationId));
-      addNotification('Delegation revoked. Stock returned to pool.', 'info');
+      addNotification(t('toast.delegation_revoked'), 'info');
       setActiveModal({ type: null }); // Close modal to refresh
   };
 
@@ -711,7 +718,10 @@ const AppContent = () => {
              </div>
           </div>
 
-          <ToastContainer notifications={notifications.filter(n => !n.read && n.isToast)} onDismiss={() => {}} />
+          <ToastContainer 
+            notifications={notifications.filter(n => !n.read && n.isToast)} 
+            onDismiss={(id) => setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n))} 
+          />
 
           {activeModal.type === 'delegate' && (
              <DelegateModal 
@@ -820,7 +830,7 @@ const AppContent = () => {
                onSave={(newItem) => {
                   setRawStones(prev => [newItem, ...prev]);
                   setActiveModal({ type: null });
-                  addNotification(`New batch ${newItem.lotId} added.`, 'success');
+                  addNotification(t('toast.batch_added', { id: newItem.lotId }), 'success');
                }}
              />
           )}

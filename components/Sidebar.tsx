@@ -63,8 +63,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </div>
       </div>
 
-      {/* Navigation */}
-      <div className="flex-1 px-4 space-y-1 relative z-10 overflow-y-auto custom-scrollbar">
+      {/* Navigation - Applied 'dark-scroll' class here */}
+      <div className="flex-1 px-4 space-y-1 relative z-10 overflow-y-auto dark-scroll">
         <div className="px-4 py-2 text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] mb-2 mt-2">
           {t('nav.operations')}
         </div>

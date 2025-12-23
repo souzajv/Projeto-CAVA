@@ -27,6 +27,44 @@
       background: #C5A059;
       color: white;
     }
+
+    /* --- PREMIUM SCROLLBAR STYLING --- */
+    /* Width & Height */
+    ::-webkit-scrollbar {
+      width: 5px;
+      height: 5px;
+    }
+    /* Track */
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    /* Handle */
+    ::-webkit-scrollbar-thumb {
+      background: #CBD5E1; /* Subtle Slate for Light Mode */
+      border-radius: 10px;
+      transition: background 0.3s ease;
+    }
+    /* Handle on Hover */
+    ::-webkit-scrollbar-thumb:hover {
+      background: #C5A059; /* Brand Gold */
+    }
+
+    /* Utility: Dark Scrollbar for Sidebar/Dark Containers */
+    .dark-scroll::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.1);
+    }
+    .dark-scroll::-webkit-scrollbar-thumb:hover {
+      background: #C5A059;
+    }
+
+    /* Firefox Support */
+    * {
+      scrollbar-width: thin;
+      scrollbar-color: #CBD5E1 transparent;
+    }
+    .dark-scroll {
+      scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+    }
   </style>
   <script type="importmap">
 {

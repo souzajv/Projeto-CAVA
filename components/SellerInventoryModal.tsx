@@ -129,6 +129,17 @@ export const SellerInventoryModal: React.FC<SellerInventoryModalProps> = ({
                       </div>
                   </div>
 
+                  {/* Primary Action - MOVED HERE */}
+                  <button 
+                    onClick={() => onCreateOffer(delegation, netAvailable)}
+                    disabled={netAvailable <= 0}
+                    className="w-full py-4 bg-[#121212] hover:bg-[#C5A059] text-white rounded-sm font-bold text-xs uppercase tracking-widest shadow-lg transition-all flex items-center justify-center group disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    {t('modal.seller_inv.create_new')}
+                    <ArrowRight className="w-4 h-4 ml-2 opacity-0 group-hover:opacity-100 transition-opacity translate-x-[-10px] group-hover:translate-x-0" />
+                  </button>
+
                   {/* Terms Card - Refined Identity */}
                   <div className="space-y-4">
                       <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center">
@@ -158,16 +169,6 @@ export const SellerInventoryModal: React.FC<SellerInventoryModalProps> = ({
                         "{t('modal.seller_inv.terms_desc')}"
                       </div>
                   </div>
-
-                  <button 
-                    onClick={() => onCreateOffer(delegation, netAvailable)}
-                    disabled={netAvailable <= 0}
-                    className="w-full py-4 bg-[#121212] hover:bg-[#C5A059] text-white rounded-sm font-bold text-xs uppercase tracking-widest shadow-lg transition-all flex items-center justify-center group disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    <Plus className="w-4 h-4 mr-2" />
-                    {t('modal.seller_inv.create_new')}
-                    <ArrowRight className="w-4 h-4 ml-2 opacity-0 group-hover:opacity-100 transition-opacity translate-x-[-10px] group-hover:translate-x-0" />
-                  </button>
                </div>
             </div>
 
