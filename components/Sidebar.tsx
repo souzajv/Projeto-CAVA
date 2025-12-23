@@ -29,14 +29,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
     return (
       <button
         onClick={() => onNavigate(page)}
-        className={`relative w-full flex items-center space-x-3 px-4 py-3.5 rounded-xl transition-all duration-300 group overflow-hidden ${
+        className={`relative w-full flex items-center space-x-3 px-4 py-3.5 rounded-sm transition-all duration-300 group overflow-hidden ${
           isActive 
             ? 'text-white bg-white/10 shadow-[0_0_20px_rgba(255,255,255,0.05)]' 
             : 'text-slate-400 hover:text-white hover:bg-white/5'
         }`}
       >
         {isActive && (
-          <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-[#C5A059] rounded-r-full shadow-[0_0_10px_#C5A059]" />
+          <div className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-6 bg-[#C5A059] shadow-[0_0_10px_#C5A059]" />
         )}
         <Icon className={`w-5 h-5 transition-colors duration-300 ${isActive ? 'text-[#C5A059]' : 'text-slate-500 group-hover:text-slate-300'}`} />
         <span className={`font-medium text-sm tracking-wide ${isActive ? 'font-semibold' : ''}`}>{label}</span>
@@ -69,10 +69,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
           {t('nav.operations')}
         </div>
         <NavItem page="inventory" icon={Package} label={t('nav.inventory')} />
-        
-        {role === 'industry_admin' && (
-          <NavItem page="lot_history" icon={Archive} label={t('nav.lot_history')} />
-        )}
+        <NavItem page="thermometer" icon={Thermometer} label={t('nav.thermometer')} />
+        <NavItem page="lot_history" icon={Archive} label={t('nav.lot_history')} />
         
         <div className="px-4 py-2 text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] mt-8 mb-2">
           {t('nav.analytics')}
@@ -81,13 +79,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <NavItem page="pipeline" icon={LinkIcon} label={t('nav.pipeline')} />
         <NavItem page="sales" icon={DollarSign} label={t('nav.sales')} />
         <NavItem page="financials" icon={TrendingUp} label={role === 'industry_admin' ? t('nav.financials_admin') : t('nav.financials_seller')} />
-        <NavItem page="thermometer" icon={Thermometer} label={t('nav.thermometer')} />
       </div>
 
       {/* User Footer */}
       <div className="p-4 border-t border-white/5 relative z-10">
-        <div className="bg-white/5 rounded-xl p-3 flex items-center space-x-3 hover:bg-white/10 transition-colors cursor-pointer border border-white/5">
-          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-slate-700 to-slate-900 border border-white/10 flex items-center justify-center text-slate-300">
+        <div className="bg-white/5 rounded-sm p-3 flex items-center space-x-3 hover:bg-white/10 transition-colors cursor-pointer border border-white/5">
+          <div className="w-10 h-10 rounded-sm bg-gradient-to-br from-slate-700 to-slate-900 border border-white/10 flex items-center justify-center text-slate-300 shadow-inner">
             <UserCircle className="w-6 h-6" />
           </div>
           <div className="flex-1 min-w-0">

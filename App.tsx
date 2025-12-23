@@ -1,10 +1,9 @@
-
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { 
   AppState, StoneItem, Seller, SalesDelegation, OfferLink, Notification, 
   UserRole, StoneTypology 
 } from './types';
-import { MOCK_STONES, MOCK_SELLERS, MOCK_DELEGATIONS, MOCK_OFFERS } from './constants';
+import { MOCK_STONES, MOCK_SELLERS, MOCK_DELEGATIONS, MOCK_OFFERS, MOCK_TYPOLOGIES } from './constants';
 import { LanguageProvider, useLanguage } from './contexts/LanguageContext';
 
 // Components
@@ -36,23 +35,66 @@ import {
 } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 
+// Helper function defined outside component to avoid recreation
+const reconcileInventory = (
+  baseStones: StoneItem[], 
+  currentDelegations: SalesDelegation[], 
+  currentOffers: OfferLink[]
+): StoneItem[] => {
+  return baseStones.map(stone => {
+    // 1. Calculate SOLD quantity
+    const soldQuantity = currentOffers
+      .filter(o => o.stoneId === stone.id && o.status === 'sold')
+      .reduce((sum, o) => sum + o.quantityOffered, 0);
+
+    // 2. Calculate RESERVED quantity
+    // Reserved = (Sum of Delegations) + (Sum of Active Direct Offers from Admin)
+    const delegatedQuantity = currentDelegations
+      .filter(d => d.stoneId === stone.id)
+      .reduce((sum, d) => sum + d.delegatedQuantity, 0);
+
+    // Active Direct Offers (Admin direct links, no delegation)
+    const directActiveQuantity = currentOffers
+      .filter(o => o.stoneId === stone.id && o.status === 'active' && !o.delegationId)
+      .reduce((sum, o) => sum + o.quantityOffered, 0);
+
+    const reservedQuantity = delegatedQuantity + directActiveQuantity;
+
+    // 3. Calculate AVAILABLE
+    const availableQuantity = Math.max(0, stone.quantity.total - reservedQuantity - soldQuantity);
+
+    return {
+      ...stone,
+      quantity: {
+        ...stone.quantity,
+        available: availableQuantity,
+        reserved: reservedQuantity,
+        sold: soldQuantity
+      }
+    };
+  });
+};
+
 const AppContent = () => {
   const { t, formatCurrency } = useLanguage();
 
   // --- STATE ---
-  const [stones, setStones] = useState<StoneItem[]>(MOCK_STONES);
   const [sellers, setSellers] = useState<Seller[]>(MOCK_SELLERS);
+  
+  // Initialize Raw State from Mocks
   const [delegations, setDelegations] = useState<SalesDelegation[]>(MOCK_DELEGATIONS);
   const [offers, setOffers] = useState<OfferLink[]>(MOCK_OFFERS);
+  const [rawStones, setRawStones] = useState<StoneItem[]>(MOCK_STONES); // The 'DB'
+  const [typologies, setTypologies] = useState<StoneTypology[]>(MOCK_TYPOLOGIES); // The Catalog
+
+  // Stones are DERIVED via useMemo to ensure they are always consistent with rawStones/delegations/offers
+  // This avoids "undefined" states during initial render or effect cycles.
+  const stones = useMemo(() => {
+    return reconcileInventory(rawStones, delegations, offers);
+  }, [rawStones, delegations, offers]);
+
   const [notifications, setNotifications] = useState<Notification[]>([]);
   
-  // Extract initial typologies from mock stones
-  const [typologies, setTypologies] = useState<StoneTypology[]>(() => {
-     const unique = new Map();
-     MOCK_STONES.forEach(s => unique.set(s.typology.id, s.typology));
-     return Array.from(unique.values());
-  });
-
   const [currentUserRole, setCurrentUserRole] = useState<UserRole>('industry_admin');
   const [currentSellerId, setCurrentSellerId] = useState<string>('sel-001'); // Default to first seller
   const [currentView, setCurrentView] = useState<AppState['currentView']>('dashboard');
@@ -74,21 +116,38 @@ const AppContent = () => {
 
   const [showNotifications, setShowNotifications] = useState(false);
 
+  // --- VISIBILITY FILTER ---
+  // Central logic to determine which offers the current user can see
+  const visibleOffers = useMemo(() => {
+    if (currentUserRole === 'industry_admin') {
+      // Admin sees ALL offers (Direct + Delegated)
+      return offers;
+    } else {
+      // Seller sees ONLY offers linked to their delegations
+      return offers.filter(o => {
+        if (!o.delegationId) return false; // Ignore direct/HQ links
+        const del = delegations.find(d => d.id === o.delegationId);
+        return del && del.sellerId === currentSellerId;
+      });
+    }
+  }, [offers, currentUserRole, currentSellerId, delegations]);
+
+
   // --- DERIVED STATE ---
   const currentUser = currentUserRole === 'industry_admin' 
     ? { name: 'HQ Admin', roleLabel: 'Global Admin' }
     : { name: sellers.find(s => s.id === currentSellerId)?.name || 'Seller', roleLabel: 'Partner' };
 
-  const activeOffers = offers.filter(o => o.status === 'active');
-  const soldOffers = offers.filter(o => o.status === 'sold');
-  
-  // KPI Calculations
+  // KPI Calculations use visibleOffers now
   const kpi = useMemo(() => {
+     const active = visibleOffers.filter(o => o.status === 'active');
+     const sold = visibleOffers.filter(o => o.status === 'sold');
+     
      if (currentUserRole === 'industry_admin') {
        return {
-         pipelineRevenue: activeOffers.reduce((sum, o) => sum + (o.finalPrice * o.quantityOffered), 0),
-         soldRevenue: soldOffers.reduce((sum, o) => sum + (o.finalPrice * o.quantityOffered), 0),
-         totalProfit: soldOffers.reduce((sum, o) => {
+         pipelineRevenue: active.reduce((sum, o) => sum + (o.finalPrice * o.quantityOffered), 0),
+         soldRevenue: sold.reduce((sum, o) => sum + (o.finalPrice * o.quantityOffered), 0),
+         totalProfit: sold.reduce((sum, o) => {
             const stone = stones.find(s => s.id === o.stoneId);
             const cost = stone ? stone.baseCost * o.quantityOffered : 0;
             return sum + ((o.finalPrice * o.quantityOffered) - cost);
@@ -97,18 +156,10 @@ const AppContent = () => {
        };
      } else {
        // Seller View
-       const myOffers = offers.filter(o => {
-          if (!o.delegationId) return false;
-          const del = delegations.find(d => d.id === o.delegationId);
-          return del?.sellerId === currentSellerId;
-       });
-       const myActive = myOffers.filter(o => o.status === 'active');
-       const mySold = myOffers.filter(o => o.status === 'sold');
-       
        return {
-         pipelineRevenue: myActive.reduce((sum, o) => sum + (o.finalPrice * o.quantityOffered), 0),
-         soldRevenue: mySold.reduce((sum, o) => sum + (o.finalPrice * o.quantityOffered), 0),
-         totalProfit: mySold.reduce((sum, o) => {
+         pipelineRevenue: active.reduce((sum, o) => sum + (o.finalPrice * o.quantityOffered), 0),
+         soldRevenue: sold.reduce((sum, o) => sum + (o.finalPrice * o.quantityOffered), 0),
+         totalProfit: sold.reduce((sum, o) => {
             const del = delegations.find(d => d.id === o.delegationId);
             const cost = del ? del.agreedMinPrice * o.quantityOffered : 0;
             return sum + ((o.finalPrice * o.quantityOffered) - cost);
@@ -116,7 +167,7 @@ const AppContent = () => {
          labelProfit: t('dash.kpi.profit_seller')
        };
      }
-  }, [offers, stones, delegations, currentUserRole, currentSellerId, activeOffers, soldOffers, t]);
+  }, [visibleOffers, stones, delegations, currentUserRole, t]);
 
   // --- ACTIONS ---
 
@@ -134,9 +185,15 @@ const AppContent = () => {
   };
 
   const handleDelegate = (stoneId: string, sellerId: string, quantity: number, minPrice: number) => {
-    // Check availability
+    // Check availability based on RECONCILED state
     const stone = stones.find(s => s.id === stoneId);
-    if (!stone || stone.quantity.available < quantity) return;
+    if (!stone) return;
+    
+    // Strict availability check
+    if (stone.quantity.available < quantity) {
+        addNotification(`Error: Only ${stone.quantity.available} available.`, 'alert');
+        return;
+    }
 
     // Create Delegation
     const newDelegation: SalesDelegation = {
@@ -148,81 +205,37 @@ const AppContent = () => {
       createdAt: new Date().toISOString()
     };
 
-    setDelegations([...delegations, newDelegation]);
-
-    // Update Stone
-    const updatedStones = stones.map(s => {
-      if (s.id === stoneId) {
-        return {
-          ...s,
-          quantity: {
-            ...s.quantity,
-            available: s.quantity.available - quantity,
-            reserved: s.quantity.reserved + quantity
-          }
-        };
-      }
-      return s;
-    });
-    setStones(updatedStones);
-
+    setDelegations(prev => [...prev, newDelegation]);
     addNotification(`Delegated ${quantity} ${stone.quantity.unit} of ${stone.typology.name}`, 'success');
     setActiveModal({ type: null });
   };
 
   const handleCreateOffer = (offer: OfferLink) => {
-    setOffers([offer, ...offers]);
-    
-    // Determine if direct (admin) or delegated (seller)
-    if (offer.delegationId) {
-       // Seller logic
-    } else {
-       // Direct Link (Admin) - Reserve stock
-       const stone = stones.find(s => s.id === offer.stoneId);
-       if (stone) {
-         const updatedStones = stones.map(s => {
-            if (s.id === stone.id) {
-               return {
-                  ...s,
-                  quantity: {
-                     ...s.quantity,
-                     available: s.quantity.available - offer.quantityOffered,
-                     reserved: s.quantity.reserved + offer.quantityOffered
-                  }
-               };
-            }
-            return s;
-         });
-         setStones(updatedStones);
-       }
-    }
-
+    setOffers(prev => [offer, ...prev]);
     addNotification(t('toast.link_ready'), 'success');
     setActiveModal({ type: null });
   };
 
   const handleFinalizeSale = (offer: OfferLink) => {
+    // 1. Mark offer as sold
     const updatedOffers = offers.map(o => o.id === offer.id ? { ...o, status: 'sold' as const } : o);
     setOffers(updatedOffers);
 
-    const stone = stones.find(s => s.id === offer.stoneId);
-    if (stone) {
-      const updatedStones = stones.map(s => {
-        if (s.id === stone.id) {
-          return {
-            ...s,
-            quantity: {
-              ...s.quantity,
-              reserved: s.quantity.reserved - offer.quantityOffered,
-              sold: s.quantity.sold + offer.quantityOffered
+    // 2. IMPORTANT: If this was a DELEGATED sale, we must reduce the Delegation Quantity
+    // so the inventory moves from "Reserved (Delegated)" to "Sold" in the math.
+    if (offer.delegationId) {
+        const updatedDelegations = delegations.map(d => {
+            if (d.id === offer.delegationId) {
+                return {
+                    ...d,
+                    delegatedQuantity: Math.max(0, d.delegatedQuantity - offer.quantityOffered)
+                };
             }
-          };
-        }
-        return s;
-      });
-      setStones(updatedStones);
+            return d;
+        });
+        setDelegations(updatedDelegations);
     }
-    
+
     addNotification(`Sale confirmed: ${offer.clientName} - ${formatCurrency(offer.finalPrice * offer.quantityOffered)}`, 'success');
     setActiveModal({ type: null });
   };
@@ -230,35 +243,56 @@ const AppContent = () => {
   const handleCancelLink = (offer: OfferLink) => {
     const updatedOffers = offers.map(o => o.id === offer.id ? { ...o, status: 'expired' as const } : o);
     setOffers(updatedOffers);
-
-    if (!offer.delegationId) {
-       const stone = stones.find(s => s.id === offer.stoneId);
-       if (stone) {
-          const updatedStones = stones.map(s => {
-             if (s.id === stone.id) {
-                return {
-                   ...s,
-                   quantity: {
-                      ...s.quantity,
-                      reserved: s.quantity.reserved - offer.quantityOffered,
-                      available: s.quantity.available + offer.quantityOffered
-                   }
-                };
-             }
-             return s;
-          });
-          setStones(updatedStones);
-       }
-    }
+    // Note: Reconcile logic handles the rest. If it was a Direct Link (active), it occupied Reserved stock. 
+    // Now it's expired, so it frees up stock automatically in reconcileInventory.
     
     addNotification(`Link for ${offer.clientName} cancelled`, 'alert');
     setActiveModal({ type: null });
   };
 
+  const handleRevokeDelegation = (delegationId: string) => {
+      const del = delegations.find(d => d.id === delegationId);
+      if (!del) return;
+
+      // Check if there are ACTIVE offers linked to this delegation
+      const activeLinkedOffers = offers.filter(o => o.delegationId === delegationId && o.status === 'active');
+      if (activeLinkedOffers.length > 0) {
+          addNotification(t('msg.revoke_block_active'), 'alert');
+          return;
+      }
+
+      // Safe to remove
+      setDelegations(prev => prev.filter(d => d.id !== delegationId));
+      addNotification('Delegation revoked. Stock returned to pool.', 'info');
+      setActiveModal({ type: null }); // Close modal to refresh
+  };
+
   // --- RENDER HELPERS ---
 
   const renderLotHistory = () => {
-    const historyStones = stones.filter(s => s.quantity.available === 0 && s.quantity.reserved === 0 && s.quantity.sold > 0);
+    // 1. Filter logic based on role
+    const historyStones = stones.filter(stone => {
+       if (currentUserRole === 'industry_admin') {
+          // Global History: Stone is completely sold out physically
+          return stone.quantity.available === 0 && stone.quantity.reserved === 0 && stone.quantity.sold > 0;
+       } else {
+          // Seller History: Stone where the seller had a delegation, and that delegation is now empty (sold out)
+          const delegation = delegations.find(d => d.stoneId === stone.id && d.sellerId === currentSellerId);
+          if (!delegation) return false;
+
+          // Check if seller has depleted their stock
+          const sellerOffers = visibleOffers.filter(o => o.delegationId === delegation.id);
+          const sold = sellerOffers.filter(o => o.status === 'sold').reduce((sum,o) => sum + o.quantityOffered, 0);
+          const active = sellerOffers.filter(o => o.status === 'active').reduce((sum,o) => sum + o.quantityOffered, 0);
+          
+          // Remaining delegation qty
+          const remaining = delegation.delegatedQuantity - sold - active;
+          
+          // Condition: No remaining stock, no active links (everything resolved), and at least 1 sold item (to be history, not just empty)
+          return remaining <= 0 && active === 0 && sold > 0;
+       }
+    });
+
     const filteredStones = historyStones.filter(stone => { 
         const matchesSearch = !invSearch || stone.lotId.toLowerCase().includes(invSearch.toLowerCase()) || stone.typology.name.toLowerCase().includes(invSearch.toLowerCase()); 
         const matchesTypology = invTypologyFilter === 'all' || stone.typology.id === invTypologyFilter; 
@@ -298,15 +332,35 @@ const AppContent = () => {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-            {filteredStones.map((stone, i) => ( 
-                <StoneCard 
-                    key={stone.id} 
-                    stone={stone} 
-                    role="industry_admin" 
-                    onClick={() => setActiveModal({ type: 'industry_inv', data: stone })} 
-                    index={i} 
-                /> 
-            ))}
+            {filteredStones.map((stone, i) => {
+                if (currentUserRole === 'industry_admin') {
+                  return (
+                    <StoneCard 
+                        key={stone.id} 
+                        stone={stone} 
+                        role="industry_admin" 
+                        onClick={() => setActiveModal({ type: 'industry_inv', data: stone })} 
+                        index={i} 
+                    />
+                  );
+                } else {
+                  // For Seller, pass the delegation context so card shows correct "sold" stats
+                  const delegation = delegations.find(d => d.stoneId === stone.id && d.sellerId === currentSellerId);
+                  const myOffersCount = visibleOffers.filter(o => o.delegationId === delegation?.id).length;
+                  
+                  return (
+                    <StoneCard 
+                        key={stone.id} 
+                        stone={stone} 
+                        role="seller" 
+                        delegation={delegation}
+                        offerCount={myOffersCount}
+                        onClick={() => setActiveModal({ type: 'seller_inv', data: { stone, delegation } })} 
+                        index={i} 
+                    />
+                  );
+                }
+            })}
           </div>
         )}
       </div>
@@ -447,7 +501,7 @@ const AppContent = () => {
                   } else {
                      const delegation = delegations.find(d => d.stoneId === stone.id && d.sellerId === currentSellerId);
                      if (!delegation) return null;
-                     const myOffersCount = offers.filter(o => o.delegationId === delegation.id).length;
+                     const myOffersCount = visibleOffers.filter(o => o.delegationId === delegation.id).length;
                      return (
                         <StoneCard 
                            key={stone.id} 
@@ -488,6 +542,7 @@ const AppContent = () => {
            offer={offer} 
            stone={stone} 
            seller={seller}
+           allTypologies={typologies} // Pass full catalog for client browsing
            onSwitchPersona={(r) => {
              if (r === 'client') return;
              setCurrentUserRole(r);
@@ -600,7 +655,9 @@ const AppContent = () => {
                        <Dashboard 
                           role={currentUserRole}
                           kpi={kpi}
-                          offers={offers.map(o => ({
+                          offers={visibleOffers
+                            .filter(o => stones.some(s => s.id === o.stoneId)) // Safety Filter
+                            .map(o => ({
                              offer: o,
                              stone: stones.find(s => s.id === o.stoneId)!,
                              seller: o.delegationId ? sellers.find(s => s.id === delegations.find(d => d.id === o.delegationId)?.sellerId) : undefined
@@ -619,7 +676,7 @@ const AppContent = () => {
                     {activePage === 'lot_history' && renderLotHistory()}
                     {activePage === 'thermometer' && (
                       <InterestThermometerView 
-                         offers={offers}
+                         offers={visibleOffers.filter(o => o.status === 'active')}
                          stones={stones}
                          sellers={sellers}
                          role={currentUserRole}
@@ -632,8 +689,9 @@ const AppContent = () => {
                           title={activePage === 'pipeline' ? t('nav.pipeline') : activePage === 'sales' ? t('nav.sales') : t('nav.financials_admin')}
                           mode={activePage === 'financials' ? 'profit' : activePage === 'pipeline' ? 'pipeline' : 'sales'}
                           role={currentUserRole}
-                          data={offers
+                          data={visibleOffers
                             .filter(o => {
+                               if (!stones.find(s => s.id === o.stoneId)) return false; // Safety Check
                                if (activePage === 'pipeline') return o.status === 'active';
                                if (activePage === 'sales') return o.status === 'sold';
                                return o.status === 'sold';
@@ -718,15 +776,12 @@ const AppContent = () => {
                onClose={() => setActiveModal({ type: null })}
                onViewTransaction={(o) => setActiveModal({ type: 'transaction', data: { offer: o, stone: activeModal.data } })}
                onUpdateStone={(updated) => {
-                  setStones(stones.map(s => s.id === updated.id ? updated : s));
+                  setRawStones(prev => prev.map(s => s.id === updated.id ? updated : s));
                   setActiveModal({ type: null });
                }}
                onDelegate={() => setActiveModal({ type: 'delegate', data: activeModal.data })}
                onDirectLink={() => setActiveModal({ type: 'direct', data: activeModal.data })}
-               onRevokeDelegation={(delId) => {
-                   setDelegations(delegations.filter(d => d.id !== delId));
-                   addNotification('Delegation revoked.', 'info');
-               }}
+               onRevokeDelegation={handleRevokeDelegation}
                onViewClientPage={(token) => setCurrentView({ type: 'client_view', token })}
              />
           )}
@@ -749,7 +804,7 @@ const AppContent = () => {
                onSave={(newType) => {
                   if (activeModal.data) {
                      setTypologies(typologies.map(t => t.id === newType.id ? newType : t));
-                     setStones(stones.map(s => s.typology.id === newType.id ? { ...s, typology: newType } : s));
+                     setRawStones(prev => prev.map(s => s.typology.id === newType.id ? { ...s, typology: newType } : s));
                   } else {
                      setTypologies([...typologies, newType]);
                   }
@@ -763,7 +818,7 @@ const AppContent = () => {
                typologies={typologies}
                onClose={() => setActiveModal({ type: null })}
                onSave={(newItem) => {
-                  setStones([newItem, ...stones]);
+                  setRawStones(prev => [newItem, ...prev]);
                   setActiveModal({ type: null });
                   addNotification(`New batch ${newItem.lotId} added.`, 'success');
                }}
@@ -775,6 +830,7 @@ const AppContent = () => {
   );
 };
 
+// Wrapper App to provide Context
 const App = () => {
   return (
     <LanguageProvider>

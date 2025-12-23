@@ -318,7 +318,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                       </td>
 
                       <td className="px-8 py-6 text-center" onClick={(e) => e.stopPropagation()}>
-                         <div className="flex items-center justify-center space-x-6 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-2 group-hover:translate-y-0">
+                         <div className="flex items-center justify-center space-x-6">
                            {!isSold && !isExpired && (
                              <>
                                <button onClick={() => onFinalizeSale?.(offer)} className="text-slate-300 hover:text-emerald-600 transition-colors" title="Finalize Sale"><BadgeCheck className="w-5 h-5" /></button>

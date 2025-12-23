@@ -37,7 +37,10 @@ export const IndustryInventoryModal: React.FC<IndustryInventoryModalProps> = ({
   const [activeTab, setActiveTab] = useState<'links' | 'delegations' | 'stock'>('links');
   const [redirectOffer, setRedirectOffer] = useState<OfferLink | null>(null);
   
-  const isFullyClosed = stone.quantity.available === 0 && stone.quantity.reserved === 0;
+  // A stone is "fully closed" if there's no available stock AND no reserved stock (everything is sold)
+  // But strictly, we can check if available == 0.
+  // Actually, we should allow viewing details even if 0 available.
+  const isFullyClosed = stone.quantity.available === 0 && stone.quantity.reserved === 0 && stone.quantity.sold > 0;
 
   const [formData, setFormData] = useState({
     totalQuantity: stone.quantity.total,
@@ -56,8 +59,10 @@ export const IndustryInventoryModal: React.FC<IndustryInventoryModalProps> = ({
   }, [stone]);
 
   const handleSaveStock = () => {
-    if (formData.totalQuantity < (stone.quantity.reserved + stone.quantity.sold)) {
-      alert("Cannot reduce total quantity below currently reserved/sold amount.");
+    // Validation: Total cannot be less than what is currently "Active" (Reserved + Sold)
+    const minRequired = stone.quantity.reserved + stone.quantity.sold;
+    if (formData.totalQuantity < minRequired) {
+      alert(`Cannot reduce total quantity below ${minRequired} (Currently Reserved + Sold).`);
       return;
     }
 
@@ -69,7 +74,13 @@ export const IndustryInventoryModal: React.FC<IndustryInventoryModalProps> = ({
       quantity: {
         ...stone.quantity,
         total: formData.totalQuantity,
-        available: formData.totalQuantity - (stone.quantity.reserved + stone.quantity.sold) 
+        // Available will be recalculated by App.tsx logic automatically
+        // but we pass a hint or just the base data.
+        // Actually onUpdateStone updates rawStones, and App recalculates available.
+        // So we just need to ensure 'total' is updated in the raw stone.
+        available: formData.totalQuantity, // This is a placeholder, App.tsx reconciles it.
+        reserved: stone.quantity.reserved,
+        sold: stone.quantity.sold
       }
     };
     onUpdateStone(updatedStone);
@@ -95,6 +106,12 @@ export const IndustryInventoryModal: React.FC<IndustryInventoryModalProps> = ({
   const directLinksCount = offers.filter(o => !o.delegationId).length;
   const delegatedLinksCount = offers.filter(o => o.delegationId).length;
   const isAvailable = stone.quantity.available > 0;
+
+  // Breakdown Calculations for Reserved Stock
+  const qtyDelegated = delegations.reduce((acc, d) => acc + d.delegatedQuantity, 0);
+  const qtyDirectActive = offers
+      .filter(o => !o.delegationId && o.status === 'active')
+      .reduce((acc, o) => acc + o.quantityOffered, 0);
 
   const handleCopy = (token: string) => {
     navigator.clipboard.writeText(`https://cava.platform/view/${token}`);
@@ -188,8 +205,8 @@ export const IndustryInventoryModal: React.FC<IndustryInventoryModalProps> = ({
                   </div>
 
                   {/* Actions: Direct & Delegate - Hidden for fully closed lots */}
-                  {!isFullyClosed && (
-                    <div className="grid grid-cols-2 gap-3 animate-in fade-in slide-in-from-top-2">
+                  {/* Even if 0 available, show buttons but disabled to indicate flow */}
+                  <div className="grid grid-cols-2 gap-3 animate-in fade-in slide-in-from-top-2">
                         <button 
                           onClick={onDirectLink}
                           disabled={!isAvailable}
@@ -212,8 +229,7 @@ export const IndustryInventoryModal: React.FC<IndustryInventoryModalProps> = ({
                            <UserPlus className="w-3 h-3 mr-2" />
                            {t('modal.ind_inv.delegate')}
                         </button>
-                    </div>
-                  )}
+                  </div>
 
                   {/* Stock Breakdown */}
                   <div className="space-y-4">
@@ -240,12 +256,31 @@ export const IndustryInventoryModal: React.FC<IndustryInventoryModalProps> = ({
                               </span>
                               <span className="font-mono text-[#121212]">{stone.quantity.sold}</span>
                            </div>
-                           <div className="flex justify-between items-center text-xs">
-                              <span className="font-bold text-slate-400 uppercase tracking-wide flex items-center">
-                                 <div className="w-1.5 h-1.5 bg-[#C5A059] rounded-full mr-2" /> {t('card.reserved')}
-                              </span>
-                              <span className="font-mono text-[#121212]">{stone.quantity.reserved}</span>
+                           
+                           {/* Breakdown of Reserved */}
+                           <div className="flex flex-col gap-1">
+                               <div className="flex justify-between items-center text-xs cursor-help group/reserved">
+                                  <span className="font-bold text-slate-400 uppercase tracking-wide flex items-center">
+                                     <div className="w-1.5 h-1.5 bg-[#C5A059] rounded-full mr-2" /> {t('card.reserved')}
+                                  </span>
+                                  <span className="font-mono text-[#121212] font-bold">{stone.quantity.reserved}</span>
+                               </div>
+                               <div className="pl-3.5 flex flex-col gap-0.5 border-l border-slate-100 ml-1">
+                                   {qtyDelegated > 0 && (
+                                       <div className="flex justify-between text-[9px] text-slate-400">
+                                           <span>↳ {t('modal.ind_inv.delegated')}</span>
+                                           <span>{qtyDelegated}</span>
+                                       </div>
+                                   )}
+                                   {qtyDirectActive > 0 && (
+                                       <div className="flex justify-between text-[9px] text-slate-400">
+                                           <span>↳ {t('modal.ind_inv.direct_active')}</span>
+                                           <span>{qtyDirectActive}</span>
+                                       </div>
+                                   )}
+                               </div>
                            </div>
+
                            <div className="flex justify-between items-center text-xs">
                               <span className="font-bold text-slate-400 uppercase tracking-wide flex items-center">
                                  <div className="w-1.5 h-1.5 bg-slate-400 rounded-full mr-2" /> {t('card.avail')}
@@ -310,20 +345,18 @@ export const IndustryInventoryModal: React.FC<IndustryInventoryModalProps> = ({
                      <span className="ml-2 bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded-full text-[10px]">{delegations.length}</span>
                   </button>
                   
-                  {/* Stock Tab only visible if NOT fully sold */}
-                  {!isFullyClosed && (
-                    <button 
+                  {/* Stock Tab */}
+                  <button 
                        onClick={() => setActiveTab('stock')}
                        className={`pb-4 text-xs font-bold uppercase tracking-widest flex items-center transition-colors border-b-2 ${
                           activeTab === 'stock' 
                           ? 'border-[#C5A059] text-[#121212]' 
                           : 'border-transparent text-slate-400 hover:text-slate-600'
                        }`}
-                    >
+                  >
                        <Settings className="w-3 h-3 mr-2" />
                        {t('modal.ind_inv.tab.stock')}
-                    </button>
-                  )}
+                  </button>
                </div>
 
                {/* Content Area */}
@@ -507,7 +540,7 @@ export const IndustryInventoryModal: React.FC<IndustryInventoryModalProps> = ({
                      </div>
                   )}
 
-                  {activeTab === 'stock' && !isFullyClosed && (
+                  {activeTab === 'stock' && (
                      <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-300">
                         <div className="bg-[#121212] p-6 flex items-start gap-5 shadow-xl">
                            <Settings className="w-6 h-6 text-[#C5A059] mt-1" />

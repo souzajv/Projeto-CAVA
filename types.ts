@@ -26,6 +26,7 @@ export interface StoneItem {
   lotId: string;
   dimensions: Dimensions;
   imageUrl: string;
+  additionalImages?: string[]; // New: Support for multiple photos per lot
   baseCost: number;
   minPrice: number;
   quantity: {

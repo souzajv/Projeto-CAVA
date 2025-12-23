@@ -51,31 +51,46 @@ export const InterestThermometerView: React.FC<InterestThermometerViewProps> = (
     return base;
   }, [analytics, activeKpi, searchTerm, stones]);
 
-  const KPICard = ({ level, count, label, icon: Icon, activeColor, gradient }: any) => (
+  const KPICard = ({ level, count, label, description, icon: Icon, activeColor, gradient }: any) => (
     <div className="relative group flex-1">
       <button 
         onClick={() => setActiveKpi(activeKpi === level ? 'all' : level)}
-        className={`relative w-full p-8 rounded-sm transition-all duration-500 text-left overflow-hidden h-48 flex flex-col justify-between border ${
+        className={`relative w-full p-8 rounded-sm transition-all duration-500 text-left overflow-hidden h-52 flex flex-col justify-between border ${
           activeKpi === level 
           ? 'border-transparent shadow-2xl' 
-          : 'bg-white border-slate-100 hover:border-[#121212]'
+          : 'bg-white border-slate-100 hover:border-[#121212] hover:shadow-xl'
         }`}
       >
+        {/* Active Gradient Background */}
         {activeKpi === level && (
            <div className={`absolute inset-0 bg-gradient-to-br ${gradient}`} />
         )}
 
+        {/* Inactive Hover Background (Obsidian) */}
+        {activeKpi !== level && (
+           <div className="absolute inset-0 bg-[#121212] opacity-0 group-hover:opacity-100 transition-opacity duration-500 ease-out" />
+        )}
+
         <div className="flex justify-between items-start relative z-10">
-          <Icon className={`w-6 h-6 ${activeKpi === level ? 'text-white' : 'text-slate-400'}`} />
-          <span className={`text-5xl font-serif ${activeKpi === level ? 'text-white' : 'text-[#121212]'}`}>
+          <Icon className={`w-6 h-6 transition-colors duration-300 ${activeKpi === level ? 'text-white' : 'text-slate-400 group-hover:text-[#C5A059]'}`} />
+          <span className={`text-5xl font-serif transition-colors duration-300 ${activeKpi === level ? 'text-white' : 'text-[#121212] group-hover:text-white'}`}>
             {count}
           </span>
         </div>
         
-        <div className="relative z-10">
-          <p className={`text-[10px] font-bold uppercase tracking-[0.3em] ${activeKpi === level ? 'text-white/80' : 'text-slate-400'}`}>
+        <div className="relative z-10 flex flex-col justify-end">
+          <p className={`text-[10px] font-bold uppercase tracking-[0.3em] transition-colors duration-300 mb-1 ${activeKpi === level ? 'text-white/80' : 'text-slate-400 group-hover:text-[#C5A059]'}`}>
             {label}
           </p>
+          
+          {/* Description Reveal */}
+          <div className="grid grid-rows-[0fr] group-hover:grid-rows-[1fr] transition-[grid-template-rows] duration-500 ease-out">
+             <div className="overflow-hidden">
+                <p className={`text-[10px] leading-relaxed pt-2 opacity-0 group-hover:opacity-100 transition-opacity duration-700 delay-100 ${activeKpi === level ? 'text-white/90' : 'text-slate-400 group-hover:text-white/80'}`}>
+                  {description}
+                </p>
+             </div>
+          </div>
         </div>
       </button>
     </div>
@@ -95,6 +110,7 @@ export const InterestThermometerView: React.FC<InterestThermometerViewProps> = (
           level="ice" 
           count={stats.ice} 
           label={t('interest.level.ice')} 
+          description={t('interest.tooltip.ice')}
           icon={Snowflake} 
           gradient="from-slate-700 to-slate-900"
         />
@@ -102,6 +118,7 @@ export const InterestThermometerView: React.FC<InterestThermometerViewProps> = (
           level="neutral" 
           count={stats.neutral} 
           label={t('interest.level.neutral')} 
+          description={t('interest.tooltip.neutral')}
           icon={Activity} 
           gradient="from-slate-600 to-slate-800"
         />
@@ -109,6 +126,7 @@ export const InterestThermometerView: React.FC<InterestThermometerViewProps> = (
           level="hot" 
           count={stats.hot} 
           label={t('interest.level.hot')} 
+          description={t('interest.tooltip.hot')}
           icon={TrendingUp} 
           gradient="from-orange-500 to-rose-500"
         />
@@ -116,6 +134,7 @@ export const InterestThermometerView: React.FC<InterestThermometerViewProps> = (
           level="boiling" 
           count={stats.boiling} 
           label={t('interest.level.boiling')} 
+          description={t('interest.tooltip.boiling')}
           icon={Flame} 
           gradient="from-rose-600 to-red-900"
         />
@@ -174,8 +193,11 @@ export const InterestThermometerView: React.FC<InterestThermometerViewProps> = (
                 </tr>
               ) : (
                 filteredData.map((item, index) => {
-                  const stone = stones.find(s => s.id === item.offer.stoneId)!;
+                  // SAFE GUARD: Ensure stone exists, though App.tsx should filter it.
+                  const stone = stones.find(s => s.id === item.offer.stoneId);
                   
+                  if (!stone) return null;
+
                   return (
                     <tr 
                       key={item.offer.id}
@@ -194,8 +216,8 @@ export const InterestThermometerView: React.FC<InterestThermometerViewProps> = (
                         <div className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">{formatDate(item.offer.createdAt)}</div>
                       </td>
                       <td className="px-8 py-6">
-                        <div className="font-serif text-lg text-[#121212]">{stone?.typology.name}</div>
-                        <div className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">{stone?.lotId}</div>
+                        <div className="font-serif text-lg text-[#121212]">{stone.typology.name}</div>
+                        <div className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">{stone.lotId}</div>
                       </td>
                       <td className="px-8 py-6">
                         <div className="flex items-center justify-center space-x-8">

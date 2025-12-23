@@ -1,7 +1,7 @@
 
-import React from 'react';
-import { OfferLink, StoneItem, Seller, UserRole, SalesDelegation } from '../types';
-import { X, Calendar, User, DollarSign, Layers, MapPin, ShieldCheck, ExternalLink, Trash2, BadgeCheck, Copy, Clock, Eye, TrendingUp, Wallet, Timer } from 'lucide-react';
+import React, { useMemo } from 'react';
+import { OfferLink, StoneItem, Seller, UserRole, SalesDelegation, InterestLevel } from '../types';
+import { X, Calendar, User, DollarSign, Layers, MapPin, ShieldCheck, ExternalLink, Trash2, BadgeCheck, Copy, Clock, Eye, TrendingUp, Wallet, Timer, Zap, Flame, Snowflake, Activity } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 
 interface TransactionDetailsModalProps {
@@ -32,6 +32,30 @@ export const TransactionDetailsModal: React.FC<TransactionDetailsModalProps> = (
   const isSold = offer.status === 'sold';
   const isActive = offer.status === 'active';
   const totalValue = offer.finalPrice * offer.quantityOffered;
+
+  // Calculate Interest Level on the fly for this specific offer
+  const interestLevel = useMemo((): InterestLevel => {
+    const views = offer.viewLog?.length || 0;
+    const totalDurationMs = offer.viewLog?.reduce((acc, log) => acc + (log.durationMs || 0), 0) || 0;
+    
+    // Get last view time
+    const lastViewTime = offer.viewLog?.length > 0 
+      ? new Date(offer.viewLog[offer.viewLog.length - 1].timestamp).getTime()
+      : 0;
+    
+    const hoursSinceLastView = lastViewTime ? (Date.now() - lastViewTime) / (1000 * 60 * 60) : 9999;
+
+    // Scoring Algorithm (Matches useInterestAnalytics)
+    let score = (views * 10) + (totalDurationMs / 1000); 
+    
+    if (hoursSinceLastView < 24) score *= 1.5;
+    else if (hoursSinceLastView < 48) score *= 1.2;
+
+    if (score > 150) return 'boiling';
+    if (score > 80) return 'hot';
+    if (score > 30) return 'neutral';
+    return 'ice';
+  }, [offer.viewLog]);
 
   let costBasis = 0;
   let profitLabel = '';
@@ -70,6 +94,34 @@ export const TransactionDetailsModal: React.FC<TransactionDetailsModalProps> = (
 
   timelineEvents.sort((a, b) => a.date.getTime() - b.date.getTime());
 
+  // Interest Tag Config
+  const getInterestTag = () => {
+    if (!isActive) return null;
+    
+    const styles = {
+      ice: 'bg-cyan-900/30 border-cyan-800 text-cyan-400',
+      neutral: 'bg-slate-800/50 border-slate-700 text-slate-400',
+      hot: 'bg-orange-900/30 border-orange-800 text-orange-400',
+      boiling: 'bg-rose-900/30 border-rose-800 text-rose-400 animate-pulse'
+    };
+
+    const icons = {
+      ice: Snowflake,
+      neutral: Activity,
+      hot: TrendingUp,
+      boiling: Flame
+    };
+
+    const Icon = icons[interestLevel];
+
+    return (
+      <span className={`px-3 py-1 border text-[10px] font-bold uppercase tracking-widest flex items-center ml-3 rounded-sm ${styles[interestLevel]}`}>
+         <Icon className="w-3 h-3 mr-1.5" />
+         {t(`interest.level.${interestLevel}`)}
+      </span>
+    );
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#121212]/80 backdrop-blur-sm p-4 animate-in fade-in duration-300" onClick={onClose}>
       <div className="bg-white rounded-sm shadow-2xl w-full max-w-6xl h-[90vh] overflow-hidden flex flex-col animate-in zoom-in-95 duration-300 border border-white/10" onClick={(e) => e.stopPropagation()}>
@@ -77,10 +129,17 @@ export const TransactionDetailsModal: React.FC<TransactionDetailsModalProps> = (
         {/* Header */}
         <div className="px-8 py-6 border-b border-[#222] flex justify-between items-start bg-[#121212]">
           <div>
-            <div className="flex items-center space-x-4 mb-2">
-              <h2 className="text-3xl font-serif text-white">{offer.clientName}</h2>
-              {isSold && <span className="px-3 py-1 bg-emerald-900/30 border border-emerald-800 text-emerald-400 text-[10px] font-bold uppercase tracking-widest">{t('modal.tx.sold')}</span>}
-              {isActive && <span className="px-3 py-1 bg-blue-900/30 border border-blue-800 text-blue-400 text-[10px] font-bold uppercase tracking-widest flex items-center"><Clock className="w-3 h-3 mr-1" /> {t('modal.tx.active')}</span>}
+            <div className="flex items-center mb-2 flex-wrap gap-y-2">
+              <h2 className="text-3xl font-serif text-white mr-4">{offer.clientName}</h2>
+              {isSold && <span className="px-3 py-1 bg-emerald-900/30 border border-emerald-800 text-emerald-400 text-[10px] font-bold uppercase tracking-widest rounded-sm">{t('modal.tx.sold')}</span>}
+              {isActive && (
+                <>
+                  <span className="px-3 py-1 bg-blue-900/30 border border-blue-800 text-blue-400 text-[10px] font-bold uppercase tracking-widest flex items-center rounded-sm">
+                    <Clock className="w-3 h-3 mr-1" /> {t('modal.tx.active')}
+                  </span>
+                  {getInterestTag()}
+                </>
+              )}
             </div>
             <p className="text-xs text-slate-500 font-mono tracking-wider uppercase">{t('modal.tx.id')}: {offer.id}</p>
           </div>
@@ -94,6 +153,24 @@ export const TransactionDetailsModal: React.FC<TransactionDetailsModalProps> = (
             
             {/* Left Column: Product Context */}
             <div className="lg:w-5/12 p-8 border-r border-slate-200 bg-white flex flex-col">
+               
+               {/* Origin Badge */}
+               {role === 'industry_admin' && (
+                  <div className="mb-6">
+                    {seller ? (
+                      <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-indigo-50 border border-indigo-100 rounded-sm">
+                        <User className="w-3.5 h-3.5 text-indigo-600" />
+                        <span className="text-[10px] font-bold uppercase tracking-widest text-indigo-900">Partner Sale • {seller.name}</span>
+                      </div>
+                    ) : (
+                      <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-[#121212]/5 border border-[#121212]/10 rounded-sm">
+                        <Zap className="w-3.5 h-3.5 text-[#121212]" />
+                        <span className="text-[10px] font-bold uppercase tracking-widest text-[#121212]">Direct Sale (HQ)</span>
+                      </div>
+                    )}
+                  </div>
+               )}
+
                <div className="aspect-square bg-slate-100 overflow-hidden mb-8 relative group">
                   <img src={stone.imageUrl} alt={stone.typology.name} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" />
                   <div className="absolute bottom-4 left-4 bg-white/90 backdrop-blur px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-[#121212]">
