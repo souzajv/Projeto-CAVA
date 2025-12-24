@@ -1,5 +1,7 @@
+
 import { useState, useMemo, useCallback } from 'react';
 import { SalesDelegation, OfferLink } from '../types';
+import { PLATFORM_DOMAIN } from '../constants';
 
 export interface UseSellerOfferReturn {
   // State
@@ -78,7 +80,7 @@ export const useSellerOffer = (delegation: SalesDelegation, maxQuantity: number)
     await new Promise(resolve => setTimeout(resolve, 1000));
 
     const token = Math.random().toString(36).substring(7);
-    const mockUrl = `https://cava.platform/view/${token}`;
+    const mockUrl = `${PLATFORM_DOMAIN}/view/${token}`;
     
     const newOffer: OfferLink = {
       id: `off-${Date.now()}`,

@@ -1,6 +1,10 @@
 
 import { StoneItem, Seller, SalesDelegation, OfferLink, StoneTypology } from './types';
 
+// --- CONFIG CONSTANTS ---
+export const PLATFORM_DOMAIN = "https://cava.platform";
+export const DEFAULT_STONE_IMAGE = "https://images.unsplash.com/photo-1595428774223-ef52624120d2?auto=format&fit=crop&q=80&w=800"; // Fallback to Carrara
+
 // --- IMAGE SOURCE CONSTANTS ---
 // New stable Unsplash texture URLs - Updated Set
 // Carrara (Confirmed Working)

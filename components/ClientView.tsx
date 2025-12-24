@@ -158,7 +158,7 @@ export const ClientView: React.FC<ClientViewProps> = ({
 
               {/* Catalog Footer */}
               <div className="h-16 border-t border-white/10 flex items-center justify-center text-slate-500 text-xs uppercase tracking-widest shrink-0">
-                 CAVA. Architecture & Design
+                 {t('client.industry_name')}
               </div>
            </motion.div>
         )}

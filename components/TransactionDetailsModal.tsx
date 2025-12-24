@@ -3,6 +3,7 @@ import React, { useMemo } from 'react';
 import { OfferLink, StoneItem, Seller, UserRole, SalesDelegation, InterestLevel } from '../types';
 import { X, Calendar, User, DollarSign, Layers, MapPin, ShieldCheck, ExternalLink, Trash2, BadgeCheck, Copy, Clock, Eye, TrendingUp, Wallet, Timer, Zap, Flame, Snowflake, Activity } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
+import { PLATFORM_DOMAIN } from '../constants';
 
 interface TransactionDetailsModalProps {
   transaction: {
@@ -74,7 +75,7 @@ export const TransactionDetailsModal: React.FC<TransactionDetailsModalProps> = (
   const marginPercent = totalValue > 0 ? (profitValue / totalValue) * 100 : 0;
 
   const handleCopyLink = () => {
-    navigator.clipboard.writeText(`https://cava.platform/view/${offer.clientViewToken}`);
+    navigator.clipboard.writeText(`${PLATFORM_DOMAIN}/view/${offer.clientViewToken}`);
     alert('Link copied!');
   };
 

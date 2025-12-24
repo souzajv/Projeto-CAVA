@@ -32,7 +32,7 @@ import { InterestThermometerView } from './components/InterestThermometerView';
 import { NotificationDropdown } from './components/NotificationDropdown';
 
 import { 
-  Archive, FilterX, Bell, Plus, UserCircle, LogOut, Package, Book 
+  Archive, FilterX, Bell, Plus, UserCircle, LogOut, Package, Book, Search, Filter
 } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 
@@ -97,7 +97,7 @@ const AppContent = () => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   
   const [currentUserRole, setCurrentUserRole] = useState<UserRole>('industry_admin');
-  const [currentSellerId, setCurrentSellerId] = useState<string>('sel-001'); // Default to first seller
+  const [currentSellerId, setCurrentSellerId] = useState<string>('all'); // Default to 'all' for Admin view
   const [currentView, setCurrentView] = useState<AppState['currentView']>('dashboard');
   const [activePage, setActivePage] = useState<PageView>('dashboard');
   
@@ -121,10 +121,20 @@ const AppContent = () => {
   // Central logic to determine which offers the current user can see
   const visibleOffers = useMemo(() => {
     if (currentUserRole === 'industry_admin') {
-      // Admin sees ALL offers (Direct + Delegated)
-      return offers;
+      // If "All Sellers" is selected (or default), return everything
+      if (currentSellerId === 'all') {
+        return offers;
+      }
+      // If a specific seller is selected in the filter, return only their delegated offers
+      return offers.filter(o => {
+        // Direct sales (no delegation) should NOT be shown when filtering by a specific seller
+        if (!o.delegationId) return false; 
+        
+        const del = delegations.find(d => d.id === o.delegationId);
+        return del && del.sellerId === currentSellerId;
+      });
     } else {
-      // Seller sees ONLY offers linked to their delegations
+      // Seller Mode: Sees ONLY offers linked to their delegations (using currentSellerId as the logged-in ID)
       return offers.filter(o => {
         if (!o.delegationId) return false; // Ignore direct/HQ links
         const del = delegations.find(d => d.id === o.delegationId);
@@ -309,23 +319,30 @@ const AppContent = () => {
 
     return (
       <div className="space-y-8">
-        <div>
-           <h2 className="text-3xl font-serif text-[#121212]">
-             {t('inv.history_title')}
-           </h2>
-           <p className="text-slate-500 mt-2 font-light">{t('inv.history_subtitle')}</p>
+        
+        {/* STICKY HEADER for History - Added PT padding to cover scroll - Z-INDEX 40 */}
+        <div className="sticky top-0 z-40 bg-[#FDFDFD]/95 backdrop-blur-sm pb-4 pt-8 lg:pt-12 mb-8 -mx-8 px-8 border-b border-slate-200 shadow-sm">
+          <div className="max-w-[1600px] mx-auto">
+            <div className="mb-6">
+               <h2 className="text-3xl font-serif text-[#121212]">
+                 {t('inv.history_title')}
+               </h2>
+               <p className="text-slate-500 mt-2 font-light">{t('inv.history_subtitle')}</p>
+            </div>
+            {historyStones.length > 0 && ( 
+               <InventoryFilters 
+                  searchTerm={invSearch} 
+                  onSearchChange={setInvSearch} 
+                  statusFilter="sold" 
+                  onStatusFilterChange={() => {}} 
+                  typologyFilter={invTypologyFilter} 
+                  onTypologyFilterChange={setInvTypologyFilter} 
+                  typologies={typologies} 
+                /> 
+            )}
+          </div>
         </div>
-        {historyStones.length > 0 && ( 
-           <InventoryFilters 
-              searchTerm={invSearch} 
-              onSearchChange={setInvSearch} 
-              statusFilter="sold" 
-              onStatusFilterChange={() => {}} 
-              typologyFilter={invTypologyFilter} 
-              onTypologyFilterChange={setInvTypologyFilter} 
-              typologies={typologies} 
-            /> 
-        )}
+
         {historyStones.length === 0 ? (
           <div className="py-32 text-center bg-white rounded-3xl border border-dashed border-slate-200 flex flex-col items-center">
             <Archive className="w-12 h-12 text-slate-200 mb-6" />
@@ -383,45 +400,77 @@ const AppContent = () => {
        
        return (
          <div className="space-y-8">
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
-               <div>
-                  <h2 className="text-3xl font-serif text-[#121212] tracking-tight">{t('nav.inventory')}</h2>
-                  <p className="text-slate-500 mt-2 font-light">{t('inv.your_inventory')}</p>
-               </div>
-               
-               <div className="flex gap-4 items-center">
-                   <div className="flex bg-slate-100 p-1 rounded-sm gap-1">
-                      <button 
-                        onClick={() => setInventoryTab('stock')}
-                        className="px-4 py-2 text-xs font-bold uppercase tracking-widest text-slate-500 hover:text-[#121212] transition-colors"
-                      >
-                        {t('inv.tab.stock')}
-                      </button>
-                      <button 
-                        onClick={() => setInventoryTab('catalog')}
-                        className="px-4 py-2 bg-white text-[#121212] shadow-sm text-xs font-bold uppercase tracking-widest rounded-sm"
-                      >
-                        {t('inv.tab.catalog')}
-                      </button>
-                   </div>
+            {/* STICKY HEADER for Catalog - Consolidated: Title, Tabs AND Filters - Z-INDEX 40 */}
+            <div className="sticky top-0 z-40 bg-[#FDFDFD]/95 backdrop-blur-sm pb-6 pt-8 lg:pt-12 mb-8 -mx-8 px-8 border-b border-slate-200 shadow-sm">
+                <div className="max-w-[1600px] mx-auto space-y-6">
+                    <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
+                       <div>
+                          <h2 className="text-3xl font-serif text-[#121212] tracking-tight">{t('nav.inventory')}</h2>
+                          <p className="text-slate-500 mt-2 font-light">{t('inv.your_inventory')}</p>
+                       </div>
+                       
+                       <div className="flex gap-4 items-center">
+                           <div className="flex bg-slate-100 p-1 rounded-sm gap-1">
+                              <button 
+                                onClick={() => setInventoryTab('stock')}
+                                className="px-4 py-2 text-xs font-bold uppercase tracking-widest text-slate-500 hover:text-[#121212] transition-colors"
+                              >
+                                {t('inv.tab.stock')}
+                              </button>
+                              <button 
+                                onClick={() => setInventoryTab('catalog')}
+                                className="px-4 py-2 bg-white text-[#121212] shadow-sm text-xs font-bold uppercase tracking-widest rounded-sm"
+                              >
+                                {t('inv.tab.catalog')}
+                              </button>
+                           </div>
 
-                   <button 
-                      onClick={() => setActiveModal({ type: 'typology', data: null })}
-                      className="px-5 py-3 bg-[#121212] text-white text-xs font-bold uppercase tracking-widest hover:bg-[#C5A059] shadow-lg transition-all flex items-center"
-                   >
-                      <Plus className="w-4 h-4 mr-2" />
-                      {t('cat.add_btn')}
-                   </button>
-               </div>
+                           <button 
+                              onClick={() => setActiveModal({ type: 'typology', data: null })}
+                              className="px-5 py-3 bg-[#121212] text-white text-xs font-bold uppercase tracking-widest hover:bg-[#C5A059] shadow-lg transition-all flex items-center"
+                           >
+                              <Plus className="w-4 h-4 mr-2" />
+                              {t('cat.add_btn')}
+                           </button>
+                       </div>
+                    </div>
+
+                    {/* Integrated Search/Filter for Catalog */}
+                    <div className="flex flex-col md:flex-row gap-4">
+                        <div className="flex-1 relative group">
+                          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                            <Search className="w-4 h-4 group-focus-within:text-[#121212] transition-colors" />
+                          </div>
+                          <input 
+                            type="text"
+                            placeholder={t('inv.search_placeholder')}
+                            value={invSearch}
+                            onChange={(e) => setInvSearch(e.target.value)}
+                            className="w-full pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-sm text-sm focus:ring-1 focus:ring-[#121212] focus:border-[#121212] outline-none transition-all placeholder:text-slate-400 font-medium"
+                          />
+                        </div>
+                        <div className="relative min-w-[200px] group">
+                          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                            <Filter className="w-4 h-4 group-focus-within:text-[#121212] transition-colors" />
+                          </div>
+                          <select
+                            value={invTypologyFilter}
+                            onChange={(e) => setInvTypologyFilter(e.target.value)}
+                            className="appearance-none bg-white border border-slate-200 text-slate-700 text-sm pl-10 pr-8 py-3 rounded-sm focus:outline-none focus:ring-1 focus:ring-[#121212] focus:border-[#121212] transition-all cursor-pointer font-medium hover:border-slate-300 w-full"
+                          >
+                            <option value="all">{t('inv.filter.all_types')}</option>
+                            {typologies.map(t => (
+                              <option key={t.id} value={t.id}>{t.name}</option>
+                            ))}
+                          </select>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <CatalogView 
                typologies={filteredTypologies}
-               fullTypologyList={typologies}
-               searchTerm={invSearch}
-               onSearchChange={setInvSearch}
-               typologyFilter={invTypologyFilter}
-               onTypologyFilterChange={setInvTypologyFilter}
+               // Pass only what's needed for display/edit since filtering is handled above
                onEditTypology={(t) => setActiveModal({ type: 'typology', data: t })}
             />
          </div>
@@ -449,51 +498,59 @@ const AppContent = () => {
 
     return (
       <div className="space-y-8">
-         <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
-            <div>
-               <h2 className="text-3xl font-serif text-[#121212] tracking-tight">{t('nav.inventory')}</h2>
-               <p className="text-slate-500 mt-2 font-light">{t('inv.your_inventory')}</p>
-            </div>
-            
-            <div className="flex gap-4 items-center">
-                {currentUserRole === 'industry_admin' && (
-                  <div className="flex bg-slate-100 p-1 rounded-sm gap-1">
-                      <button 
-                        onClick={() => setInventoryTab('stock')}
-                        className="px-4 py-2 bg-white text-[#121212] shadow-sm text-xs font-bold uppercase tracking-widest rounded-sm"
-                      >
-                        {t('inv.tab.stock')}
-                      </button>
-                      <button 
-                        onClick={() => setInventoryTab('catalog')}
-                        className="px-4 py-2 text-xs font-bold uppercase tracking-widest text-slate-500 hover:text-[#121212] transition-colors"
-                      >
-                        {t('inv.tab.catalog')}
-                      </button>
-                  </div>
-                )}
+         
+         {/* STICKY HEADER for Stock View - Added PT padding - Z-INDEX 40 */}
+         <div className="sticky top-0 z-40 bg-[#FDFDFD]/95 backdrop-blur-sm pb-4 pt-8 lg:pt-12 mb-8 -mx-8 px-8 border-b border-slate-200 shadow-sm">
+             <div className="max-w-[1600px] mx-auto space-y-6">
+                 <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
+                    <div>
+                       <h2 className="text-3xl font-serif text-[#121212] tracking-tight">{t('nav.inventory')}</h2>
+                       <p className="text-slate-500 mt-2 font-light">{t('inv.your_inventory')}</p>
+                    </div>
+                    
+                    <div className="flex gap-4 items-center">
+                        {currentUserRole === 'industry_admin' && (
+                          <div className="flex bg-slate-100 p-1 rounded-sm gap-1">
+                              <button 
+                                onClick={() => setInventoryTab('stock')}
+                                className="px-4 py-2 bg-white text-[#121212] shadow-sm text-xs font-bold uppercase tracking-widest rounded-sm"
+                              >
+                                {t('inv.tab.stock')}
+                              </button>
+                              <button 
+                                onClick={() => setInventoryTab('catalog')}
+                                className="px-4 py-2 text-xs font-bold uppercase tracking-widest text-slate-500 hover:text-[#121212] transition-colors"
+                              >
+                                {t('inv.tab.catalog')}
+                              </button>
+                          </div>
+                        )}
 
-                {currentUserRole === 'industry_admin' && (
-                  <button 
-                    onClick={() => setActiveModal({ type: 'batch', data: null })}
-                    className="px-5 py-3 bg-[#121212] text-white text-xs font-bold uppercase tracking-widest hover:bg-[#C5A059] shadow-lg transition-all flex items-center"
-                  >
-                    <Plus className="w-4 h-4 mr-2" />
-                    {t('inv.add_batch')}
-                  </button>
-                )}
-            </div>
+                        {currentUserRole === 'industry_admin' && (
+                          <button 
+                            onClick={() => setActiveModal({ type: 'batch', data: null })}
+                            className="px-5 py-3 bg-[#121212] text-white text-xs font-bold uppercase tracking-widest hover:bg-[#C5A059] shadow-lg transition-all flex items-center"
+                          >
+                            <Plus className="w-4 h-4 mr-2" />
+                            {t('inv.add_batch')}
+                          </button>
+                        )}
+                    </div>
+                 </div>
+
+                 <div className="mb-0">
+                     <InventoryFilters 
+                        searchTerm={invSearch} 
+                        onSearchChange={setInvSearch} 
+                        statusFilter={invStatusFilter}
+                        onStatusFilterChange={setInvStatusFilter}
+                        typologyFilter={invTypologyFilter} 
+                        onTypologyFilterChange={setInvTypologyFilter} 
+                        typologies={typologies} 
+                     />
+                 </div>
+             </div>
          </div>
-
-         <InventoryFilters 
-            searchTerm={invSearch} 
-            onSearchChange={setInvSearch} 
-            statusFilter={invStatusFilter}
-            onStatusFilterChange={setInvStatusFilter}
-            typologyFilter={invTypologyFilter} 
-            onTypologyFilterChange={setInvTypologyFilter} 
-            typologies={typologies} 
-         />
 
          {filtered.length === 0 ? (
             <div className="py-20 text-center bg-white border border-dashed border-slate-200 rounded-lg">
@@ -558,7 +615,7 @@ const AppContent = () => {
            offer={offer} 
            stone={stone} 
            seller={seller}
-           allTypologies={typologies} // Pass full catalog for client browsing
+           allTypologies={typologies} 
            onSwitchPersona={(r) => {
              if (r === 'client') return;
              setCurrentUserRole(r);
@@ -604,7 +661,7 @@ const AppContent = () => {
        
        <main className="flex-1 flex flex-col h-screen overflow-hidden relative">
           
-          <header className="h-20 bg-white/80 backdrop-blur-md border-b border-slate-200 flex items-center justify-between px-8 sticky top-0 z-30">
+          <header className="h-20 bg-white/80 backdrop-blur-md border-b border-slate-200 flex items-center justify-between px-8 sticky top-0 z-50">
              <div className="flex items-center space-x-4">
                 <h2 className="text-xl font-serif font-bold text-[#121212]">
                    {activePage === 'dashboard' && t('nav.dashboard')}
@@ -640,13 +697,21 @@ const AppContent = () => {
 
                 <div className="flex items-center space-x-2 bg-slate-100 p-1 rounded-lg">
                    <button 
-                     onClick={() => { setCurrentUserRole('industry_admin'); setActivePage('dashboard'); }}
+                     onClick={() => { 
+                       setCurrentUserRole('industry_admin'); 
+                       setCurrentSellerId('all'); // Reset filter when switching to Admin
+                       setActivePage('dashboard'); 
+                     }}
                      className={`px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest rounded-md transition-all ${currentUserRole === 'industry_admin' ? 'bg-white shadow-sm text-[#121212]' : 'text-slate-400'}`}
                    >
                      Admin
                    </button>
                    <button 
-                     onClick={() => { setCurrentUserRole('seller'); setActivePage('dashboard'); }}
+                     onClick={() => { 
+                       setCurrentUserRole('seller'); 
+                       setCurrentSellerId('sel-001'); // Force specific seller ID for Seller Role
+                       setActivePage('dashboard'); 
+                     }}
                      className={`px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest rounded-md transition-all ${currentUserRole === 'seller' ? 'bg-white shadow-sm text-[#121212]' : 'text-slate-400'}`}
                    >
                      Seller
@@ -655,8 +720,9 @@ const AppContent = () => {
              </div>
           </header>
 
-          <div className="flex-1 overflow-y-auto p-8 lg:p-12 scroll-smooth">
-             <div className="max-w-[1600px] mx-auto">
+          {/* SCROLL CONTAINER: Top Padding Removed (pt-0) to allow sticky header to cover */}
+          <div className="flex-1 overflow-y-auto px-8 pb-8 lg:px-12 lg:pb-12 pt-0 scroll-smooth">
+             <div className="max-w-[1600px] mx-auto h-full">
                 <AnimatePresence mode="wait">
                   <motion.div
                     key={`${activePage}-${currentUserRole}-${inventoryTab}`}
@@ -667,60 +733,73 @@ const AppContent = () => {
                     transition={pageTransition}
                     className="h-full"
                   >
+                    {/* Add Top Padding Wrapper for NON-STICKY pages */}
                     {activePage === 'dashboard' && (
-                       <Dashboard 
-                          role={currentUserRole}
-                          kpi={kpi}
-                          offers={visibleOffers
-                            .filter(o => stones.some(s => s.id === o.stoneId)) // Safety Filter
-                            .map(o => ({
-                             offer: o,
-                             stone: stones.find(s => s.id === o.stoneId)!,
-                             seller: o.delegationId ? sellers.find(s => s.id === delegations.find(d => d.id === o.delegationId)?.sellerId) : undefined
-                          }))}
-                          sellers={sellers}
-                          selectedSellerId={currentSellerId}
-                          onFilterSeller={setCurrentSellerId}
-                          onFinalizeSale={handleFinalizeSale}
-                          onCancelLink={handleCancelLink}
-                          onNavigate={setActivePage}
-                          onSelectTransaction={(tx) => setActiveModal({ type: 'transaction', data: tx })}
-                          onViewClientPage={(token) => setCurrentView({ type: 'client_view', token })}
-                       />
+                       <div className="pt-8 lg:pt-12">
+                           <Dashboard 
+                              role={currentUserRole}
+                              kpi={kpi}
+                              offers={visibleOffers
+                                .filter(o => stones.some(s => s.id === o.stoneId)) 
+                                .map(o => ({
+                                 offer: o,
+                                 stone: stones.find(s => s.id === o.stoneId)!,
+                                 seller: o.delegationId ? sellers.find(s => s.id === delegations.find(d => d.id === o.delegationId)?.sellerId) : undefined
+                              }))}
+                              sellers={sellers}
+                              selectedSellerId={currentSellerId}
+                              onFilterSeller={setCurrentSellerId}
+                              onFinalizeSale={handleFinalizeSale}
+                              onCancelLink={handleCancelLink}
+                              onNavigate={setActivePage}
+                              onSelectTransaction={(tx) => setActiveModal({ type: 'transaction', data: tx })}
+                              onViewClientPage={(token) => setCurrentView({ type: 'client_view', token })}
+                           />
+                       </div>
                     )}
+                    
+                    {/* Inventory renders its own Sticky Header with padding included */}
                     {activePage === 'inventory' && renderInventory()}
+                    
+                    {/* Lot History renders its own Sticky Header with padding included */}
                     {activePage === 'lot_history' && renderLotHistory()}
+                    
                     {activePage === 'thermometer' && (
-                      <InterestThermometerView 
-                         offers={visibleOffers.filter(o => o.status === 'active')}
-                         stones={stones}
-                         sellers={sellers}
-                         role={currentUserRole}
-                         onSelectTransaction={(item) => setActiveModal({ type: 'transaction', data: { offer: item.offer, stone: stones.find(s => s.id === item.offer.stoneId) } })}
-                         onViewClientPage={(token) => setCurrentView({ type: 'client_view', token })}
-                      />
+                      <div className="pt-8 lg:pt-12">
+                          <InterestThermometerView 
+                             offers={visibleOffers.filter(o => o.status === 'active')}
+                             stones={stones}
+                             sellers={sellers}
+                             role={currentUserRole}
+                             onSelectTransaction={(item) => setActiveModal({ type: 'transaction', data: { offer: item.offer, stone: stones.find(s => s.id === item.offer.stoneId) } })}
+                             onViewClientPage={(token) => setCurrentView({ type: 'client_view', token })}
+                          />
+                      </div>
                     )}
+                    
                     {(activePage === 'pipeline' || activePage === 'sales' || activePage === 'financials') && (
-                       <AnalyticsDetailView 
-                          title={activePage === 'pipeline' ? t('nav.pipeline') : activePage === 'sales' ? t('nav.sales') : t('nav.financials_admin')}
-                          mode={activePage === 'financials' ? 'profit' : activePage === 'pipeline' ? 'pipeline' : 'sales'}
-                          role={currentUserRole}
-                          data={visibleOffers
-                            .filter(o => {
-                               if (!stones.find(s => s.id === o.stoneId)) return false; // Safety Check
-                               if (activePage === 'pipeline') return o.status === 'active';
-                               if (activePage === 'sales') return o.status === 'sold';
-                               return o.status === 'sold';
-                            })
-                            .map(o => ({
-                              offer: o,
-                              stone: stones.find(s => s.id === o.stoneId)!,
-                              seller: o.delegationId ? sellers.find(s => s.id === delegations.find(d => d.id === o.delegationId)?.sellerId) : undefined,
-                              delegation: delegations.find(d => d.id === o.delegationId)
-                            }))
-                          }
-                          onTransactionClick={(tx) => setActiveModal({ type: 'transaction', data: tx })}
-                       />
+                       <div className="pt-8 lg:pt-12">
+                           <AnalyticsDetailView 
+                              title={activePage === 'pipeline' ? t('nav.pipeline') : activePage === 'sales' ? t('nav.sales') : t('nav.financials_admin')}
+                              mode={activePage === 'financials' ? 'profit' : activePage === 'pipeline' ? 'pipeline' : 'sales'}
+                              role={currentUserRole}
+                              data={visibleOffers
+                                .filter(o => {
+                                   if (!stones.find(s => s.id === o.stoneId)) return false; 
+                                   if (activePage === 'pipeline') return o.status === 'active';
+                                   if (activePage === 'sales') return o.status === 'sold';
+                                   return o.status === 'sold';
+                                })
+                                .map(o => ({
+                                  offer: o,
+                                  stone: stones.find(s => s.id === o.stoneId)!,
+                                  seller: o.delegationId ? sellers.find(s => s.id === delegations.find(d => d.id === o.delegationId)?.sellerId) : undefined,
+                                  delegation: delegations.find(d => d.id === o.delegationId)
+                                }))
+                              }
+                              onTransactionClick={(tx) => setActiveModal({ type: 'transaction', data: tx })}
+                           />
+                       </div>
                     )}
                   </motion.div>
                 </AnimatePresence>
@@ -732,6 +811,7 @@ const AppContent = () => {
             onDismiss={(id) => setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n))} 
           />
 
+          {/* ... Modals (unchanged) ... */}
           {activeModal.type === 'delegate' && (
              <DelegateModal 
                 stone={activeModal.data}

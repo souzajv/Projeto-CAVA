@@ -4,6 +4,7 @@ import { SalesDelegation, StoneItem, OfferLink } from '../types';
 import { X, Layers, Link as LinkIcon, ExternalLink, Copy, Plus, History, ArrowRight, Eye, ArrowUpRight, DollarSign, Package } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { ImageWithLoader } from './ImageWithLoader';
+import { PLATFORM_DOMAIN } from '../constants';
 
 interface SellerInventoryModalProps {
   delegation: SalesDelegation;
@@ -38,7 +39,7 @@ export const SellerInventoryModal: React.FC<SellerInventoryModalProps> = ({
   });
 
   const handleCopy = (token: string) => {
-    navigator.clipboard.writeText(`https://cava.platform/view/${token}`);
+    navigator.clipboard.writeText(`${PLATFORM_DOMAIN}/view/${token}`);
     alert('Link copied!');
   };
 

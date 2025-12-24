@@ -1,66 +1,27 @@
 
 import React from 'react';
 import { StoneTypology } from '../types';
-import { Pencil, Search, Filter } from 'lucide-react';
+import { Pencil, Search } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 
 interface CatalogViewProps {
   typologies: StoneTypology[];
-  fullTypologyList: StoneTypology[]; // List for the dropdown filter
-  searchTerm: string;
-  onSearchChange: (val: string) => void;
-  typologyFilter: string;
-  onTypologyFilterChange: (val: string) => void;
+  // Props related to search/filter are no longer used here directly for UI rendering, 
+  // but kept in interface if passed down, or removed if logic moves up.
+  // Ideally, we just receive the filtered list or the raw list + handlers if we were rendering inputs here.
+  // Since inputs moved to App.tsx, we just need the data to display.
   onEditTypology: (typology: StoneTypology) => void;
 }
 
 export const CatalogView: React.FC<CatalogViewProps> = ({ 
   typologies, 
-  fullTypologyList,
-  searchTerm,
-  onSearchChange,
-  typologyFilter,
-  onTypologyFilterChange,
   onEditTypology 
 }) => {
   const { t } = useLanguage();
 
   return (
     <div className="animate-in fade-in duration-500">
-      
-      {/* Search & Filter Bar - Obsidian Style */}
-      <div className="mb-10 flex flex-col md:flex-row gap-4">
-          {/* Search Input */}
-          <div className="flex-1 relative group">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-              <Search className="w-4 h-4 group-focus-within:text-[#121212] transition-colors" />
-            </div>
-            <input 
-              type="text"
-              placeholder={t('inv.search_placeholder')}
-              value={searchTerm}
-              onChange={(e) => onSearchChange(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-sm text-sm focus:ring-1 focus:ring-[#121212] focus:border-[#121212] outline-none transition-all placeholder:text-slate-400 font-medium"
-            />
-          </div>
-
-          {/* Typology Filter Dropdown */}
-          <div className="relative min-w-[200px] group">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-              <Filter className="w-4 h-4 group-focus-within:text-[#121212] transition-colors" />
-            </div>
-            <select
-              value={typologyFilter}
-              onChange={(e) => onTypologyFilterChange(e.target.value)}
-              className="appearance-none bg-white border border-slate-200 text-slate-700 text-sm pl-10 pr-8 py-3 rounded-sm focus:outline-none focus:ring-1 focus:ring-[#121212] focus:border-[#121212] transition-all cursor-pointer font-medium hover:border-slate-300 w-full"
-            >
-              <option value="all">{t('inv.filter.all_types')}</option>
-              {fullTypologyList.map(t => (
-                <option key={t.id} value={t.id}>{t.name}</option>
-              ))}
-            </select>
-          </div>
-      </div>
+      {/* Search & Filter Bar moved to App.tsx for unified sticky behavior */}
 
       {typologies.length === 0 ? (
         <div className="py-20 text-center text-slate-400 border border-dashed border-slate-200 rounded-sm bg-white">

@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { StoneItem, StoneTypology } from '../types';
 import { X, Save, Ruler, DollarSign, Layers, Tag, Image as ImageIcon, CheckCircle2, RefreshCw, ChevronDown } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
+import { DEFAULT_STONE_IMAGE } from '../constants';
 
 interface BatchModalProps {
   typologies: StoneTypology[];
@@ -61,7 +62,8 @@ export const BatchModal: React.FC<BatchModalProps> = ({ typologies, onClose, onS
       typology: selectedTypology,
       lotId,
       dimensions: { width, height, thickness, unit },
-      imageUrl: batchImageUrl || selectedTypology.imageUrl,
+      // Use batch image if provided, else typology image, else default constant
+      imageUrl: batchImageUrl || selectedTypology.imageUrl || DEFAULT_STONE_IMAGE,
       baseCost,
       minPrice,
       quantity: {

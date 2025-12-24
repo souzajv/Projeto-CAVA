@@ -4,6 +4,7 @@ import { StoneItem, SalesDelegation, OfferLink, Seller } from '../types';
 import { X, Layers, Users, Link as LinkIcon, ArrowUpRight, DollarSign, ExternalLink, Eye, User, Settings, Save, AlertTriangle, Copy, Zap, UserPlus, Trash2, RotateCcw } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { ImageWithLoader } from './ImageWithLoader';
+import { PLATFORM_DOMAIN } from '../constants';
 
 interface IndustryInventoryModalProps {
   stone: StoneItem;
@@ -114,7 +115,7 @@ export const IndustryInventoryModal: React.FC<IndustryInventoryModalProps> = ({
       .reduce((acc, o) => acc + o.quantityOffered, 0);
 
   const handleCopy = (token: string) => {
-    navigator.clipboard.writeText(`https://cava.platform/view/${token}`);
+    navigator.clipboard.writeText(`${PLATFORM_DOMAIN}/view/${token}`);
     alert('Link copied!');
   };
 

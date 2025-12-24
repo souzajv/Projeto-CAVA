@@ -1,7 +1,9 @@
+
 import React from 'react';
 import { OfferLink, StoneItem, SalesDelegation } from '../types';
 import { X, ExternalLink, Copy, Calendar, Clock, DollarSign, User, CheckCircle2 } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
+import { PLATFORM_DOMAIN } from '../constants';
 
 interface LinkHistoryModalProps {
   delegation: SalesDelegation;
@@ -21,7 +23,7 @@ export const LinkHistoryModal: React.FC<LinkHistoryModalProps> = ({ delegation, 
   });
 
   const handleCopy = (token: string) => {
-    const url = `https://cava.platform/view/${token}`;
+    const url = `${PLATFORM_DOMAIN}/view/${token}`;
     navigator.clipboard.writeText(url);
     alert('Link copied to clipboard');
   };
@@ -109,7 +111,7 @@ export const LinkHistoryModal: React.FC<LinkHistoryModalProps> = ({ delegation, 
                          {t('modal.history.copy')}
                        </button>
                        <a 
-                         href={`https://cava.platform/view/${offer.clientViewToken}`}
+                         href={`${PLATFORM_DOMAIN}/view/${offer.clientViewToken}`}
                          target="_blank"
                          rel="noreferrer"
                          className="flex-1 sm:flex-none flex items-center justify-center px-4 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-sm font-bold transition-colors shadow-sm"

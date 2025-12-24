@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { StoneTypology } from '../types';
 import { X, Save, Image as ImageIcon, MapPin, Hammer, AlignLeft, Type } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
+import { DEFAULT_STONE_IMAGE } from '../constants';
 
 interface TypologyModalProps {
   typology?: StoneTypology; // If provided, edit mode. If null, create mode.
@@ -34,7 +35,7 @@ export const TypologyModal: React.FC<TypologyModalProps> = ({ typology, onClose,
       origin: formData.origin!,
       hardness: formData.hardness!,
       description: formData.description!,
-      imageUrl: formData.imageUrl || 'https://picsum.photos/800/600' // Fallback image
+      imageUrl: formData.imageUrl || DEFAULT_STONE_IMAGE
     });
   };
 
