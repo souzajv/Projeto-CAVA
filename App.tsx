@@ -661,64 +661,51 @@ const AppContent = () => {
        
        <main className="flex-1 flex flex-col h-screen overflow-hidden relative">
           
-          <header className="h-20 bg-white/80 backdrop-blur-md border-b border-slate-200 flex items-center justify-between px-8 sticky top-0 z-50">
-             <div className="flex items-center space-x-4">
-                <h2 className="text-xl font-serif font-bold text-[#121212]">
-                   {activePage === 'dashboard' && t('nav.dashboard')}
-                   {activePage === 'inventory' && t('nav.inventory')}
-                   {activePage === 'lot_history' && t('nav.lot_history')}
-                   {activePage === 'pipeline' && t('nav.pipeline')}
-                   {activePage === 'sales' && t('nav.sales')}
-                   {activePage === 'financials' && (currentUserRole === 'industry_admin' ? t('nav.financials_admin') : t('nav.financials_seller'))}
-                   {activePage === 'thermometer' && t('nav.thermometer')}
-                </h2>
+          {/* FLOATING CONTROLS (Replacing Sticky Header) */}
+          <div className="absolute top-6 right-8 z-50 flex items-center space-x-6">
+             <div className="relative">
+                <button 
+                  onClick={() => setShowNotifications(!showNotifications)}
+                  className="relative p-2 text-slate-400 hover:text-[#121212] transition-colors bg-white/80 backdrop-blur-sm rounded-full hover:bg-white shadow-sm hover:shadow-md border border-slate-100"
+                >
+                  <Bell className="w-5 h-5" />
+                  {notifications.some(n => !n.read) && (
+                     <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-rose-500 rounded-full border border-white" />
+                  )}
+                </button>
+                {showNotifications && (
+                   <NotificationDropdown 
+                      notifications={notifications}
+                      onMarkRead={(id) => setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n))}
+                      onMarkAllRead={() => setNotifications(prev => prev.map(n => ({ ...n, read: true })))}
+                      onClose={() => setShowNotifications(false)}
+                   />
+                )}
              </div>
 
-             <div className="flex items-center space-x-6">
-                <div className="relative">
-                   <button 
-                     onClick={() => setShowNotifications(!showNotifications)}
-                     className="relative p-2 text-slate-400 hover:text-[#121212] transition-colors"
-                   >
-                     <Bell className="w-5 h-5" />
-                     {notifications.some(n => !n.read) && (
-                        <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-rose-500 rounded-full border border-white" />
-                     )}
-                   </button>
-                   {showNotifications && (
-                      <NotificationDropdown 
-                         notifications={notifications}
-                         onMarkRead={(id) => setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n))}
-                         onMarkAllRead={() => setNotifications(prev => prev.map(n => ({ ...n, read: true })))}
-                         onClose={() => setShowNotifications(false)}
-                      />
-                   )}
-                </div>
-
-                <div className="flex items-center space-x-2 bg-slate-100 p-1 rounded-lg">
-                   <button 
-                     onClick={() => { 
-                       setCurrentUserRole('industry_admin'); 
-                       setCurrentSellerId('all'); // Reset filter when switching to Admin
-                       setActivePage('dashboard'); 
-                     }}
-                     className={`px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest rounded-md transition-all ${currentUserRole === 'industry_admin' ? 'bg-white shadow-sm text-[#121212]' : 'text-slate-400'}`}
-                   >
-                     Admin
-                   </button>
-                   <button 
-                     onClick={() => { 
-                       setCurrentUserRole('seller'); 
-                       setCurrentSellerId('sel-001'); // Force specific seller ID for Seller Role
-                       setActivePage('dashboard'); 
-                     }}
-                     className={`px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest rounded-md transition-all ${currentUserRole === 'seller' ? 'bg-white shadow-sm text-[#121212]' : 'text-slate-400'}`}
-                   >
-                     Seller
-                   </button>
-                </div>
+             <div className="flex items-center space-x-2 bg-slate-100/90 backdrop-blur-sm p-1 rounded-lg border border-slate-200 shadow-sm">
+                <button 
+                  onClick={() => { 
+                    setCurrentUserRole('industry_admin'); 
+                    setCurrentSellerId('all'); // Reset filter when switching to Admin
+                    setActivePage('dashboard'); 
+                  }}
+                  className={`px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest rounded-md transition-all ${currentUserRole === 'industry_admin' ? 'bg-white shadow-sm text-[#121212]' : 'text-slate-400'}`}
+                >
+                  Admin
+                </button>
+                <button 
+                  onClick={() => { 
+                    setCurrentUserRole('seller'); 
+                    setCurrentSellerId('sel-001'); // Force specific seller ID for Seller Role
+                    setActivePage('dashboard'); 
+                  }}
+                  className={`px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest rounded-md transition-all ${currentUserRole === 'seller' ? 'bg-white shadow-sm text-[#121212]' : 'text-slate-400'}`}
+                >
+                  Seller
+                </button>
              </div>
-          </header>
+          </div>
 
           {/* SCROLL CONTAINER: Top Padding Removed (pt-0) to allow sticky header to cover */}
           <div className="flex-1 overflow-y-auto px-8 pb-8 lg:px-12 lg:pb-12 pt-0 scroll-smooth">
