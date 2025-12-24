@@ -320,25 +320,29 @@ const AppContent = () => {
     return (
       <div className="space-y-8">
         
-        {/* STICKY HEADER for History - Added PT padding to cover scroll - Z-INDEX 40 */}
-        <div className="sticky top-0 z-40 bg-[#FDFDFD]/95 backdrop-blur-sm pb-4 pt-8 lg:pt-12 mb-8 -mx-8 px-8 border-b border-slate-200 shadow-sm">
+        {/* NON-STICKY Header Content */}
+        <div className="pt-8 lg:pt-12 mb-2">
+           <h2 className="text-3xl font-serif text-[#121212]">
+             {t('inv.history_title')}
+           </h2>
+           <p className="text-slate-500 mt-2 font-light">{t('inv.history_subtitle')}</p>
+        </div>
+
+        {/* STICKY HEADER for Filters ONLY - Reduced Padding */}
+        <div className="sticky top-0 z-40 bg-[#FDFDFD]/95 backdrop-blur-sm py-3 -mx-8 px-8 border-b border-slate-200 shadow-sm mb-8">
           <div className="max-w-[1600px] mx-auto">
-            <div className="mb-6">
-               <h2 className="text-3xl font-serif text-[#121212]">
-                 {t('inv.history_title')}
-               </h2>
-               <p className="text-slate-500 mt-2 font-light">{t('inv.history_subtitle')}</p>
-            </div>
             {historyStones.length > 0 && ( 
-               <InventoryFilters 
-                  searchTerm={invSearch} 
-                  onSearchChange={setInvSearch} 
-                  statusFilter="sold" 
-                  onStatusFilterChange={() => {}} 
-                  typologyFilter={invTypologyFilter} 
-                  onTypologyFilterChange={setInvTypologyFilter} 
-                  typologies={typologies} 
-                /> 
+               <div className="mb-0">
+                 <InventoryFilters 
+                    searchTerm={invSearch} 
+                    onSearchChange={setInvSearch} 
+                    statusFilter="sold" 
+                    onStatusFilterChange={() => {}} 
+                    typologyFilter={invTypologyFilter} 
+                    onTypologyFilterChange={setInvTypologyFilter} 
+                    typologies={typologies} 
+                  /> 
+               </div>
             )}
           </div>
         </div>
@@ -400,41 +404,44 @@ const AppContent = () => {
        
        return (
          <div className="space-y-8">
-            {/* STICKY HEADER for Catalog - Consolidated: Title, Tabs AND Filters - Z-INDEX 40 */}
-            <div className="sticky top-0 z-40 bg-[#FDFDFD]/95 backdrop-blur-sm pb-6 pt-8 lg:pt-12 mb-8 -mx-8 px-8 border-b border-slate-200 shadow-sm">
-                <div className="max-w-[1600px] mx-auto space-y-6">
-                    <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
-                       <div>
-                          <h2 className="text-3xl font-serif text-[#121212] tracking-tight">{t('nav.inventory')}</h2>
-                          <p className="text-slate-500 mt-2 font-light">{t('inv.your_inventory')}</p>
+            {/* NON-STICKY Header: Title & Actions */}
+            <div className="pt-8 lg:pt-12 space-y-6">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
+                   <div>
+                      <h2 className="text-3xl font-serif text-[#121212] tracking-tight">{t('nav.inventory')}</h2>
+                      <p className="text-slate-500 mt-2 font-light">{t('inv.your_inventory')}</p>
+                   </div>
+                   
+                   <div className="flex gap-4 items-center">
+                       <div className="flex bg-slate-100 p-1 rounded-sm gap-1">
+                          <button 
+                            onClick={() => setInventoryTab('stock')}
+                            className="px-4 py-2 text-xs font-bold uppercase tracking-widest text-slate-500 hover:text-[#121212] transition-colors"
+                          >
+                            {t('inv.tab.stock')}
+                          </button>
+                          <button 
+                            onClick={() => setInventoryTab('catalog')}
+                            className="px-4 py-2 bg-white text-[#121212] shadow-sm text-xs font-bold uppercase tracking-widest rounded-sm"
+                          >
+                            {t('inv.tab.catalog')}
+                          </button>
                        </div>
-                       
-                       <div className="flex gap-4 items-center">
-                           <div className="flex bg-slate-100 p-1 rounded-sm gap-1">
-                              <button 
-                                onClick={() => setInventoryTab('stock')}
-                                className="px-4 py-2 text-xs font-bold uppercase tracking-widest text-slate-500 hover:text-[#121212] transition-colors"
-                              >
-                                {t('inv.tab.stock')}
-                              </button>
-                              <button 
-                                onClick={() => setInventoryTab('catalog')}
-                                className="px-4 py-2 bg-white text-[#121212] shadow-sm text-xs font-bold uppercase tracking-widest rounded-sm"
-                              >
-                                {t('inv.tab.catalog')}
-                              </button>
-                           </div>
 
-                           <button 
-                              onClick={() => setActiveModal({ type: 'typology', data: null })}
-                              className="px-5 py-3 bg-[#121212] text-white text-xs font-bold uppercase tracking-widest hover:bg-[#C5A059] shadow-lg transition-all flex items-center"
-                           >
-                              <Plus className="w-4 h-4 mr-2" />
-                              {t('cat.add_btn')}
-                           </button>
-                       </div>
-                    </div>
+                       <button 
+                          onClick={() => setActiveModal({ type: 'typology', data: null })}
+                          className="px-5 py-3 bg-[#121212] text-white text-xs font-bold uppercase tracking-widest hover:bg-[#C5A059] shadow-lg transition-all flex items-center"
+                       >
+                          <Plus className="w-4 h-4 mr-2" />
+                          {t('cat.add_btn')}
+                       </button>
+                   </div>
+                </div>
+            </div>
 
+            {/* STICKY HEADER for Filters Only - Reduced Height */}
+            <div className="sticky top-0 z-40 bg-[#FDFDFD]/95 backdrop-blur-sm py-3 -mx-8 px-8 border-b border-slate-200 shadow-sm mb-8">
+                <div className="max-w-[1600px] mx-auto">
                     {/* Integrated Search/Filter for Catalog */}
                     <div className="flex flex-col md:flex-row gap-4">
                         <div className="flex-1 relative group">
@@ -446,7 +453,7 @@ const AppContent = () => {
                             placeholder={t('inv.search_placeholder')}
                             value={invSearch}
                             onChange={(e) => setInvSearch(e.target.value)}
-                            className="w-full pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-sm text-sm focus:ring-1 focus:ring-[#121212] focus:border-[#121212] outline-none transition-all placeholder:text-slate-400 font-medium"
+                            className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-sm text-sm focus:ring-1 focus:ring-[#121212] focus:border-[#121212] outline-none transition-all placeholder:text-slate-400 font-medium"
                           />
                         </div>
                         <div className="relative min-w-[200px] group">
@@ -456,7 +463,7 @@ const AppContent = () => {
                           <select
                             value={invTypologyFilter}
                             onChange={(e) => setInvTypologyFilter(e.target.value)}
-                            className="appearance-none bg-white border border-slate-200 text-slate-700 text-sm pl-10 pr-8 py-3 rounded-sm focus:outline-none focus:ring-1 focus:ring-[#121212] focus:border-[#121212] transition-all cursor-pointer font-medium hover:border-slate-300 w-full"
+                            className="appearance-none bg-white border border-slate-200 text-slate-700 text-sm pl-10 pr-8 py-2.5 rounded-sm focus:outline-none focus:ring-1 focus:ring-[#121212] focus:border-[#121212] transition-all cursor-pointer font-medium hover:border-slate-300 w-full"
                           >
                             <option value="all">{t('inv.filter.all_types')}</option>
                             {typologies.map(t => (
@@ -499,45 +506,48 @@ const AppContent = () => {
     return (
       <div className="space-y-8">
          
-         {/* STICKY HEADER for Stock View - Added PT padding - Z-INDEX 40 */}
-         <div className="sticky top-0 z-40 bg-[#FDFDFD]/95 backdrop-blur-sm pb-4 pt-8 lg:pt-12 mb-8 -mx-8 px-8 border-b border-slate-200 shadow-sm">
-             <div className="max-w-[1600px] mx-auto space-y-6">
-                 <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
-                    <div>
-                       <h2 className="text-3xl font-serif text-[#121212] tracking-tight">{t('nav.inventory')}</h2>
-                       <p className="text-slate-500 mt-2 font-light">{t('inv.your_inventory')}</p>
-                    </div>
-                    
-                    <div className="flex gap-4 items-center">
-                        {currentUserRole === 'industry_admin' && (
-                          <div className="flex bg-slate-100 p-1 rounded-sm gap-1">
-                              <button 
-                                onClick={() => setInventoryTab('stock')}
-                                className="px-4 py-2 bg-white text-[#121212] shadow-sm text-xs font-bold uppercase tracking-widest rounded-sm"
-                              >
-                                {t('inv.tab.stock')}
-                              </button>
-                              <button 
-                                onClick={() => setInventoryTab('catalog')}
-                                className="px-4 py-2 text-xs font-bold uppercase tracking-widest text-slate-500 hover:text-[#121212] transition-colors"
-                              >
-                                {t('inv.tab.catalog')}
-                              </button>
-                          </div>
-                        )}
-
-                        {currentUserRole === 'industry_admin' && (
+         {/* NON-STICKY Header: Title & Actions */}
+         <div className="pt-8 lg:pt-12 space-y-6">
+             <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
+                <div>
+                   <h2 className="text-3xl font-serif text-[#121212] tracking-tight">{t('nav.inventory')}</h2>
+                   <p className="text-slate-500 mt-2 font-light">{t('inv.your_inventory')}</p>
+                </div>
+                
+                <div className="flex gap-4 items-center">
+                    {currentUserRole === 'industry_admin' && (
+                      <div className="flex bg-slate-100 p-1 rounded-sm gap-1">
                           <button 
-                            onClick={() => setActiveModal({ type: 'batch', data: null })}
-                            className="px-5 py-3 bg-[#121212] text-white text-xs font-bold uppercase tracking-widest hover:bg-[#C5A059] shadow-lg transition-all flex items-center"
+                            onClick={() => setInventoryTab('stock')}
+                            className="px-4 py-2 bg-white text-[#121212] shadow-sm text-xs font-bold uppercase tracking-widest rounded-sm"
                           >
-                            <Plus className="w-4 h-4 mr-2" />
-                            {t('inv.add_batch')}
+                            {t('inv.tab.stock')}
                           </button>
-                        )}
-                    </div>
-                 </div>
+                          <button 
+                            onClick={() => setInventoryTab('catalog')}
+                            className="px-4 py-2 text-xs font-bold uppercase tracking-widest text-slate-500 hover:text-[#121212] transition-colors"
+                          >
+                            {t('inv.tab.catalog')}
+                          </button>
+                      </div>
+                    )}
 
+                    {currentUserRole === 'industry_admin' && (
+                      <button 
+                        onClick={() => setActiveModal({ type: 'batch', data: null })}
+                        className="px-5 py-3 bg-[#121212] text-white text-xs font-bold uppercase tracking-widest hover:bg-[#C5A059] shadow-lg transition-all flex items-center"
+                      >
+                        <Plus className="w-4 h-4 mr-2" />
+                        {t('inv.add_batch')}
+                      </button>
+                    )}
+                </div>
+             </div>
+         </div>
+
+         {/* STICKY HEADER for Filters Only - Reduced Height */}
+         <div className="sticky top-0 z-40 bg-[#FDFDFD]/95 backdrop-blur-sm py-2 -mx-8 px-8 border-b border-slate-200 shadow-sm mb-8">
+             <div className="max-w-[1600px] mx-auto">
                  <div className="mb-0">
                      <InventoryFilters 
                         searchTerm={invSearch} 
