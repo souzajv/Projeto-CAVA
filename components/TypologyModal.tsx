@@ -169,7 +169,7 @@ export const TypologyModal: React.FC<TypologyModalProps> = ({ typology, onClose,
                 </button>
                 <button 
                   type="submit"
-                  className="px-8 py-3 bg-[#121212] text-white text-xs font-bold uppercase tracking-widest hover:bg-[#C5A059] shadow-lg transition-all flex items-center"
+                  className="px-8 py-3 bg-[#121212] text-white text-xs font-bold uppercase tracking-widest hover:bg-[#C2410C] shadow-lg transition-all flex items-center"
                 >
                   <Save className="w-4 h-4 mr-2" />
                   {t('modal.type.save')}

@@ -1,7 +1,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { OfferLink, StoneItem, Seller, SalesDelegation, UserRole } from '../types';
-import { Search, Link as LinkIcon, DollarSign, Calendar, TrendingUp, Download } from 'lucide-react';
+import { Search, Link as LinkIcon, DollarSign, Calendar, TrendingUp, Download, AlertTriangle } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 
 export type AnalyticsMode = 'pipeline' | 'sales' | 'profit';
@@ -33,6 +33,8 @@ export const AnalyticsDetailView: React.FC<AnalyticsDetailViewProps> = ({
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
 
+  // Filtering Logic: Only applies search and dates. 
+  // Status filtering is done by parent to ensure 'Sales' tab only gets 'sold' items.
   const filteredData = useMemo(() => {
     return data.filter(item => {
       const itemDate = new Date(item.offer.createdAt);
@@ -48,8 +50,8 @@ export const AnalyticsDetailView: React.FC<AnalyticsDetailViewProps> = ({
       const searchLower = searchTerm.toLowerCase();
       return (
         item.offer.clientName.toLowerCase().includes(searchLower) ||
-        item.stone.typology.name.toLowerCase().includes(searchLower) ||
-        item.stone.lotId.toLowerCase().includes(searchLower) ||
+        (item.stone?.typology.name || '').toLowerCase().includes(searchLower) ||
+        (item.stone?.lotId || '').toLowerCase().includes(searchLower) ||
         (item.seller?.name || '').toLowerCase().includes(searchLower)
       );
     });
@@ -60,7 +62,7 @@ export const AnalyticsDetailView: React.FC<AnalyticsDetailViewProps> = ({
       const revenue = item.offer.finalPrice * item.offer.quantityOffered;
       let cost = 0;
       if (role === 'industry_admin') {
-        cost = item.stone.baseCost * item.offer.quantityOffered;
+        cost = (item.stone?.baseCost || 0) * item.offer.quantityOffered;
       } else {
         cost = (item.delegation?.agreedMinPrice || 0) * item.offer.quantityOffered;
       }
@@ -87,7 +89,7 @@ export const AnalyticsDetailView: React.FC<AnalyticsDetailViewProps> = ({
            <p className="text-slate-500 font-light">{t('analytics.desc')}</p>
         </div>
         
-        <button onClick={handleExport} className="flex items-center px-6 py-3 bg-[#121212] text-white text-xs font-bold uppercase tracking-widest hover:bg-[#C5A059] transition-all shadow-lg">
+        <button onClick={handleExport} className="flex items-center px-6 py-3 bg-[#121212] text-white text-xs font-bold uppercase tracking-widest hover:bg-[#C2410C] transition-all shadow-lg">
            <Download className="w-4 h-4 mr-2" />
            {t('analytics.export')}
         </button>
@@ -102,8 +104,9 @@ export const AnalyticsDetailView: React.FC<AnalyticsDetailViewProps> = ({
             <p className="text-3xl font-serif text-[#121212]">{formatCurrency(totals.revenue)}</p>
          </div>
          {mode === 'profit' && (
-           <div className="p-8 bg-[#121212] text-white shadow-xl">
-              <p className="text-[10px] font-bold text-[#C5A059] uppercase tracking-[0.2em] mb-4">{t('dash.kpi.profit')}</p>
+           <div className="p-8 bg-[#121212] text-white shadow-xl relative overflow-hidden">
+              <div className="absolute top-0 left-0 w-full h-1 bg-[#C2410C]" />
+              <p className="text-[10px] font-bold text-[#C2410C] uppercase tracking-[0.2em] mb-4">{t('dash.kpi.profit')}</p>
               <p className="text-3xl font-serif text-white">{formatCurrency(totals.profit)}</p>
            </div>
          )}
@@ -118,20 +121,20 @@ export const AnalyticsDetailView: React.FC<AnalyticsDetailViewProps> = ({
       </div>
 
       {/* Main Content Area */}
-      <div className="bg-white border border-slate-200 shadow-sm">
+      <div className="bg-white border border-slate-200 shadow-sm rounded-sm overflow-hidden">
         
         {/* Filters */}
         <div className="p-6 border-b border-slate-100 bg-[#FAFAFA]">
           <div className="flex flex-col md:flex-row gap-6 items-center">
             
-            <div className="relative flex-1 w-full">
-              <Search className="absolute left-0 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <div className="relative flex-1 w-full group">
+              <Search className="absolute left-0 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-[#C2410C] transition-colors" />
               <input 
                 type="text"
                 placeholder={t('common.search_placeholder')}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-8 py-2 bg-transparent border-b border-slate-300 text-sm focus:border-[#121212] outline-none transition-all placeholder:text-slate-400"
+                className="w-full pl-8 py-2 bg-transparent border-b border-slate-300 text-sm focus:border-[#C2410C] outline-none transition-all placeholder:text-slate-400"
               />
             </div>
 
@@ -140,14 +143,14 @@ export const AnalyticsDetailView: React.FC<AnalyticsDetailViewProps> = ({
                    type="date"
                    value={startDate}
                    onChange={(e) => setStartDate(e.target.value)}
-                   className="bg-white border border-slate-200 text-[10px] uppercase font-bold px-3 py-2 rounded-sm outline-none"
+                   className="bg-white border border-slate-200 text-[10px] uppercase font-bold px-3 py-2 rounded-sm outline-none focus:border-[#C2410C] transition-colors"
                  />
                  <span className="text-slate-300">-</span>
                  <input 
                    type="date"
                    value={endDate}
                    onChange={(e) => setEndDate(e.target.value)}
-                   className="bg-white border border-slate-200 text-[10px] uppercase font-bold px-3 py-2 rounded-sm outline-none"
+                   className="bg-white border border-slate-200 text-[10px] uppercase font-bold px-3 py-2 rounded-sm outline-none focus:border-[#C2410C] transition-colors"
                  />
             </div>
           </div>
@@ -156,7 +159,7 @@ export const AnalyticsDetailView: React.FC<AnalyticsDetailViewProps> = ({
         {/* Table */}
         <div className="overflow-x-auto">
           <table className="w-full text-left">
-            <thead className="text-[10px] text-slate-400 uppercase font-bold tracking-widest border-b border-slate-100">
+            <thead className="text-[10px] text-slate-400 uppercase font-bold tracking-widest border-b border-slate-100 bg-[#FAFAFA]">
               <tr>
                 <th className="px-8 py-6">{t('dash.table.created')}</th>
                 <th className="px-8 py-6">{t('dash.table.client')}</th>
@@ -183,7 +186,7 @@ export const AnalyticsDetailView: React.FC<AnalyticsDetailViewProps> = ({
                   const revenue = item.offer.finalPrice * item.offer.quantityOffered;
                   let costBasis = 0;
                   if (role === 'industry_admin') {
-                    costBasis = item.stone.baseCost * item.offer.quantityOffered;
+                    costBasis = (item.stone?.baseCost || 0) * item.offer.quantityOffered;
                   } else {
                     costBasis = (item.delegation?.agreedMinPrice || 0) * item.offer.quantityOffered;
                   }
@@ -193,21 +196,29 @@ export const AnalyticsDetailView: React.FC<AnalyticsDetailViewProps> = ({
                     <tr 
                       key={item.offer.id} 
                       onClick={() => onTransactionClick?.(item)}
-                      className="hover:bg-[#FAFAFA] cursor-pointer transition-colors group"
+                      className="hover:bg-slate-50 cursor-pointer transition-colors group"
                     >
                       <td className="px-8 py-6 text-slate-500 text-xs font-bold uppercase tracking-wider">
                         {formatDate(item.offer.createdAt)}
                       </td>
                       
                       <td className="px-8 py-6">
-                        <div className="font-bold text-[#121212] text-sm group-hover:text-[#C5A059] transition-colors">{item.offer.clientName}</div>
+                        <div className="font-bold text-[#121212] text-sm group-hover:text-[#C2410C] transition-colors">{item.offer.clientName}</div>
                       </td>
 
                       <td className="px-8 py-6">
-                        <div className="font-serif text-lg text-[#121212]">{item.stone.typology.name}</div>
-                        <div className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">
-                           {item.stone.lotId} • {item.offer.quantityOffered} {t(`unit.${item.stone.quantity.unit}`)}
-                        </div>
+                        {item.stone ? (
+                          <>
+                            <div className="font-serif text-lg text-[#121212]">{item.stone.typology.name}</div>
+                            <div className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">
+                              {item.stone.lotId} • {item.offer.quantityOffered} {t(`unit.${item.stone.quantity.unit}`)}
+                            </div>
+                          </>
+                        ) : (
+                          <div className="flex items-center text-rose-500 text-xs font-bold uppercase tracking-widest">
+                             <AlertTriangle className="w-4 h-4 mr-1" /> Unknown Stone
+                          </div>
+                        )}
                       </td>
 
                       {role === 'industry_admin' && (
@@ -217,7 +228,7 @@ export const AnalyticsDetailView: React.FC<AnalyticsDetailViewProps> = ({
                       )}
 
                       <td className="px-8 py-6 text-right">
-                        <span className="font-serif text-lg text-[#121212]">{formatCurrency(revenue)}</span>
+                        <span className="font-serif text-lg text-[#121212] group-hover:text-[#C2410C] transition-colors">{formatCurrency(revenue)}</span>
                       </td>
 
                       {mode === 'profit' && (

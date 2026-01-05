@@ -6,10 +6,6 @@ import { useLanguage } from '../contexts/LanguageContext';
 
 interface CatalogViewProps {
   typologies: StoneTypology[];
-  // Props related to search/filter are no longer used here directly for UI rendering, 
-  // but kept in interface if passed down, or removed if logic moves up.
-  // Ideally, we just receive the filtered list or the raw list + handlers if we were rendering inputs here.
-  // Since inputs moved to App.tsx, we just need the data to display.
   onEditTypology: (typology: StoneTypology) => void;
 }
 
@@ -21,8 +17,6 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
 
   return (
     <div className="animate-in fade-in duration-500">
-      {/* Search & Filter Bar moved to App.tsx for unified sticky behavior */}
-
       {typologies.length === 0 ? (
         <div className="py-20 text-center text-slate-400 border border-dashed border-slate-200 rounded-sm bg-white">
            <Search className="w-12 h-12 mx-auto mb-4 opacity-10" />
@@ -53,7 +47,7 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
               </div>
 
               <div className="p-6 flex-1 flex flex-col">
-                <h3 className="text-xl font-serif text-[#121212] mb-3 leading-tight group-hover:text-[#C5A059] transition-colors">{typology.name}</h3>
+                <h3 className="text-xl font-serif text-[#121212] mb-3 leading-tight group-hover:text-[#C2410C] transition-colors">{typology.name}</h3>
                 <p className="text-sm text-slate-500 line-clamp-3 mb-6 flex-1 font-light leading-relaxed">
                   {typology.description}
                 </p>

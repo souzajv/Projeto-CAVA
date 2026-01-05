@@ -3,6 +3,8 @@
  * Domain Layer Definitions for CAVA Platform
  */
 
+export type StoneStatus = 'available' | 'reserved' | 'sold';
+
 export interface StoneTypology {
   id: string;
   name: string;
@@ -26,7 +28,7 @@ export interface StoneItem {
   lotId: string;
   dimensions: Dimensions;
   imageUrl: string;
-  additionalImages?: string[]; // New: Support for multiple photos per lot
+  additionalImages?: string[]; 
   baseCost: number;
   minPrice: number;
   quantity: {
@@ -38,7 +40,18 @@ export interface StoneItem {
   };
 }
 
-export type StoneStatus = 'available' | 'reserved' | 'sold';
+export interface Client {
+  id: string;
+  name: string;
+  company?: string;
+  email: string;
+  phone: string;
+  createdAt: string;
+  notes?: string;
+  // Auditoria de Origem do Lead
+  createdById: string; // ID do Vendedor ou "admin"
+  createdByRole: UserRole; 
+}
 
 export interface Seller {
   id: string;
@@ -56,23 +69,23 @@ export interface SalesDelegation {
   createdAt: string; 
 }
 
-export type OfferStatus = 'active' | 'sold' | 'expired';
+export type OfferStatus = 'active' | 'sold' | 'expired' | 'reservation_pending' | 'reserved';
 
 export interface OfferLink {
   id: string;
   delegationId?: string; 
   stoneId: string; 
-  clientName: string;
+  clientId: string; 
+  clientName: string; // Denormalização para performance
   finalPrice: number;
   quantityOffered: number;
   status: OfferStatus;
   clientViewToken: string;
   createdAt: string; 
   expiresAt?: string; 
-  // RF-008: Track access and duration
   viewLog: { 
     timestamp: string; 
-    durationMs?: number; // How long they stayed
+    durationMs?: number; 
   }[];
 }
 
@@ -88,11 +101,12 @@ export interface Notification {
 
 export type UserRole = 'industry_admin' | 'seller';
 
-export type InterestLevel = 'ice' | 'neutral' | 'hot' | 'boiling';
+export type InterestLevel = 'cold' | 'warm' | 'hot';
 
 export interface AppState {
   stones: StoneItem[];
   sellers: Seller[];
+  clients: Client[];
   delegations: SalesDelegation[];
   offers: OfferLink[];
   notifications: Notification[];

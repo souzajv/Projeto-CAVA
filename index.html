@@ -24,46 +24,53 @@
       scroll-behavior: smooth;
     }
     ::selection {
-      background: #C5A059;
+      background: #C2410C; /* New Terracotta Accent */
       color: white;
     }
 
-    /* --- PREMIUM SCROLLBAR STYLING --- */
-    /* Width & Height */
+    /* --- HIGH CONTRAST SCROLLBAR STYLING --- */
+    /* Width & Height - Increased for visibility */
     ::-webkit-scrollbar {
-      width: 5px;
-      height: 5px;
+      width: 10px;
+      height: 10px;
     }
-    /* Track */
+    /* Track - Visible now for contrast */
     ::-webkit-scrollbar-track {
-      background: transparent;
+      background: #E2E8F0; /* Slate 200 */
+      border-left: 1px solid #CBD5E1;
     }
-    /* Handle */
+    /* Handle - Dark by default for visibility */
     ::-webkit-scrollbar-thumb {
-      background: #CBD5E1; /* Subtle Slate for Light Mode */
-      border-radius: 10px;
+      background: #475569; /* Slate 600 */
+      border: 2px solid #E2E8F0; /* Padding effect */
+      border-radius: 6px;
       transition: background 0.3s ease;
     }
-    /* Handle on Hover */
+    /* Handle on Hover - Brand Color */
     ::-webkit-scrollbar-thumb:hover {
-      background: #C5A059; /* Brand Gold */
+      background: #C2410C; /* New Terracotta Accent */
     }
 
     /* Utility: Dark Scrollbar for Sidebar/Dark Containers */
+    .dark-scroll::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.05);
+      border-left: 1px solid rgba(255, 255, 255, 0.1);
+    }
     .dark-scroll::-webkit-scrollbar-thumb {
-      background: rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.3);
+      border: 2px solid #121212;
     }
     .dark-scroll::-webkit-scrollbar-thumb:hover {
-      background: #C5A059;
+      background: #C2410C;
     }
 
     /* Firefox Support */
     * {
       scrollbar-width: thin;
-      scrollbar-color: #CBD5E1 transparent;
+      scrollbar-color: #475569 #E2E8F0;
     }
     .dark-scroll {
-      scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+      scrollbar-color: rgba(255, 255, 255, 0.3) rgba(255, 255, 255, 0.05);
     }
   </style>
   <script type="importmap">

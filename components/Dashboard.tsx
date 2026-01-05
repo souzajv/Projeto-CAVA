@@ -1,10 +1,11 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
 import { OfferLink, Seller, StoneItem, SalesDelegation, UserRole } from '../types';
-import { BarChart3, Link as LinkIcon, Users, ExternalLink, CheckSquare, BadgeCheck, Trash2, Calendar, X, ArrowUpRight } from 'lucide-react';
+import { BarChart3, Link as LinkIcon, Users, ExternalLink, CheckSquare, BadgeCheck, Trash2, Calendar, X, ArrowUpRight, AlertCircle, Check, XCircle } from 'lucide-react';
 import { PageView } from './Sidebar';
 import { useLanguage } from '../contexts/LanguageContext';
 import { motion, useSpring, useTransform } from 'framer-motion';
+import { StatusBadge } from './Badge';
 
 function NumberTicker({ value }: { value: number }) {
   const { formatCurrency } = useLanguage();
@@ -40,6 +41,8 @@ interface DashboardProps {
   onNavigate?: (page: PageView) => void;
   onSelectTransaction?: (transaction: any) => void;
   onViewClientPage?: (token: string) => void;
+  onApproveReservation?: (offer: OfferLink) => void;
+  onRejectReservation?: (offer: OfferLink) => void;
 }
 
 type DateFilterType = 'all' | 'today' | 'week' | 'month' | 'year' | 'custom';
@@ -55,13 +58,20 @@ export const Dashboard: React.FC<DashboardProps> = ({
   onCancelLink,
   onNavigate,
   onSelectTransaction,
-  onViewClientPage
+  onViewClientPage,
+  onApproveReservation,
+  onRejectReservation
 }) => {
   const { t, formatCurrency, formatDate } = useLanguage();
   const [dateFilter, setDateFilter] = useState<DateFilterType>('all');
   const [customStartDate, setCustomStartDate] = useState('');
   const [customEndDate, setCustomEndDate] = useState('');
   
+  // Pending Reservations Logic
+  const pendingReservations = useMemo(() => {
+    return offers.filter(item => item.offer.status === 'reservation_pending');
+  }, [offers]);
+
   const filteredOffers = useMemo(() => {
     const now = new Date();
     const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -130,7 +140,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
   );
 
   return (
-    <div className="space-y-16 animate-in fade-in duration-700">
+    <div className="space-y-16 animate-in fade-in duration-700 pb-20">
       
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-6 border-b border-slate-200 pb-8">
@@ -157,6 +167,47 @@ export const Dashboard: React.FC<DashboardProps> = ({
           </div>
         )}
       </div>
+
+      {/* PENDING APPROVALS SECTION (Admin Only) */}
+      {role === 'industry_admin' && pendingReservations.length > 0 && (
+        <div className="bg-purple-50 border border-purple-100 rounded-sm p-6 shadow-sm animate-in slide-in-from-top-4">
+           <div className="flex items-center gap-2 mb-4">
+              <AlertCircle className="w-5 h-5 text-purple-600" />
+              <h3 className="font-bold text-purple-900 uppercase tracking-widest text-sm">Pending Approval Requests ({pendingReservations.length})</h3>
+           </div>
+           
+           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+              {pendingReservations.map(item => (
+                 <div key={item.offer.id} className="bg-white border border-purple-100 p-4 shadow-sm flex flex-col justify-between rounded-sm">
+                    <div className="mb-4">
+                       <div className="flex justify-between items-start mb-2">
+                          <span className="text-[10px] font-bold bg-purple-100 text-purple-700 px-2 py-0.5 rounded-sm uppercase">Request</span>
+                          <span className="text-xs text-slate-400 font-mono">{formatDate(item.offer.createdAt)}</span>
+                       </div>
+                       <h4 className="font-bold text-[#121212]">{item.offer.clientName}</h4>
+                       <p className="text-xs text-slate-500 mt-1">{item.seller?.name} • {item.stone.typology.name} ({item.stone.lotId})</p>
+                       <p className="text-lg font-serif mt-2">{item.offer.quantityOffered} {item.stone.quantity.unit}</p>
+                    </div>
+                    
+                    <div className="flex gap-2 mt-auto border-t border-slate-50 pt-3">
+                       <button 
+                         onClick={() => onRejectReservation?.(item.offer)}
+                         className="flex-1 py-2 text-xs font-bold text-slate-500 hover:text-rose-600 hover:bg-rose-50 border border-slate-200 transition-colors uppercase tracking-wider flex items-center justify-center"
+                       >
+                          <XCircle className="w-3 h-3 mr-1" /> Reject
+                       </button>
+                       <button 
+                         onClick={() => onApproveReservation?.(item.offer)}
+                         className="flex-1 py-2 text-xs font-bold text-white bg-purple-600 hover:bg-purple-700 shadow-md transition-colors uppercase tracking-wider flex items-center justify-center"
+                       >
+                          <Check className="w-3 h-3 mr-1" /> Approve
+                       </button>
+                    </div>
+                 </div>
+              ))}
+           </div>
+        </div>
+      )}
 
       {/* KPI Cards - Editorial Style */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -218,8 +269,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
              <BarChart3 className="w-48 h-48 text-white rotate-12" />
            </div>
            <div>
-             <p className="text-[10px] font-bold text-[#C5A059] uppercase tracking-[0.3em] mb-6 flex items-center gap-2">
-               <span className="w-2 h-2 bg-[#C5A059] rounded-full animate-pulse" />
+             <p className="text-[10px] font-bold text-[#C2410C] uppercase tracking-[0.3em] mb-6 flex items-center gap-2">
+               <span className="w-2 h-2 bg-[#C2410C] rounded-full animate-pulse" />
                {kpi.labelProfit}
              </p>
              <h3 className="text-5xl font-serif text-white">
@@ -285,22 +336,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                       className="hover:bg-slate-50 cursor-pointer transition-colors group"
                     >
                       <td className="px-8 py-6 pl-10">
-                        {isSold ? (
-                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-sm text-[10px] font-bold bg-emerald-50 text-emerald-900 uppercase tracking-wider border border-emerald-100">
-                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-600" />
-                            {t('dash.status.sold')}
-                          </span>
-                        ) : isExpired ? (
-                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-sm text-[10px] font-bold bg-slate-50 text-slate-400 uppercase tracking-wider border border-slate-200">
-                            <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
-                            {t('dash.status.expired')}
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-sm text-[10px] font-bold bg-blue-50 text-blue-900 uppercase tracking-wider border border-blue-100">
-                            <span className="w-1.5 h-1.5 rounded-full bg-blue-600 animate-pulse" />
-                            {t('dash.status.active')}
-                          </span>
-                        )}
+                        <StatusBadge status={offer.status} />
                       </td>
 
                       <td className="px-8 py-6">
@@ -325,7 +361,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                <button onClick={() => onCancelLink?.(offer)} className="text-slate-300 hover:text-rose-500 transition-colors" title="Cancel Link"><Trash2 className="w-5 h-5" /></button>
                              </>
                            )}
-                           <button onClick={() => onViewClientPage?.(offer.clientViewToken)} className="text-slate-300 hover:text-[#C5A059] transition-colors" title="View Page">
+                           <button onClick={() => onViewClientPage?.(offer.clientViewToken)} className="text-slate-300 hover:text-[#C2410C] transition-colors" title="View Page">
                              <ExternalLink className="w-5 h-5" />
                            </button>
                          </div>

@@ -75,11 +75,11 @@ export const StoneCard: React.FC<StoneCardProps> = ({
       <div className="p-6 flex-1 flex flex-col">
         {/* Typology Info */}
         <div className="mb-6">
-          <h3 className="font-serif font-medium text-slate-900 text-xl leading-snug group-hover:text-[#C5A059] transition-colors duration-300">
+          <h3 className="font-serif font-medium text-slate-900 text-xl leading-snug group-hover:text-[#C2410C] transition-colors duration-300">
             {stone.typology.name}
           </h3>
           <p className="text-xs text-slate-400 mt-2 uppercase tracking-wider font-medium flex items-center">
-            <span className="w-2 h-px bg-[#C5A059] mr-2"></span>
+            <span className="w-2 h-px bg-[#C2410C] mr-2"></span>
             {stone.typology.origin}
           </p>
         </div>
@@ -95,12 +95,12 @@ export const StoneCard: React.FC<StoneCardProps> = ({
           <div className="mb-6 space-y-3">
             <div className="h-1 w-full bg-slate-100 overflow-hidden flex">
               <div style={{ width: `${soldPct}%` }} className="bg-emerald-900" /> {/* Sold is Dark Green */}
-              <div style={{ width: `${reservedPct}%` }} className="bg-[#C5A059]" /> {/* Reserved is Gold */}
+              <div style={{ width: `${reservedPct}%` }} className="bg-[#C2410C]" /> {/* Reserved is Terracotta */}
               <div style={{ width: `${availPct}%` }} className="bg-slate-300" /> {/* Available is Stone Grey */}
             </div>
             <div className="flex justify-between text-[10px] font-bold uppercase tracking-wider text-slate-400">
               <span className={soldPct > 0 ? "text-emerald-800" : ""}>{t('card.sold')} {stone.quantity.sold}</span>
-              <span className={reservedPct > 0 ? "text-[#C5A059]" : ""}>{t('card.reserved')} {stone.quantity.reserved}</span>
+              <span className={reservedPct > 0 ? "text-[#C2410C]" : ""}>{t('card.reserved')} {stone.quantity.reserved}</span>
               <span className={availPct > 0 ? "text-slate-600" : ""}>{t('card.avail')} {stone.quantity.available}</span>
             </div>
           </div>
@@ -133,7 +133,7 @@ export const StoneCard: React.FC<StoneCardProps> = ({
                   disabled={!isAvailable}
                   className={`flex items-center justify-center px-4 py-2.5 text-xs font-bold uppercase tracking-wide transition-all
                     ${isAvailable 
-                      ? 'bg-[#121212] text-white hover:bg-[#C5A059] hover:shadow-lg' 
+                      ? 'bg-[#121212] text-white hover:bg-[#C2410C] hover:shadow-lg' 
                       : 'bg-slate-100 text-slate-300 cursor-not-allowed'}`}
                 >
                   <User className="w-3 h-3 mr-2" />
@@ -169,7 +169,7 @@ export const StoneCard: React.FC<StoneCardProps> = ({
                     
                     <button 
                       onClick={(e) => { e.stopPropagation(); onCreateOffer?.(delegation); }}
-                      className="h-10 flex-1 flex items-center justify-center bg-[#121212] hover:bg-[#C5A059] text-white text-xs font-bold uppercase tracking-wide transition-all shadow-md"
+                      className="h-10 flex-1 flex items-center justify-center bg-[#121212] hover:bg-[#C2410C] text-white text-xs font-bold uppercase tracking-wide transition-all shadow-md"
                     >
                       <LinkIcon className="w-3 h-3 mr-2" />
                       {t('card.create_offer')}

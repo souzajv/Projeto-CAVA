@@ -1,11 +1,11 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import { OfferLink, StoneItem, Seller, UserRole, StoneTypology } from '../types';
-import { Ruler, ArrowRight, ShieldCheck, Maximize2, X, ChevronRight, ChevronLeft, Factory, Grid, ArrowUpRight, BookOpen } from 'lucide-react';
+import { Ruler, ShieldCheck, Maximize2, X, ChevronRight, ChevronLeft, Grid } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ImageWithLoader } from './ImageWithLoader';
+import { Lock } from 'lucide-react';
 
 interface ClientViewProps {
   offer: OfferLink;
@@ -28,7 +28,6 @@ export const ClientView: React.FC<ClientViewProps> = ({
   const startTimeRef = useRef<number>(Date.now());
   
   // --- CAROUSEL STATE ---
-  // Combine main image with additional images
   const images = [stone.imageUrl, ...(stone.additionalImages || [])];
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
@@ -55,8 +54,10 @@ export const ClientView: React.FC<ClientViewProps> = ({
     setCurrentImageIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
   };
 
+  const isReserved = offer.status === 'reserved';
+
   return (
-    <div className="min-h-screen bg-[#FAFAFA] font-sans text-[#121212] selection:bg-[#C5A059] selection:text-white relative">
+    <div className="min-h-screen bg-[#FAFAFA] font-sans text-[#121212] selection:bg-[#C2410C] selection:text-white relative">
       
       {/* --- LIGHTBOX MODAL --- */}
       <AnimatePresence>
@@ -81,7 +82,7 @@ export const ClientView: React.FC<ClientViewProps> = ({
                 initial={{ scale: 0.9 }}
                 animate={{ scale: 1 }}
                 className="max-h-full max-w-full object-contain shadow-2xl rounded-sm"
-                onClick={(e) => e.stopPropagation()} // Prevent close on image click
+                onClick={(e) => e.stopPropagation()} 
              />
 
              {/* Lightbox Navigation */}
@@ -119,7 +120,7 @@ export const ClientView: React.FC<ClientViewProps> = ({
               <div className="h-24 px-8 border-b border-white/10 flex items-center justify-between shrink-0">
                  <div>
                     <h2 className="text-2xl font-serif font-bold tracking-tight">{t('client.industry_name')}</h2>
-                    <p className="text-[#C5A059] text-[10px] font-bold uppercase tracking-[0.3em] mt-1">{t('client.catalog_title')}</p>
+                    <p className="text-[#C2410C] text-[10px] font-bold uppercase tracking-[0.3em] mt-1">{t('client.catalog_title')}</p>
                  </div>
                  <button 
                    onClick={() => setIsCatalogOpen(false)}
@@ -146,7 +147,7 @@ export const ClientView: React.FC<ClientViewProps> = ({
                                 {item.origin}
                              </div>
                           </div>
-                          <h3 className="text-xl font-serif text-white mb-2 group-hover:text-[#C5A059] transition-colors">{item.name}</h3>
+                          <h3 className="text-xl font-serif text-white mb-2 group-hover:text-[#C2410C] transition-colors">{item.name}</h3>
                           <p className="text-sm text-slate-400 font-light leading-relaxed line-clamp-2">{item.description}</p>
                           <div className="mt-4 flex items-center text-xs font-bold uppercase tracking-widest text-slate-500">
                              <Ruler className="w-3 h-3 mr-2" /> {item.hardness}
@@ -207,7 +208,7 @@ export const ClientView: React.FC<ClientViewProps> = ({
               </div>
               
               <div className="flex items-center space-x-4">
-                 <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#C5A059] border border-[#C5A059] px-3 py-1 hidden lg:block">
+                 <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#C2410C] border border-[#C2410C] px-3 py-1 hidden lg:block">
                     {t('client.nav.secure')}
                  </div>
                  <LanguageSwitcher />
@@ -263,39 +264,41 @@ export const ClientView: React.FC<ClientViewProps> = ({
                   </div>
                   
                   {/* Price Block */}
-                  <div className="p-10 bg-white border border-slate-100 shadow-[0_30px_60px_-15px_rgba(0,0,0,0.05)] relative overflow-hidden group">
-                     {/* Gold Accent Line */}
-                     <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#C5A059] to-transparent" />
-                     
-                     <div className="flex justify-between items-end mb-8">
-                        <div>
-                           <span className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">{t('client.price_unit')}</span>
-                           <span className="text-5xl font-serif text-[#121212]">{formatCurrency(offer.finalPrice)}</span>
-                        </div>
-                        <div className="text-right">
-                           <span className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">{t('client.qty_offered')}</span>
-                           <span className="text-xl font-medium text-[#121212]">{offer.quantityOffered} {t(`unit.${stone.quantity.unit}`)}</span>
-                        </div>
-                     </div>
-                     
-                     <motion.button 
-                       whileHover={{ scale: 1.01 }}
-                       whileTap={{ scale: 0.99 }}
-                       className="w-full bg-[#121212] hover:bg-[#C5A059] text-white text-lg font-bold uppercase tracking-widest py-6 px-8 transition-all duration-300 flex items-center justify-between group"
-                     >
-                       <span>{t('client.btn.reserve')}</span>
-                       <ArrowRight className="w-6 h-6 group-hover:translate-x-2 transition-transform" />
-                     </motion.button>
-                     
-                     <div className="text-center mt-6 flex items-center justify-center space-x-2">
-                        <ShieldCheck className="w-4 h-4 text-slate-300" />
-                        <p className="text-[10px] text-slate-400 font-medium uppercase tracking-wider">
-                          {t('client.validity')} <span className="text-[#121212]">{offer.clientName}</span>
-                        </p>
-                     </div>
-                  </div>
-
-                  {/* Industry Origin Section - NEW FEATURE (Bottom redundancy removed, now in header) */}
+                  {isReserved ? (
+                    <div className="p-10 bg-[#C2410C]/10 border border-[#C2410C]/20 shadow-xl relative overflow-hidden group">
+                       <div className="absolute top-0 left-0 w-full h-1 bg-[#C2410C]" />
+                       <div className="text-center py-8">
+                          <Lock className="w-12 h-12 text-[#C2410C] mx-auto mb-4" />
+                          <h3 className="text-2xl font-serif text-[#121212] mb-2">Reserved for {offer.clientName}</h3>
+                          <p className="text-sm text-slate-500 mb-6">This material is currently held exclusively for you.</p>
+                          <div className="text-4xl font-serif text-[#C2410C]">{formatCurrency(offer.finalPrice * offer.quantityOffered)}</div>
+                       </div>
+                    </div>
+                  ) : (
+                    <div className="p-10 bg-white border border-slate-100 shadow-[0_30px_60px_-15px_rgba(0,0,0,0.05)] relative overflow-hidden group">
+                       <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#C2410C] to-transparent" />
+                       
+                       <div className="flex justify-between items-end mb-8">
+                          <div>
+                             <span className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">{t('client.price_unit')}</span>
+                             <span className="text-5xl font-serif text-[#121212]">{formatCurrency(offer.finalPrice)}</span>
+                          </div>
+                          <div className="text-right">
+                             <span className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">{t('client.qty_offered')}</span>
+                             <span className="text-xl font-medium text-[#121212]">{offer.quantityOffered} {t(`unit.${stone.quantity.unit}`)}</span>
+                          </div>
+                       </div>
+                       
+                       {/* REMOVED RESERVE BUTTON HERE */}
+                       
+                       <div className="text-center mt-6 flex items-center justify-center space-x-2">
+                          <ShieldCheck className="w-4 h-4 text-slate-300" />
+                          <p className="text-[10px] text-slate-400 font-medium uppercase tracking-wider">
+                            {t('client.validity')} <span className="text-[#121212]">{offer.clientName}</span>
+                          </p>
+                       </div>
+                    </div>
+                  )}
                   
                </motion.div>
             </div>
@@ -308,7 +311,7 @@ export const ClientView: React.FC<ClientViewProps> = ({
                  transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
                  className="relative shadow-2xl group"
                >
-                 {/* Main Image Container - Adjusted to be more Landscape on Desktop */}
+                 {/* Main Image Container */}
                  <div className="aspect-square md:aspect-[4/3] bg-slate-200 relative overflow-hidden cursor-zoom-in" onClick={() => setIsLightboxOpen(true)}>
                     <AnimatePresence mode="wait">
                        <motion.img 
@@ -351,7 +354,7 @@ export const ClientView: React.FC<ClientViewProps> = ({
                             key={idx}
                             onClick={() => setCurrentImageIndex(idx)}
                             className={`relative w-20 h-20 shrink-0 overflow-hidden transition-all duration-300 ${
-                               currentImageIndex === idx ? 'ring-2 ring-[#C5A059] opacity-100' : 'opacity-50 hover:opacity-100'
+                               currentImageIndex === idx ? 'ring-2 ring-[#C2410C] opacity-100' : 'opacity-50 hover:opacity-100'
                             }`}
                           >
                              <img src={img} className="w-full h-full object-cover" />
@@ -367,7 +370,7 @@ export const ClientView: React.FC<ClientViewProps> = ({
                      <span>Texture Detail</span>
                   </div>
                   <div className="aspect-square md:aspect-[2/1] bg-[#121212] p-8 flex flex-col justify-between text-white">
-                     <Ruler className="w-8 h-8 text-[#C5A059]" />
+                     <Ruler className="w-8 h-8 text-[#C2410C]" />
                      <div>
                         <p className="text-[10px] uppercase tracking-[0.3em] opacity-60 mb-2">{t('modal.type.hardness')}</p>
                         <p className="text-3xl font-serif">{stone.typology.hardness}</p>

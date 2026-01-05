@@ -6,6 +6,7 @@ import {
 } from './types';
 import { MOCK_STONES, MOCK_SELLERS, MOCK_DELEGATIONS, MOCK_OFFERS, MOCK_TYPOLOGIES, MOCK_CLIENTS } from './constants';
 import { LanguageProvider, useLanguage } from './contexts/LanguageContext';
+import { InventoryService } from './domain/services/InventoryService';
 
 // Components
 import { Sidebar, PageView } from './components/Sidebar';
@@ -34,44 +35,6 @@ import { LotHistoryView } from './components/LotHistoryView';
 import { 
   Bell, Plus, LayoutGrid, List
 } from 'lucide-react';
-import { AnimatePresence, motion } from 'framer-motion';
-
-// RECONCILE: A função mestra que garante a integridade de dados Início -> Fim
-const reconcileInventory = (
-  baseStones: StoneItem[], 
-  currentDelegations: SalesDelegation[], 
-  currentOffers: OfferLink[]
-): StoneItem[] => {
-  return (baseStones || []).map(stone => {
-    // 1. Quantidade vendida (Contratos fechados)
-    const soldQuantity = (currentOffers || [])
-      .filter(o => o.stoneId === stone.id && o.status === 'sold')
-      .reduce((sum, o) => sum + (o.quantityOffered || 0), 0);
-
-    // 2. Quantidade Delegada (Pool de vendedores)
-    const delegatedQuantity = (currentDelegations || [])
-      .filter(d => d.stoneId === stone.id)
-      .reduce((sum, d) => sum + (d.delegatedQuantity || 0), 0);
-
-    // 3. Quantidade em Ofertas HQ (Venda direta não delegada e ativa)
-    const directActiveQuantity = (currentOffers || [])
-      .filter(o => o.stoneId === stone.id && o.status === 'active' && !o.delegationId)
-      .reduce((sum, o) => sum + (o.quantityOffered || 0), 0);
-
-    const reservedQuantity = delegatedQuantity + directActiveQuantity;
-    const availableQuantity = Math.max(0, stone.quantity.total - reservedQuantity - soldQuantity);
-
-    return {
-      ...stone,
-      quantity: {
-        ...stone.quantity,
-        available: availableQuantity,
-        reserved: reservedQuantity,
-        sold: soldQuantity
-      }
-    };
-  });
-};
 
 const AppContent = () => {
   const { t, formatCurrency } = useLanguage();
@@ -83,9 +46,9 @@ const AppContent = () => {
   const [rawStones, setRawStones] = useState<StoneItem[]>(MOCK_STONES);
   const [typologies, setTypologies] = useState<StoneTypology[]>(MOCK_TYPOLOGIES);
 
-  // Inventário Calculado em Tempo Real
+  // Inventário Calculado pelo Serviço de Domínio (Clean Architecture)
   const stones = useMemo(() => {
-    return reconcileInventory(rawStones, delegations, offers);
+    return InventoryService.reconcile(rawStones, delegations, offers);
   }, [rawStones, delegations, offers]);
 
   const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -94,7 +57,6 @@ const AppContent = () => {
   const [currentView, setCurrentView] = useState<AppState['currentView']>('dashboard');
   const [activePage, setActivePage] = useState<PageView>('dashboard');
   
-  // Toggle para visão da Indústria (Lotes vs Catálogo)
   const [inventoryMode, setInventoryMode] = useState<'lots' | 'catalog'>('lots');
   const [invSearch, setInvSearch] = useState('');
   const [invTypologyFilter, setInvTypologyFilter] = useState('all');
@@ -107,7 +69,7 @@ const AppContent = () => {
 
   const [showNotifications, setShowNotifications] = useState(false);
 
-  // --- 1. FILTRAGEM CENTRAL (Quem pode ver o quê?) ---
+  // --- 1. FILTRAGEM CENTRAL ---
   const visibleOffers = useMemo(() => {
     const list = offers || [];
     if (currentUserRole === 'industry_admin') {
@@ -118,7 +80,6 @@ const AppContent = () => {
         return del && del.sellerId === currentSellerId;
       });
     } else {
-      // Vendedor vê apenas suas ofertas
       return list.filter(o => {
         if (!o.delegationId) return false;
         const del = delegations.find(d => d.id === o.delegationId);
@@ -127,23 +88,22 @@ const AppContent = () => {
     }
   }, [offers, currentUserRole, currentSellerId, delegations]);
 
-  // --- 2. ENRIQUECIMENTO (Adiciona dados de Stone, Seller e Delegation aos links) ---
+  // --- 2. ENRIQUECIMENTO ---
   const enrichedOffers = useMemo(() => {
     return visibleOffers.map(o => ({
       offer: o,
       stone: stones.find(s => s.id === o.stoneId)!,
       seller: o.delegationId ? sellers.find(s => s.id === delegations.find(d => d.id === o.delegationId)?.sellerId) : undefined,
       delegation: delegations.find(d => d.id === o.delegationId)
-    })).filter(item => item.stone); // Remove inconsistências
+    })).filter(item => item.stone);
   }, [visibleOffers, stones, sellers, delegations]);
 
-  // --- 3. SEGREGAÇÃO (A Chave para corrigir o bug!) ---
-  // Pipeline: Apenas o que está ATIVO
+  // --- 3. SEGREGAÇÃO ---
+  // Pipeline: Active OR Reservation Pending OR Reserved (Before finalized as Sold)
   const pipelineData = useMemo(() => 
-    enrichedOffers.filter(item => item.offer.status === 'active'), 
+    enrichedOffers.filter(item => ['active', 'reservation_pending', 'reserved'].includes(item.offer.status)), 
   [enrichedOffers]);
 
-  // Sales e Financials: Apenas o que foi VENDIDO
   const salesData = useMemo(() => 
     enrichedOffers.filter(item => item.offer.status === 'sold'), 
   [enrichedOffers]);
@@ -152,7 +112,7 @@ const AppContent = () => {
     ? { name: 'HQ Admin', roleLabel: 'Global Admin' }
     : { name: sellers.find(s => s.id === currentSellerId)?.name || 'Seller', roleLabel: 'Partner' };
 
-  // 4. KPI Calculation (Usa as listas já segregadas para precisão)
+  // 4. KPI Calculation
   const kpi = useMemo(() => {
      const pipelineRevenue = pipelineData.reduce((sum, item) => sum + (item.offer.finalPrice * item.offer.quantityOffered), 0);
      const soldRevenue = salesData.reduce((sum, item) => sum + (item.offer.finalPrice * item.offer.quantityOffered), 0);
@@ -221,10 +181,6 @@ const AppContent = () => {
 
   const handleFinalizeSale = (offer: OfferLink) => {
     setOffers(prev => prev.map(o => o.id === offer.id ? { ...o, status: 'sold' as const } : o));
-    // Se foi venda delegada, abate do saldo do vendedor
-    if (offer.delegationId) {
-        setDelegations(prev => prev.map(d => d.id === offer.delegationId ? { ...d, delegatedQuantity: Math.max(0, d.delegatedQuantity - offer.quantityOffered) } : d));
-    }
     addNotification(t('toast.sale_confirmed', { client: offer.clientName, value: formatCurrency(offer.finalPrice * offer.quantityOffered) }), 'success');
     setActiveModal({ type: null });
   };
@@ -235,8 +191,27 @@ const AppContent = () => {
     setActiveModal({ type: null });
   };
 
+  // --- RESERVATION WORKFLOW HANDLERS ---
+
+  const handleRequestReservation = (offer: OfferLink) => {
+    setOffers(prev => prev.map(o => o.id === offer.id ? { ...o, status: 'reservation_pending' } : o));
+    addNotification(`Reservation requested for ${offer.clientName}. Pending Industry approval.`, 'info');
+  };
+
+  const handleApproveReservation = (offer: OfferLink) => {
+    setOffers(prev => prev.map(o => o.id === offer.id ? { ...o, status: 'reserved' } : o));
+    addNotification(`Reservation approved for ${offer.clientName}. Stock is now Hard Locked.`, 'success');
+  };
+
+  const handleRejectReservation = (offer: OfferLink) => {
+    setOffers(prev => prev.map(o => o.id === offer.id ? { ...o, status: 'active' } : o));
+    addNotification(`Reservation rejected for ${offer.clientName}. Link returned to Active.`, 'alert');
+  };
+
+  // -------------------------------------
+
   const handleRevokeDelegation = (delegationId: string) => {
-      const activeLinkedOffers = offers.filter(o => o.delegationId === delegationId && o.status === 'active');
+      const activeLinkedOffers = offers.filter(o => o.delegationId === delegationId && ['active', 'reserved', 'reservation_pending'].includes(o.status));
       if (activeLinkedOffers.length > 0) {
           addNotification(t('msg.revoke_block_active'), 'alert');
           return;
@@ -247,8 +222,14 @@ const AppContent = () => {
   };
 
   const handleSaveClient = (client: Client) => {
-    setClients(prev => prev.find(c => c.id === client.id) ? prev.map(c => c.id === client.id ? client : c) : [...prev, client]);
-    setActiveModal({ type: null });
+    setClients(prev => {
+        const exists = prev.find(c => c.id === client.id);
+        if (exists) return prev.map(c => c.id === client.id ? client : c);
+        return [client, ...prev];
+    });
+    if (activeModal.type === 'client_form') {
+        setActiveModal({ type: null });
+    }
     addNotification('Registro CRM atualizado.', 'success');
   };
 
@@ -258,9 +239,9 @@ const AppContent = () => {
     const filteredStones = stones.filter(s => {
        const matchesSearch = !invSearch || s.typology.name.toLowerCase().includes(invSearch.toLowerCase()) || s.lotId.toLowerCase().includes(invSearch.toLowerCase());
        const matchesType = invTypologyFilter === 'all' || s.typology.id === invTypologyFilter;
-       // Lógica de Status:
+       
        const isFullySold = s.quantity.available === 0 && s.quantity.reserved === 0 && s.quantity.sold >= s.quantity.total;
-       if (isFullySold) return false; // Não mostra no inventário ativo (vai para Lot History)
+       if (isFullySold) return false; 
 
        const matchesStatus = invStatusFilter === 'all' || 
           (invStatusFilter === 'available' && s.quantity.available > 0) || 
@@ -278,7 +259,6 @@ const AppContent = () => {
             </div>
             
             <div className="flex items-center gap-4">
-                {/* View Switcher (Industry Only) */}
                 {currentUserRole === 'industry_admin' && (
                    <div className="bg-slate-100 p-1 rounded-sm flex">
                       <button 
@@ -325,7 +305,6 @@ const AppContent = () => {
     );
   };
 
-  // --- CLIENT VIEW (PUBLIC PAGE) ---
   if (typeof currentView === 'object' && currentView.type === 'client_view') {
      const token = currentView.token;
      const offer = (offers || []).find(o => o && o.clientViewToken === token);
@@ -351,7 +330,6 @@ const AppContent = () => {
      );
   }
 
-  // --- MAIN APP ---
   return (
     <div className="flex min-h-screen bg-[#FDFDFD] font-sans text-slate-900">
        <Sidebar 
@@ -363,7 +341,6 @@ const AppContent = () => {
        />
        
        <main className="flex-1 flex flex-col h-screen overflow-hidden relative">
-          {/* Top Bar */}
           <div className="absolute top-6 right-8 z-50 flex items-center space-x-6">
              <div className="relative">
                 <button onClick={() => setShowNotifications(!showNotifications)} className="relative p-2 text-slate-400 hover:text-[#121212] transition-colors bg-white/80 backdrop-blur-sm rounded-full hover:bg-white shadow-sm border border-slate-100">
@@ -391,7 +368,19 @@ const AppContent = () => {
                 {activePage === 'dashboard' && (
                    <div className="pt-8 lg:pt-12">
                        <Dashboard 
-                          role={currentUserRole} kpi={kpi} offers={enrichedOffers} sellers={sellers} selectedSellerId={currentSellerId} onFilterSeller={setCurrentSellerId} onFinalizeSale={handleFinalizeSale} onCancelLink={handleCancelLink} onNavigate={setActivePage} onSelectTransaction={(tx) => setActiveModal({ type: 'transaction', data: tx })} onViewClientPage={(token) => setCurrentView({ type: 'client_view', token })}
+                          role={currentUserRole} 
+                          kpi={kpi} 
+                          offers={enrichedOffers} 
+                          sellers={sellers} 
+                          selectedSellerId={currentSellerId} 
+                          onFilterSeller={setCurrentSellerId} 
+                          onFinalizeSale={handleFinalizeSale} 
+                          onCancelLink={handleCancelLink} 
+                          onNavigate={setActivePage} 
+                          onSelectTransaction={(tx) => setActiveModal({ type: 'transaction', data: tx })} 
+                          onViewClientPage={(token) => setCurrentView({ type: 'client_view', token })}
+                          onApproveReservation={handleApproveReservation}
+                          onRejectReservation={handleRejectReservation}
                        />
                    </div>
                 )}
@@ -422,8 +411,7 @@ const AppContent = () => {
                 {activePage === 'thermometer' && (
                   <div className="pt-8 lg:pt-12">
                       <InterestThermometerView 
-                         // CORREÇÃO: Termômetro usa explicitamente pipelineData (active)
-                         offers={offers.filter(o => o.status === 'active')} 
+                         offers={offers.filter(o => o.status === 'active' || o.status === 'reservation_pending')} 
                          stones={stones} 
                          sellers={sellers} 
                          delegations={delegations} 
@@ -447,44 +435,36 @@ const AppContent = () => {
                   </div>
                 )}
                 
-                {/* --- ANALYTICS ROUTES: AGORA USANDO DADOS FILTRADOS --- */}
-                
-                {/* 1. PIPELINE (Links Ativos) */}
                 {activePage === 'pipeline' && (
                    <div className="pt-8 lg:pt-12">
                       <AnalyticsDetailView 
                          title={t('nav.pipeline')} 
                          mode="pipeline"
                          role={currentUserRole} 
-                         // AQUI ESTÁ A MUDANÇA: Passando apenas pipelineData (active)
                          data={pipelineData} 
                          onTransactionClick={(tx) => setActiveModal({ type: 'transaction', data: tx })}
                       />
                    </div>
                 )}
                 
-                {/* 2. SALES (Vendas Realizadas) */}
                 {activePage === 'sales' && (
                    <div className="pt-8 lg:pt-12">
                       <AnalyticsDetailView 
                          title={t('nav.sales')} 
                          mode="sales"
                          role={currentUserRole} 
-                         // AQUI ESTÁ A MUDANÇA: Passando apenas salesData (sold)
                          data={salesData} 
                          onTransactionClick={(tx) => setActiveModal({ type: 'transaction', data: tx })}
                       />
                    </div>
                 )}
                 
-                {/* 3. FINANCIALS (Lucro Líquido / Comissões) */}
                 {activePage === 'financials' && (
                    <div className="pt-8 lg:pt-12">
                       <AnalyticsDetailView 
                          title={t(currentUserRole === 'industry_admin' ? 'nav.financials_admin' : 'nav.financials_seller')} 
                          mode="profit"
                          role={currentUserRole} 
-                         // AQUI ESTÁ A MUDANÇA: Passando apenas salesData (sold)
                          data={salesData} 
                          onTransactionClick={(tx) => setActiveModal({ type: 'transaction', data: tx })}
                       />
@@ -496,7 +476,23 @@ const AppContent = () => {
           <ToastContainer notifications={notifications.filter(n => !n.read && n.isToast)} onDismiss={(id) => setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n))} />
 
           {activeModal.type === 'client_form' && <ClientFormModal currentUserId={currentUserRole === 'industry_admin' ? 'admin' : currentSellerId} currentUserRole={currentUserRole} onClose={() => setActiveModal({ type: null })} onSave={handleSaveClient} />}
-          {activeModal.type === 'client_details' && <ClientDetailsModal client={activeModal.data} offers={offers} stones={stones} sellers={sellers} delegations={delegations} role={currentUserRole} onClose={() => setActiveModal({ type: null })} onSave={handleSaveClient} onViewClientPage={(t) => setCurrentView({ type: 'client_view', token: t })} />}
+          {
+            activeModal.type === 'client_details' && 
+            <ClientDetailsModal 
+                client={activeModal.data} 
+                offers={offers} 
+                stones={stones} 
+                sellers={sellers} 
+                delegations={delegations} 
+                role={currentUserRole} 
+                onClose={() => setActiveModal({ type: null })} 
+                onSave={handleSaveClient} 
+                onViewClientPage={(t) => setCurrentView({ type: 'client_view', token: t })} 
+                onRequestReservation={handleRequestReservation}
+                onApproveReservation={handleApproveReservation}
+                onFinalizeSale={handleFinalizeSale}
+            />
+          }
           {activeModal.type === 'delegate' && <DelegateModal stone={activeModal.data} sellers={sellers} onClose={() => setActiveModal({ type: null })} onConfirm={(selId, qty, p) => handleDelegate(activeModal.data.id, selId, qty, p)} />}
           {activeModal.type === 'direct' && <DirectLinkModal stone={activeModal.data} clients={clients} onClose={() => setActiveModal({ type: null })} onGenerate={(p, q, cId, cN) => {
              const token = Math.random().toString(36).substring(7);
@@ -508,9 +504,37 @@ const AppContent = () => {
                 delegation={activeModal.data.delegation} stone={activeModal.data.stone} clients={clients} maxQuantity={stones.find(s => s.id === activeModal.data.stone.id)?.quantity.available || 0} onClose={() => setActiveModal({ type: null })} onSuccess={handleCreateOffer}
              />
           )}
-          {activeModal.type === 'seller_inv' && <SellerInventoryModal delegation={activeModal.data.delegation} stone={activeModal.data.stone} offers={offers.filter(o => o.delegationId === activeModal.data.delegation.id)} onClose={() => setActiveModal({ type: null })} onCreateOffer={(d) => setActiveModal({ type: 'offer', data: { delegation: d, stone: activeModal.data.stone } })} onViewTransaction={(o) => setActiveModal({ type: 'transaction', data: { offer: o, stone: activeModal.data.stone, delegation: activeModal.data.delegation } })} onViewClientPage={(token) => setCurrentView({ type: 'client_view', token })} />}
-          {activeModal.type === 'industry_inv' && <IndustryInventoryModal stone={activeModal.data} delegations={delegations.filter(d => d.stoneId === activeModal.data.id)} offers={offers.filter(o => o.stoneId === activeModal.data.id)} sellers={sellers} onClose={() => setActiveModal({ type: null })} onViewTransaction={(o) => setActiveModal({ type: 'transaction', data: { offer: o, stone: activeModal.data } })} onUpdateStone={(updated) => setRawStones(prev => prev.map(s => s.id === updated.id ? updated : s))} onDelegate={() => setActiveModal({ type: 'delegate', data: activeModal.data })} onDirectLink={() => setActiveModal({ type: 'direct', data: activeModal.data })} onRevokeDelegation={handleRevokeDelegation} onViewClientPage={(token) => setCurrentView({ type: 'client_view', token })} />}
-          {activeModal.type === 'transaction' && <TransactionDetailsModal transaction={activeModal.data} role={currentUserRole} onClose={() => setActiveModal({ type: null })} onFinalizeSale={handleFinalizeSale} onCancelLink={handleCancelLink} onViewClientPage={(token) => setCurrentView({ type: 'client_view', token })} />}
+          {activeModal.type === 'seller_inv' && (
+            <SellerInventoryModal 
+              delegation={activeModal.data.delegation} 
+              stone={activeModal.data.stone} 
+              offers={offers.filter(o => o.delegationId === activeModal.data.delegation.id)} 
+              onClose={() => setActiveModal({ type: null })} 
+              onCreateOffer={(d) => setActiveModal({ type: 'offer', data: { delegation: d, stone: activeModal.data.stone } })} 
+              onViewTransaction={(o) => setActiveModal({ type: 'transaction', data: { offer: o, stone: activeModal.data.stone, delegation: activeModal.data.delegation } })} 
+              onViewClientPage={(token) => setCurrentView({ type: 'client_view', token })}
+              onRequestReservation={handleRequestReservation} 
+              onFinalizeSale={handleFinalizeSale}
+            />
+          )}
+          {activeModal.type === 'industry_inv' && (
+            <IndustryInventoryModal 
+                stone={activeModal.data} 
+                delegations={delegations.filter(d => d.stoneId === activeModal.data.id)} 
+                offers={offers.filter(o => o.stoneId === activeModal.data.id)} 
+                sellers={sellers} 
+                onClose={() => setActiveModal({ type: null })} 
+                onViewTransaction={(o) => setActiveModal({ type: 'transaction', data: { offer: o, stone: activeModal.data } })} 
+                onUpdateStone={(updated) => setRawStones(prev => prev.map(s => s.id === updated.id ? updated : s))} 
+                onDelegate={() => setActiveModal({ type: 'delegate', data: activeModal.data })} 
+                onDirectLink={() => setActiveModal({ type: 'direct', data: activeModal.data })} 
+                onRevokeDelegation={handleRevokeDelegation} 
+                onViewClientPage={(token) => setCurrentView({ type: 'client_view', token })} 
+                onReserve={handleApproveReservation}
+                onFinalizeSale={handleFinalizeSale}
+            />
+          )}
+          {activeModal.type === 'transaction' && <TransactionDetailsModal transaction={activeModal.data} role={currentUserRole} onClose={() => setActiveModal({ type: null })} onFinalizeSale={handleFinalizeSale} onCancelLink={handleCancelLink} onViewClientPage={(token) => setCurrentView({ type: 'client_view', token })} onRequestReservation={handleRequestReservation} onApproveReservation={handleApproveReservation} />}
           {activeModal.type === 'typology' && <TypologyModal typology={activeModal.data} onClose={() => setActiveModal({ type: null })} onSave={(newType) => setTypologies(prev => activeModal.data ? prev.map(t => t.id === newType.id ? newType : t) : [...prev, newType])} />}
           {activeModal.type === 'batch' && <BatchModal typologies={typologies} onClose={() => setActiveModal({ type: null })} onSave={(newItem) => { setRawStones(prev => [newItem, ...prev]); addNotification(t('toast.batch_added', { id: newItem.lotId }), 'success'); }} />}
        </main>

@@ -36,19 +36,19 @@ const Toast: React.FC<{ notification: Notification; onDismiss: (id: string) => v
   };
 
   const progressColors = {
-    info: 'bg-[#C5A059]',
-    success: 'bg-[#C5A059]', // Gold on Black looks premium
+    info: 'bg-[#C2410C]',
+    success: 'bg-[#C2410C]', // Terracotta on Black looks premium
     alert: 'bg-rose-500'
   };
 
   const icons = {
-    info: <Bell className="w-5 h-5 text-[#C5A059]" />,
-    success: <CheckCircle2 className="w-5 h-5 text-[#C5A059]" />,
+    info: <Bell className="w-5 h-5 text-[#C2410C]" />,
+    success: <CheckCircle2 className="w-5 h-5 text-[#C2410C]" />,
     alert: <AlertTriangle className="w-5 h-5 text-rose-500" />
   };
 
   return (
-    <div className={`pointer-events-auto relative overflow-hidden flex items-start p-5 rounded-none md:rounded-sm border-l-4 ${notification.type === 'success' ? 'border-l-[#C5A059]' : 'border-l-transparent'} w-96 animate-in slide-in-from-right-10 fade-in duration-500 ${styles[notification.type]}`}>
+    <div className={`pointer-events-auto relative overflow-hidden flex items-start p-5 rounded-none md:rounded-sm border-l-4 ${notification.type === 'success' ? 'border-l-[#C2410C]' : 'border-l-transparent'} w-96 animate-in slide-in-from-right-10 fade-in duration-500 ${styles[notification.type]}`}>
       <div className="flex-shrink-0 pt-0.5">
         {icons[notification.type]}
       </div>

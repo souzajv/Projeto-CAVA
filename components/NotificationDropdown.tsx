@@ -24,7 +24,7 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
 
   const getIcon = (type: string) => {
     switch (type) {
-      case 'success': return <CheckCircle2 className="w-4 h-4 text-[#C5A059]" />;
+      case 'success': return <CheckCircle2 className="w-4 h-4 text-[#C2410C]" />;
       case 'alert': return <AlertTriangle className="w-4 h-4 text-rose-500" />;
       default: return <Info className="w-4 h-4 text-slate-400" />;
     }
@@ -42,7 +42,7 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
           {notifications.some(n => !n.read) && (
             <button 
               onClick={onMarkAllRead}
-              className="text-[10px] font-bold uppercase tracking-widest text-[#C5A059] hover:text-[#B08D4C] transition-colors"
+              className="text-[10px] font-bold uppercase tracking-widest text-[#C2410C] hover:text-orange-800 transition-colors"
             >
               {t('notif.mark_all')}
             </button>
@@ -54,7 +54,7 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
       </div>
 
       {/* List */}
-      <div className="max-h-[400px] overflow-y-auto">
+      <div className="max-h-[400px] overflow-y-auto dark-scroll">
         {sortedNotifications.length === 0 ? (
           <div className="py-16 px-6 text-center text-slate-400 flex flex-col items-center">
             <Bell className="w-10 h-10 mb-4 opacity-10" />
@@ -65,7 +65,7 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
             {sortedNotifications.map(n => (
               <div 
                 key={n.id} 
-                className={`p-5 hover:bg-slate-50 transition-colors flex gap-4 cursor-pointer group ${!n.read ? 'bg-[#C5A059]/5' : ''}`}
+                className={`p-5 hover:bg-slate-50 transition-colors flex gap-4 cursor-pointer group ${!n.read ? 'bg-[#C2410C]/5' : ''}`}
                 onClick={() => !n.read && onMarkRead(n.id)}
               >
                 <div className="mt-1 shrink-0">
@@ -82,7 +82,7 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
                 </div>
                 {!n.read && (
                   <div className="shrink-0 mt-2">
-                    <div className="w-2 h-2 rounded-full bg-[#C5A059] shadow-[0_0_10px_#C5A059]"></div>
+                    <div className="w-2 h-2 rounded-full bg-[#C2410C] shadow-[0_0_10px_#C2410C]"></div>
                   </div>
                 )}
               </div>

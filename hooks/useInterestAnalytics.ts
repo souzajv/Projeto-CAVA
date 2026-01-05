@@ -8,25 +8,25 @@ export const useInterestAnalytics = (offers: OfferLink[]) => {
       const views = offer.viewLog?.length || 0;
       const totalDurationMs = offer.viewLog?.reduce((acc, log) => acc + (log.durationMs || 0), 0) || 0;
       
-      // Get last view time
       const lastViewTime = offer.viewLog?.length > 0 
         ? new Date(offer.viewLog[offer.viewLog.length - 1].timestamp).getTime()
         : 0;
       
       const hoursSinceLastView = lastViewTime ? (Date.now() - lastViewTime) / (1000 * 60 * 60) : 9999;
 
-      // Scoring Algorithm
-      // Base: 10 points per view, 1 point per second spent
-      let score = (views * 10) + (totalDurationMs / 1000); 
+      // New Scoring Logic for 3 levels
+      // Base: 15 points per view, 1 point per second spent
+      let score = (views * 15) + (totalDurationMs / 1000); 
       
-      // Recency Multiplier: High impact for recent engagement
       if (hoursSinceLastView < 24) score *= 1.5;
       else if (hoursSinceLastView < 48) score *= 1.2;
 
-      let interestLevel: InterestLevel = 'ice';
-      if (score > 150) interestLevel = 'boiling';
-      else if (score > 80) interestLevel = 'hot';
-      else if (score > 30) interestLevel = 'neutral';
+      let interestLevel: InterestLevel = 'cold';
+      
+      // Hot: > 7 clicks OR > 2 mins (approx 120 points base)
+      if (score > 120) interestLevel = 'hot';
+      // Warm: > 3 clicks OR > 30s (approx 45 points base)
+      else if (score > 45) interestLevel = 'warm';
 
       return {
         offer,
@@ -41,10 +41,9 @@ export const useInterestAnalytics = (offers: OfferLink[]) => {
 
   const stats = useMemo(() => {
     return {
-      ice: analytics.filter(a => a.interestLevel === 'ice').length,
-      neutral: analytics.filter(a => a.interestLevel === 'neutral').length,
+      cold: analytics.filter(a => a.interestLevel === 'cold').length,
+      warm: analytics.filter(a => a.interestLevel === 'warm').length,
       hot: analytics.filter(a => a.interestLevel === 'hot').length,
-      boiling: analytics.filter(a => a.interestLevel === 'boiling').length,
     };
   }, [analytics]);
 

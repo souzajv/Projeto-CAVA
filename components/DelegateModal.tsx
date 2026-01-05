@@ -83,7 +83,7 @@ export const DelegateModal: React.FC<DelegateModalProps> = ({ stone, sellers, on
                   <select 
                     value={selectedSellerId}
                     onChange={(e) => setSelectedSellerId(e.target.value)}
-                    className="w-full pl-10 pr-10 py-3 bg-white border-b border-slate-200 text-sm font-medium text-[#121212] focus:border-[#121212] outline-none appearance-none rounded-none transition-colors"
+                    className="w-full pl-10 pr-10 py-3 bg-white border-b border-slate-200 text-sm font-medium text-[#121212] focus:border-[#C2410C] outline-none appearance-none rounded-none transition-colors"
                   >
                     {sellers.map(seller => (
                       <option key={seller.id} value={seller.id}>{seller.name}</option>
@@ -112,7 +112,7 @@ export const DelegateModal: React.FC<DelegateModalProps> = ({ stone, sellers, on
                     max={stone.quantity.available}
                     value={delegatedQty}
                     onChange={(e) => setDelegatedQty(Number(e.target.value))}
-                    className="w-full pl-10 py-3 bg-white border-b border-slate-200 text-lg font-serif text-[#121212] focus:border-[#121212] outline-none rounded-none transition-colors"
+                    className="w-full pl-10 py-3 bg-white border-b border-slate-200 text-lg font-serif text-[#121212] focus:border-[#C2410C] outline-none rounded-none transition-colors"
                   />
                   <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-xs font-bold uppercase tracking-widest text-slate-400">
                     {stone.quantity.unit}
@@ -148,7 +148,7 @@ export const DelegateModal: React.FC<DelegateModalProps> = ({ stone, sellers, on
                     min={stone.minPrice}
                     value={agreedPrice}
                     onChange={(e) => setAgreedPrice(Number(e.target.value))}
-                    className="w-full pl-9 py-3 bg-white border-b border-slate-200 text-lg font-serif text-[#121212] focus:border-[#121212] outline-none rounded-none transition-colors"
+                    className="w-full pl-9 py-3 bg-white border-b border-slate-200 text-lg font-serif text-[#121212] focus:border-[#C2410C] outline-none rounded-none transition-colors"
                   />
                 </div>
               </div>
@@ -166,7 +166,7 @@ export const DelegateModal: React.FC<DelegateModalProps> = ({ stone, sellers, on
             </button>
             <button 
               type="submit"
-              className="px-8 py-3 bg-[#121212] text-white text-xs font-bold uppercase tracking-widest hover:bg-[#C5A059] transition-all shadow-lg flex items-center"
+              className="px-8 py-3 bg-[#121212] text-white text-xs font-bold uppercase tracking-widest hover:bg-[#C2410C] transition-all shadow-lg flex items-center"
             >
               <Check className="w-4 h-4 mr-2" />
               {t('modal.delegate.confirm')}

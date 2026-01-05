@@ -7,6 +7,7 @@ export interface UseSellerOfferReturn {
   // State
   salePrice: number;
   quantity: number;
+  clientId: string;
   clientName: string;
   
   // Computed
@@ -19,6 +20,7 @@ export interface UseSellerOfferReturn {
   // Setters
   setSalePrice: (val: number) => void;
   setQuantity: (val: number) => void;
+  setClientId: (val: string) => void;
   setClientName: (val: string) => void;
 
   // Actions
@@ -34,6 +36,7 @@ export const useSellerOffer = (delegation: SalesDelegation, maxQuantity: number)
   // Initialize price with a default margin (e.g., 15% above floor)
   const [salePrice, setSalePrice] = useState<number>(delegation.agreedMinPrice * 1.15);
   const [quantity, setQuantity] = useState<number>(1);
+  const [clientId, setClientId] = useState<string>('');
   const [clientName, setClientName] = useState<string>('');
   
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
@@ -61,12 +64,16 @@ export const useSellerOffer = (delegation: SalesDelegation, maxQuantity: number)
       errs.quantity = `You only have ${maxQuantity} units remaining available.`;
     }
 
+    if (!clientId.trim()) {
+      errs.clientId = "Client ID is required";
+    }
+
     if (!clientName.trim()) {
       errs.clientName = "Client reference is required";
     }
 
     return errs;
-  }, [salePrice, quantity, clientName, delegation.agreedMinPrice, maxQuantity]);
+  }, [salePrice, quantity, clientId, clientName, delegation.agreedMinPrice, maxQuantity]);
 
   const isValid = Object.keys(errors).length === 0;
 
@@ -82,10 +89,12 @@ export const useSellerOffer = (delegation: SalesDelegation, maxQuantity: number)
     const token = Math.random().toString(36).substring(7);
     const mockUrl = `${PLATFORM_DOMAIN}/view/${token}`;
     
+    // Fixed: Added required clientId property to newOffer
     const newOffer: OfferLink = {
       id: `off-${Date.now()}`,
       delegationId: delegation.id,
       stoneId: delegation.stoneId,
+      clientId: clientId,
       clientName: clientName,
       finalPrice: salePrice,
       quantityOffered: quantity,
@@ -100,11 +109,12 @@ export const useSellerOffer = (delegation: SalesDelegation, maxQuantity: number)
     setIsSubmitting(false);
 
     return newOffer;
-  }, [isValid, delegation, clientName, salePrice, quantity]);
+  }, [isValid, delegation, clientId, clientName, salePrice, quantity]);
 
   const reset = useCallback(() => {
     setSalePrice(delegation.agreedMinPrice * 1.15);
     setQuantity(1);
+    setClientId('');
     setClientName('');
     setGeneratedUrl(null);
     setIsSubmitting(false);
@@ -113,6 +123,7 @@ export const useSellerOffer = (delegation: SalesDelegation, maxQuantity: number)
   return {
     salePrice,
     quantity,
+    clientId,
     clientName,
     profit,
     errors,
@@ -121,6 +132,7 @@ export const useSellerOffer = (delegation: SalesDelegation, maxQuantity: number)
     generatedUrl,
     setSalePrice,
     setQuantity,
+    setClientId,
     setClientName,
     generateLink,
     reset

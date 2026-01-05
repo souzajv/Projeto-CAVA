@@ -105,7 +105,7 @@ export const BatchModal: React.FC<BatchModalProps> = ({ typologies, onClose, onS
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
             <div className="space-y-4">
               <label className="text-xs font-bold uppercase tracking-widest text-slate-400 flex items-center">
-                {t('modal.batch.select_type')} <span className="text-[#C5A059] ml-1">*</span>
+                {t('modal.batch.select_type')} <span className="text-[#C2410C] ml-1">*</span>
               </label>
               <div className="relative">
                 <select
@@ -137,13 +137,13 @@ export const BatchModal: React.FC<BatchModalProps> = ({ typologies, onClose, onS
 
             <div className="space-y-4">
               <label className="text-xs font-bold uppercase tracking-widest text-slate-400 flex items-center justify-between">
-                <span className="flex items-center"><Tag className="w-3 h-3 mr-2" /> {t('modal.batch.lot_id')} <span className="text-[#C5A059] ml-1">*</span></span>
+                <span className="flex items-center"><Tag className="w-3 h-3 mr-2" /> {t('modal.batch.lot_id')} <span className="text-[#C2410C] ml-1">*</span></span>
                 
                 {selectedTypology && (
                   <button 
                     type="button" 
                     onClick={handleRegenerateId}
-                    className="text-[10px] font-bold text-[#121212] hover:text-[#C5A059] flex items-center transition-colors uppercase tracking-wider"
+                    className="text-[10px] font-bold text-[#121212] hover:text-[#C2410C] flex items-center transition-colors uppercase tracking-wider"
                   >
                     <RefreshCw className="w-3 h-3 mr-1" /> {t('modal.batch.regenerate')}
                   </button>
@@ -194,7 +194,7 @@ export const BatchModal: React.FC<BatchModalProps> = ({ typologies, onClose, onS
 
                <div className="w-full lg:w-64 space-y-3">
                   <label className="text-xs font-bold uppercase tracking-widest text-slate-400 flex items-center">
-                    <Layers className="w-4 h-4 mr-2" /> {t('modal.batch.qty')} <span className="text-[#C5A059] ml-1">*</span>
+                    <Layers className="w-4 h-4 mr-2" /> {t('modal.batch.qty')} <span className="text-[#C2410C] ml-1">*</span>
                   </label>
                   <div className="flex items-baseline border-b border-slate-200">
                     <input 
@@ -256,7 +256,7 @@ export const BatchModal: React.FC<BatchModalProps> = ({ typologies, onClose, onS
                 <button 
                   type="button" 
                   onClick={() => setBatchImageUrl(selectedTypology.imageUrl)}
-                  className="text-[10px] font-bold text-[#121212] hover:text-[#C5A059] uppercase tracking-wider transition-colors"
+                  className="text-[10px] font-bold text-[#121212] hover:text-[#C2410C] uppercase tracking-wider transition-colors"
                 >
                   {t('modal.batch.use_catalog')}
                 </button>
@@ -283,7 +283,7 @@ export const BatchModal: React.FC<BatchModalProps> = ({ typologies, onClose, onS
           <button 
             onClick={handleSubmit}
             disabled={!selectedTypology}
-            className="px-8 py-3 bg-[#121212] text-white text-xs font-bold uppercase tracking-widest hover:bg-[#C5A059] flex items-center shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-8 py-3 bg-[#121212] text-white text-xs font-bold uppercase tracking-widest hover:bg-[#C2410C] flex items-center shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Save className="w-4 h-4 mr-2" />
             {t('modal.batch.save')}

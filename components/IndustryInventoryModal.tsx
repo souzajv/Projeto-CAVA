@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { StoneItem, SalesDelegation, OfferLink, Seller } from '../types';
-import { X, Layers, Users, Link as LinkIcon, ArrowUpRight, DollarSign, ExternalLink, Eye, User, Settings, Save, AlertTriangle, Copy, Zap, UserPlus, Trash2, RotateCcw } from 'lucide-react';
+import { X, Layers, Users, Link as LinkIcon, ArrowUpRight, DollarSign, ExternalLink, Eye, User, Settings, Save, AlertTriangle, Copy, Zap, UserPlus, Trash2, RotateCcw, Lock, BadgeCheck } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { ImageWithLoader } from './ImageWithLoader';
 import { PLATFORM_DOMAIN } from '../constants';
@@ -18,6 +18,8 @@ interface IndustryInventoryModalProps {
   onDirectLink: () => void;
   onRevokeDelegation?: (delegationId: string) => void;
   onViewClientPage?: (token: string) => void;
+  onReserve?: (offer: OfferLink) => void;
+  onFinalizeSale?: (offer: OfferLink) => void;
 }
 
 export const IndustryInventoryModal: React.FC<IndustryInventoryModalProps> = ({ 
@@ -31,16 +33,15 @@ export const IndustryInventoryModal: React.FC<IndustryInventoryModalProps> = ({
   onDelegate,
   onDirectLink,
   onRevokeDelegation,
-  onViewClientPage
+  onViewClientPage,
+  onReserve,
+  onFinalizeSale
 }) => {
   const { t, formatCurrency, formatDate } = useLanguage();
   
   const [activeTab, setActiveTab] = useState<'links' | 'delegations' | 'stock'>('links');
   const [redirectOffer, setRedirectOffer] = useState<OfferLink | null>(null);
   
-  // A stone is "fully closed" if there's no available stock AND no reserved stock (everything is sold)
-  // But strictly, we can check if available == 0.
-  // Actually, we should allow viewing details even if 0 available.
   const isFullyClosed = stone.quantity.available === 0 && stone.quantity.reserved === 0 && stone.quantity.sold > 0;
 
   const [formData, setFormData] = useState({
@@ -60,7 +61,6 @@ export const IndustryInventoryModal: React.FC<IndustryInventoryModalProps> = ({
   }, [stone]);
 
   const handleSaveStock = () => {
-    // Validation: Total cannot be less than what is currently "Active" (Reserved + Sold)
     const minRequired = stone.quantity.reserved + stone.quantity.sold;
     if (formData.totalQuantity < minRequired) {
       alert(`Cannot reduce total quantity below ${minRequired} (Currently Reserved + Sold).`);
@@ -75,11 +75,7 @@ export const IndustryInventoryModal: React.FC<IndustryInventoryModalProps> = ({
       quantity: {
         ...stone.quantity,
         total: formData.totalQuantity,
-        // Available will be recalculated by App.tsx logic automatically
-        // but we pass a hint or just the base data.
-        // Actually onUpdateStone updates rawStones, and App recalculates available.
-        // So we just need to ensure 'total' is updated in the raw stone.
-        available: formData.totalQuantity, // This is a placeholder, App.tsx reconciles it.
+        available: formData.totalQuantity, // App reconciliation handles this
         reserved: stone.quantity.reserved,
         sold: stone.quantity.sold
       }
@@ -108,7 +104,6 @@ export const IndustryInventoryModal: React.FC<IndustryInventoryModalProps> = ({
   const delegatedLinksCount = offers.filter(o => o.delegationId).length;
   const isAvailable = stone.quantity.available > 0;
 
-  // Breakdown Calculations for Reserved Stock
   const qtyDelegated = delegations.reduce((acc, d) => acc + d.delegatedQuantity, 0);
   const qtyDirectActive = offers
       .filter(o => !o.delegationId && o.status === 'active')
@@ -140,7 +135,6 @@ export const IndustryInventoryModal: React.FC<IndustryInventoryModalProps> = ({
         onClick={(e) => e.stopPropagation()}
       >
         
-        {/* Redirect Modal */}
         {redirectOffer && (
           <div className="absolute inset-0 z-[60] flex items-center justify-center bg-[#121212]/80 backdrop-blur-md p-4 animate-in fade-in duration-200">
              <div className="bg-white rounded-sm shadow-2xl border border-slate-100 p-8 w-full max-w-md text-center animate-in zoom-in-95 relative overflow-hidden" onClick={e => e.stopPropagation()}>
@@ -170,7 +164,6 @@ export const IndustryInventoryModal: React.FC<IndustryInventoryModalProps> = ({
           </div>
         )}
 
-        {/* Obsidian Header */}
         <div className="px-8 py-6 border-b border-[#222] flex justify-between items-center bg-[#121212] text-white shrink-0">
           <div>
             <h2 className="text-2xl font-serif tracking-wide">{stone.typology.name}</h2>
@@ -188,11 +181,8 @@ export const IndustryInventoryModal: React.FC<IndustryInventoryModalProps> = ({
 
         <div className="flex-1 overflow-hidden bg-[#FAFAFA] flex flex-col lg:flex-row">
             
-            {/* Left Column: Master Stats */}
             <div className="lg:w-1/4 border-r border-slate-200 bg-white flex flex-col overflow-y-auto shrink-0">
                <div className="p-6 space-y-8">
-                  
-                  {/* Image */}
                   <div className="aspect-square bg-slate-100 overflow-hidden relative shadow-sm">
                      <ImageWithLoader 
                         src={stone.imageUrl} 
@@ -205,8 +195,6 @@ export const IndustryInventoryModal: React.FC<IndustryInventoryModalProps> = ({
                      </div>
                   </div>
 
-                  {/* Actions: Direct & Delegate - Hidden for fully closed lots */}
-                  {/* Even if 0 available, show buttons but disabled to indicate flow */}
                   <div className="grid grid-cols-2 gap-3 animate-in fade-in slide-in-from-top-2">
                         <button 
                           onClick={onDirectLink}
@@ -224,7 +212,7 @@ export const IndustryInventoryModal: React.FC<IndustryInventoryModalProps> = ({
                           disabled={!isAvailable}
                           className={`flex items-center justify-center px-4 py-3 rounded-sm text-xs font-bold uppercase tracking-wider transition-all shadow-lg
                             ${isAvailable 
-                              ? 'bg-[#121212] hover:bg-[#C5A059] text-white border border-transparent' 
+                              ? 'bg-[#121212] hover:bg-[#C2410C] text-white border border-transparent' 
                               : 'bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed shadow-none'}`}
                         >
                            <UserPlus className="w-3 h-3 mr-2" />
@@ -232,7 +220,6 @@ export const IndustryInventoryModal: React.FC<IndustryInventoryModalProps> = ({
                         </button>
                   </div>
 
-                  {/* Stock Breakdown */}
                   <div className="space-y-4">
                      <h3 className="text-xs font-bold uppercase tracking-widest text-slate-400 flex items-center">
                         <Layers className="w-3 h-3 mr-2" /> {t('modal.ind_inv.global_inv')}
@@ -246,7 +233,7 @@ export const IndustryInventoryModal: React.FC<IndustryInventoryModalProps> = ({
                         
                         <div className="w-full bg-slate-200 h-1 flex">
                            <div style={{ width: `${(stone.quantity.sold / stone.quantity.total) * 100}%` }} className="bg-emerald-600" />
-                           <div style={{ width: `${(stone.quantity.reserved / stone.quantity.total) * 100}%` }} className="bg-[#C5A059]" />
+                           <div style={{ width: `${(stone.quantity.reserved / stone.quantity.total) * 100}%` }} className="bg-[#C2410C]" />
                            <div style={{ width: `${(stone.quantity.available / stone.quantity.total) * 100}%` }} className="bg-slate-400" />
                         </div>
 
@@ -258,14 +245,13 @@ export const IndustryInventoryModal: React.FC<IndustryInventoryModalProps> = ({
                               <span className="font-mono text-[#121212]">{stone.quantity.sold}</span>
                            </div>
                            
-                           {/* Breakdown of Reserved */}
                            <div className="flex flex-col gap-1">
                                <div className="flex justify-between items-center text-xs cursor-help group/reserved">
                                   <span className="font-bold text-slate-400 uppercase tracking-wide flex items-center">
-                                     <div className="w-1.5 h-1.5 bg-[#C5A059] rounded-full mr-2" /> {t('card.reserved')}
+                                     <div className="w-1.5 h-1.5 bg-[#C2410C] rounded-full mr-2" /> {t('card.reserved')}
                                   </span>
                                   <span className="font-mono text-[#121212] font-bold">{stone.quantity.reserved}</span>
-                               </div>
+                                </div>
                                <div className="pl-3.5 flex flex-col gap-0.5 border-l border-slate-100 ml-1">
                                    {qtyDelegated > 0 && (
                                        <div className="flex justify-between text-[9px] text-slate-400">
@@ -292,7 +278,6 @@ export const IndustryInventoryModal: React.FC<IndustryInventoryModalProps> = ({
                      </div>
                   </div>
 
-                  {/* Financial Base */}
                   <div className="space-y-4">
                      <h3 className="text-xs font-bold uppercase tracking-widest text-slate-400 flex items-center">
                         <DollarSign className="w-3 h-3 mr-2" /> {t('modal.ind_inv.financials')}
@@ -308,7 +293,7 @@ export const IndustryInventoryModal: React.FC<IndustryInventoryModalProps> = ({
                         </div>
                      </div>
                      <div className="p-4 bg-[#121212] text-white text-center shadow-lg">
-                        <p className="text-[9px] text-[#C5A059] uppercase font-bold tracking-[0.2em]">{t('modal.ind_inv.total_value')}</p>
+                        <p className="text-[9px] text-[#C2410C] uppercase font-bold tracking-[0.2em]">{t('modal.ind_inv.total_value')}</p>
                         <p className="text-2xl font-serif mt-1">{formatCurrency(totalValuePotential)}</p>
                      </div>
                   </div>
@@ -316,16 +301,13 @@ export const IndustryInventoryModal: React.FC<IndustryInventoryModalProps> = ({
                </div>
             </div>
 
-            {/* Right Column: Details & Tables */}
             <div className="flex-1 flex flex-col overflow-hidden bg-[#FAFAFA]">
-               
-               {/* Tab Navigation */}
                <div className="bg-white border-b border-slate-200 px-8 pt-6 flex gap-8 sticky top-0 z-10">
                   <button 
                      onClick={() => setActiveTab('links')}
                      className={`pb-4 text-xs font-bold uppercase tracking-widest flex items-center transition-colors border-b-2 ${
                         activeTab === 'links' 
-                        ? 'border-[#C5A059] text-[#121212]' 
+                        ? 'border-[#C2410C] text-[#121212]' 
                         : 'border-transparent text-slate-400 hover:text-slate-600'
                      }`}
                   >
@@ -337,7 +319,7 @@ export const IndustryInventoryModal: React.FC<IndustryInventoryModalProps> = ({
                      onClick={() => setActiveTab('delegations')}
                      className={`pb-4 text-xs font-bold uppercase tracking-widest flex items-center transition-colors border-b-2 ${
                         activeTab === 'delegations' 
-                        ? 'border-[#C5A059] text-[#121212]' 
+                        ? 'border-[#C2410C] text-[#121212]' 
                         : 'border-transparent text-slate-400 hover:text-slate-600'
                      }`}
                   >
@@ -345,13 +327,11 @@ export const IndustryInventoryModal: React.FC<IndustryInventoryModalProps> = ({
                      {t('modal.ind_inv.tab.delegations')}
                      <span className="ml-2 bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded-full text-[10px]">{delegations.length}</span>
                   </button>
-                  
-                  {/* Stock Tab */}
                   <button 
                        onClick={() => setActiveTab('stock')}
                        className={`pb-4 text-xs font-bold uppercase tracking-widest flex items-center transition-colors border-b-2 ${
                           activeTab === 'stock' 
-                          ? 'border-[#C5A059] text-[#121212]' 
+                          ? 'border-[#C2410C] text-[#121212]' 
                           : 'border-transparent text-slate-400 hover:text-slate-600'
                        }`}
                   >
@@ -360,9 +340,7 @@ export const IndustryInventoryModal: React.FC<IndustryInventoryModalProps> = ({
                   </button>
                </div>
 
-               {/* Content Area */}
                <div className="flex-1 overflow-y-auto p-8">
-                  
                   {activeTab === 'links' && (
                      <div className="space-y-6">
                         <div className="flex gap-4 mb-4">
@@ -401,6 +379,10 @@ export const IndustryInventoryModal: React.FC<IndustryInventoryModalProps> = ({
                                                    <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[10px] font-bold uppercase tracking-wider bg-emerald-50 text-emerald-800 border border-emerald-100">{t('modal.history.sold')}</span>
                                                 ) : offer.status === 'expired' ? (
                                                    <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[10px] font-bold uppercase tracking-wider bg-slate-100 text-slate-500 border border-slate-200">{t('modal.history.expired')}</span>
+                                                ) : offer.status === 'reserved' ? (
+                                                   <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[10px] font-bold uppercase tracking-wider bg-amber-50 text-amber-800 border border-amber-100">{t('card.reserved')}</span>
+                                                ) : offer.status === 'reservation_pending' ? (
+                                                   <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[10px] font-bold uppercase tracking-wider bg-purple-50 text-purple-700 border border-purple-100 animate-pulse">Request</span>
                                                 ) : (
                                                    <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[10px] font-bold uppercase tracking-wider bg-blue-50 text-blue-700 border border-blue-100">{t('modal.history.active')}</span>
                                                 )}
@@ -426,27 +408,49 @@ export const IndustryInventoryModal: React.FC<IndustryInventoryModalProps> = ({
                                                 {formatDate(offer.createdAt)}
                                              </td>
                                              <td className="px-6 py-4 text-right">
-                                                <div className="flex items-center justify-end gap-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                   {/* Reserve Action for Industry */}
+                                                   {offer.status === 'active' && onReserve && (
+                                                      <button 
+                                                         onClick={() => onReserve(offer)}
+                                                         className="p-2 bg-amber-50 text-amber-600 hover:bg-amber-100 border border-amber-100 rounded-sm transition-colors"
+                                                         title="Reserve"
+                                                      >
+                                                         <Lock className="w-3.5 h-3.5" />
+                                                      </button>
+                                                   )}
+                                                   
+                                                   {/* Finalize Action for Industry */}
+                                                   {offer.status === 'active' && onFinalizeSale && (
+                                                      <button 
+                                                         onClick={() => onFinalizeSale(offer)}
+                                                         className="p-2 bg-emerald-50 text-emerald-600 hover:bg-emerald-100 border border-emerald-100 rounded-sm transition-colors"
+                                                         title="Finalize Sale"
+                                                      >
+                                                         <BadgeCheck className="w-3.5 h-3.5" />
+                                                      </button>
+                                                   )}
+
                                                    <button 
                                                       onClick={() => handleViewDetails(offer)}
-                                                      className="text-slate-400 hover:text-[#121212] transition-colors"
+                                                      className="p-2 text-slate-400 hover:text-[#121212] transition-colors"
                                                       title="Details"
                                                    >
-                                                      <Eye className="w-4 h-4" />
+                                                      <Eye className="w-3.5 h-3.5" />
                                                    </button>
                                                    <button 
                                                       onClick={() => handleCopy(offer.clientViewToken)}
-                                                      className="text-slate-400 hover:text-[#121212] transition-colors"
+                                                      className="p-2 text-slate-400 hover:text-[#121212] transition-colors"
                                                       title="Copy Link"
                                                    >
-                                                      <Copy className="w-4 h-4" />
+                                                      <Copy className="w-3.5 h-3.5" />
                                                    </button>
                                                    <button 
                                                       onClick={() => onViewClientPage?.(offer.clientViewToken)}
-                                                      className="text-slate-400 hover:text-[#C5A059] transition-colors"
+                                                      className="p-2 text-slate-400 hover:text-[#C2410C] transition-colors"
                                                       title="Open Page"
                                                    >
-                                                      <ExternalLink className="w-4 h-4" />
+                                                      <ExternalLink className="w-3.5 h-3.5" />
                                                    </button>
                                                 </div>
                                              </td>
@@ -503,7 +507,6 @@ export const IndustryInventoryModal: React.FC<IndustryInventoryModalProps> = ({
                                              <p className="font-serif text-lg text-slate-700">{formatCurrency(del.agreedMinPrice)}</p>
                                           </div>
                                           
-                                          {/* Enhanced Revoke Button */}
                                           {onRevokeDelegation && (
                                             <div className="pl-6 border-l border-slate-100">
                                                 <button 
@@ -514,8 +517,8 @@ export const IndustryInventoryModal: React.FC<IndustryInventoryModalProps> = ({
                                                         hasActive 
                                                         ? 'bg-slate-50 text-slate-300 cursor-not-allowed' 
                                                         : sold > 0 
-                                                            ? 'bg-slate-100 text-slate-600 hover:bg-[#121212] hover:text-white' // Reclaim mode
-                                                            : 'bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white' // Delete mode
+                                                            ? 'bg-slate-100 text-slate-600 hover:bg-[#121212] hover:text-white'
+                                                            : 'bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white' 
                                                     }`}
                                                 >
                                                     {sold > 0 ? (
@@ -544,7 +547,7 @@ export const IndustryInventoryModal: React.FC<IndustryInventoryModalProps> = ({
                   {activeTab === 'stock' && (
                      <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-300">
                         <div className="bg-[#121212] p-6 flex items-start gap-5 shadow-xl">
-                           <Settings className="w-6 h-6 text-[#C5A059] mt-1" />
+                           <Settings className="w-6 h-6 text-[#C2410C] mt-1" />
                            <div>
                               <h3 className="text-lg font-serif text-white">{t('modal.ind_inv.inv_correction')}</h3>
                               <p className="text-sm text-slate-400 mt-2 font-light leading-relaxed max-w-xl">
@@ -569,7 +572,7 @@ export const IndustryInventoryModal: React.FC<IndustryInventoryModalProps> = ({
                                        className="w-full py-2 bg-transparent border-b border-slate-300 text-xl font-serif text-[#121212] focus:border-[#121212] outline-none transition-colors"
                                     />
                                     <p className="text-[10px] text-slate-400 mt-1 flex items-center uppercase tracking-wider font-bold">
-                                       <AlertTriangle className="w-3 h-3 mr-1 text-[#C5A059]" />
+                                       <AlertTriangle className="w-3 h-3 mr-1 text-[#C2410C]" />
                                        {t('modal.ind_inv.min_locked')}: <span className="text-[#121212] ml-1">{stone.quantity.reserved + stone.quantity.sold}</span>
                                     </p>
                                  </div>
@@ -624,7 +627,7 @@ export const IndustryInventoryModal: React.FC<IndustryInventoryModalProps> = ({
                         <div className="flex justify-end pt-4 border-t border-slate-200">
                            <button 
                               onClick={handleSaveStock}
-                              className="px-8 py-3 bg-[#121212] text-white text-xs font-bold uppercase tracking-widest hover:bg-[#C5A059] shadow-lg transition-all flex items-center"
+                              className="px-8 py-3 bg-[#121212] text-white text-xs font-bold uppercase tracking-widest hover:bg-[#C2410C] shadow-lg transition-all flex items-center"
                            >
                               <Save className="w-4 h-4 mr-2" />
                               {t('modal.ind_inv.save_changes')}

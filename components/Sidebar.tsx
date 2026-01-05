@@ -1,10 +1,10 @@
 
 import React from 'react';
-import { LayoutGrid, TrendingUp, DollarSign, Link as LinkIcon, Package, UserCircle, Archive, Thermometer } from 'lucide-react';
+import { LayoutGrid, TrendingUp, DollarSign, Link as LinkIcon, Package, UserCircle, Archive, Thermometer, Users } from 'lucide-react';
 import { UserRole } from '../types';
 import { useLanguage } from '../contexts/LanguageContext';
 
-export type PageView = 'inventory' | 'lot_history' | 'dashboard' | 'pipeline' | 'sales' | 'financials' | 'thermometer';
+export type PageView = 'inventory' | 'lot_history' | 'dashboard' | 'pipeline' | 'sales' | 'financials' | 'thermometer' | 'clients';
 
 interface SidebarProps {
   activePage: PageView;
@@ -36,9 +36,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
         }`}
       >
         {isActive && (
-          <div className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-6 bg-[#C5A059] shadow-[0_0_10px_#C5A059]" />
+          <div className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-6 bg-[#C2410C] shadow-[0_0_10px_#C2410C]" />
         )}
-        <Icon className={`w-5 h-5 transition-colors duration-300 ${isActive ? 'text-[#C5A059]' : 'text-slate-500 group-hover:text-slate-300'}`} />
+        <Icon className={`w-5 h-5 transition-colors duration-300 ${isActive ? 'text-[#C2410C]' : 'text-slate-500 group-hover:text-slate-300'}`} />
         <span className={`font-medium text-sm tracking-wide ${isActive ? 'font-semibold' : ''}`}>{label}</span>
       </button>
     );
@@ -46,32 +46,26 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   return (
     <aside className="w-72 bg-[#121212] border-r border-white/5 h-screen sticky top-0 flex flex-col hidden lg:flex shadow-2xl z-40 text-white relative overflow-hidden">
-      
-      {/* Background Texture Effect */}
       <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-white/5 via-transparent to-transparent pointer-events-none" />
-
-      {/* Brand */}
       <div className="p-8 pb-10 relative z-10">
         <div className="flex items-center space-x-4">
-          <div className="w-10 h-10 bg-[#C5A059] rounded-sm flex items-center justify-center shadow-lg shadow-[#C5A059]/20 rotate-3 transition-transform hover:rotate-0">
-            <span className="text-[#121212] font-serif font-bold text-2xl">C</span>
+          <div className="w-10 h-10 bg-[#C2410C] rounded-sm flex items-center justify-center shadow-lg shadow-[#C2410C]/20 rotate-3 transition-transform hover:rotate-0">
+            <span className="text-white font-serif font-bold text-2xl">C</span>
           </div>
           <div>
             <h1 className="text-2xl font-serif font-bold tracking-tight text-white">CAVA.</h1>
-            <p className="text-[9px] uppercase tracking-[0.3em] text-[#C5A059] font-medium opacity-80">Architecture</p>
+            <p className="text-[9px] uppercase tracking-[0.3em] text-[#C2410C] font-medium opacity-80">Architecture</p>
           </div>
         </div>
       </div>
-
-      {/* Navigation - Applied 'dark-scroll' class here */}
       <div className="flex-1 px-4 space-y-1 relative z-10 overflow-y-auto dark-scroll">
         <div className="px-4 py-2 text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] mb-2 mt-2">
           {t('nav.operations')}
         </div>
         <NavItem page="inventory" icon={Package} label={t('nav.inventory')} />
+        <NavItem page="clients" icon={Users} label={t('nav.clients')} />
         <NavItem page="thermometer" icon={Thermometer} label={t('nav.thermometer')} />
         <NavItem page="lot_history" icon={Archive} label={t('nav.lot_history')} />
-        
         <div className="px-4 py-2 text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] mt-8 mb-2">
           {t('nav.analytics')}
         </div>
@@ -80,8 +74,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <NavItem page="sales" icon={DollarSign} label={t('nav.sales')} />
         <NavItem page="financials" icon={TrendingUp} label={role === 'industry_admin' ? t('nav.financials_admin') : t('nav.financials_seller')} />
       </div>
-
-      {/* User Footer */}
       <div className="p-4 border-t border-white/5 relative z-10">
         <div className="bg-white/5 rounded-sm p-3 flex items-center space-x-3 hover:bg-white/10 transition-colors cursor-pointer border border-white/5">
           <div className="w-10 h-10 rounded-sm bg-gradient-to-br from-slate-700 to-slate-900 border border-white/10 flex items-center justify-center text-slate-300 shadow-inner">
@@ -89,7 +81,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-bold text-white truncate font-serif tracking-wide">{currentUserName}</p>
-            <p className="text-xs text-[#C5A059] truncate capitalize tracking-wider">{currentUserRoleLabel}</p>
+            <p className="text-xs text-[#C2410C] truncate capitalize tracking-wider">{currentUserRoleLabel}</p>
           </div>
         </div>
       </div>

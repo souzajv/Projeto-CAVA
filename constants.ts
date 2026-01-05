@@ -1,31 +1,20 @@
 
-import { StoneItem, Seller, SalesDelegation, OfferLink, StoneTypology } from './types';
+import { StoneItem, Seller, SalesDelegation, OfferLink, StoneTypology, Client } from './types';
 
-// --- CONFIG CONSTANTS ---
 export const PLATFORM_DOMAIN = "https://cava.platform";
-export const DEFAULT_STONE_IMAGE = "https://images.unsplash.com/photo-1595428774223-ef52624120d2?auto=format&fit=crop&q=80&w=800"; // Fallback to Carrara
+export const DEFAULT_STONE_IMAGE = "https://images.unsplash.com/photo-1595428774223-ef52624120d2?auto=format&fit=crop&q=80&w=800";
 
-// --- IMAGE SOURCE CONSTANTS ---
-// New stable Unsplash texture URLs - Updated Set
-// Carrara (Confirmed Working)
+// --- IMAGENS ---
 const IMG_CARRARA = "https://images.unsplash.com/photo-1595428774223-ef52624120d2?auto=format&fit=crop&q=80&w=800";
-// Nero Marquina (Dark Black Marble)
 const IMG_NERO = "https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?auto=format&fit=crop&q=80&w=800";
-// Calacatta (White with distinct grey/gold veins)
-const IMG_CALACATTA = "https://images.unsplash.com/photo-1615800098779-1be32e60cca3?auto=format&fit=crop&q=80&w=800";
-// Travertine (Beige/Textured)
-const IMG_TRAVERTINE = "https://images.unsplash.com/photo-1600607687644-c7171b42498f?auto=format&fit=crop&q=80&w=800";
+const IMG_CALACATTA = "https://images.unsplash.com/photo-1617191523662-79b9e69c7333?auto=format&fit=crop&q=80&w=800";
 
-// Extra detail shots for carousel
-const IMG_DETAIL_1 = "https://images.unsplash.com/photo-1566373151820-22e519c2eb71?auto=format&fit=crop&q=80&w=800";
-const IMG_DETAIL_2 = "https://images.unsplash.com/photo-1617135016259-8667c43df793?auto=format&fit=crop&q=80&w=800";
-
-// --- 1. CATALOG (Domain Entities) ---
+// --- 1. TYPOLOGIES (Catálogo Global) ---
 export const MOCK_TYPOLOGIES: StoneTypology[] = [
   {
     id: 'type-01',
     name: 'Carrara Marble Premium',
-    description: 'Classic Italian marble with soft grey veining. Ideal for luxury interiors and timeless designs.',
+    description: 'Classic Italian marble with soft grey veining. Ideal for luxury interiors.',
     origin: 'Tuscany, Italy',
     hardness: 'Mohs 3',
     imageUrl: IMG_CARRARA
@@ -33,30 +22,57 @@ export const MOCK_TYPOLOGIES: StoneTypology[] = [
   {
     id: 'type-02',
     name: 'Nero Marquina',
-    description: 'High quality black marble with distinct white veins. A statement piece for modern architecture.',
-    origin: 'Basque Country, Spain',
+    description: 'High quality black marble with distinct white veins.',
+    origin: 'Spain',
     hardness: 'Mohs 4',
     imageUrl: IMG_NERO
   },
   {
     id: 'type-03',
     name: 'Calacatta Gold',
-    description: 'Rare white marble with gold and grey veining. The epitome of elegance.',
+    description: 'Rare and exclusive white marble with dramatic gold and grey veining.',
     origin: 'Apuan Alps, Italy',
     hardness: 'Mohs 3',
     imageUrl: IMG_CALACATTA
-  },
-  {
-    id: 'type-04',
-    name: 'Travertine Silver',
-    description: 'Elegant grey beige travertine with distinct linear patterns.',
-    origin: 'Tivoli, Italy',
-    hardness: 'Mohs 4',
-    imageUrl: IMG_TRAVERTINE
   }
 ];
 
-// --- 2. SELLERS (Partners) ---
+// --- 2. CLIENTS (CRM) ---
+export const MOCK_CLIENTS: Client[] = [
+  {
+    id: 'cli-001',
+    name: 'Roberto Valência',
+    company: 'Luxury Mansions Inc.',
+    email: 'roberto@luxmansions.com',
+    phone: '+55 11 99988-7766',
+    createdAt: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString(),
+    createdById: 'admin',
+    createdByRole: 'industry_admin',
+    notes: 'Arquiteto focado em alto luxo. Compra recorrente.'
+  },
+  {
+    id: 'cli-002',
+    name: 'Amanda Silveira',
+    company: 'Silveira Interiors',
+    email: 'amanda@interiors.com',
+    phone: '+55 11 98877-6655',
+    createdAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
+    createdById: 'sel-001',
+    createdByRole: 'seller'
+  },
+  {
+    id: 'cli-003',
+    name: 'Construtora Horizonte',
+    company: 'Horizonte Engenharia',
+    email: 'compras@horizonte.com',
+    phone: '+55 21 3344-5566',
+    createdAt: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString(),
+    createdById: 'admin',
+    createdByRole: 'industry_admin'
+  }
+];
+
+// --- 3. SELLERS (Parceiros) ---
 export const MOCK_SELLERS: Seller[] = [
   {
     id: 'sel-001',
@@ -72,198 +88,148 @@ export const MOCK_SELLERS: Seller[] = [
   }
 ];
 
-// --- 3. INVENTORY (Physical Stock) ---
-// Note: 'available', 'reserved', 'sold' are calculated dynamically in App.tsx.
-// We only strictly define 'total' here.
+// --- 4. INVENTORY (Estoques Físicos) ---
 export const MOCK_STONES: StoneItem[] = [
   {
-    id: 'inv-001',
-    lotId: 'BLK-2024-001',
-    typology: MOCK_TYPOLOGIES[0], // Carrara
+    id: 'inv-001', // Carrara (Tem vendas e ativos)
+    lotId: 'BLK-2024-CARRARA-01',
+    typology: MOCK_TYPOLOGIES[0],
     dimensions: { width: 280, height: 160, thickness: 2, unit: 'cm' },
-    imageUrl: IMG_CARRARA, 
-    additionalImages: [IMG_DETAIL_1, IMG_DETAIL_2], // Added mock details
+    imageUrl: IMG_CARRARA,
     baseCost: 1200,
     minPrice: 2000,
-    quantity: {
-      total: 10,
-      available: 10, 
-      reserved: 0,
-      sold: 0,
-      unit: 'slabs'
-    }
+    quantity: { total: 30, available: 10, reserved: 10, sold: 10, unit: 'slabs' } 
   },
   {
-    id: 'inv-002',
-    lotId: 'BLK-2024-002',
-    typology: MOCK_TYPOLOGIES[1], // Nero
-    dimensions: { width: 300, height: 180, thickness: 2, unit: 'cm' },
-    imageUrl: IMG_NERO, 
-    additionalImages: [IMG_DETAIL_2],
-    baseCost: 1800,
-    minPrice: 3500,
-    quantity: {
-      total: 5,
-      available: 5,
-      reserved: 0,
-      sold: 0,
-      unit: 'slabs'
-    }
+    id: 'inv-002', // Nero (Totalmente vendido - Histórico)
+    lotId: 'BLK-2023-NERO-OLD',
+    typology: MOCK_TYPOLOGIES[1],
+    dimensions: { width: 300, height: 180, thickness: 3, unit: 'cm' },
+    imageUrl: IMG_NERO,
+    baseCost: 1500,
+    minPrice: 2500,
+    quantity: { total: 10, available: 0, reserved: 0, sold: 10, unit: 'slabs' }
   },
   {
-    id: 'inv-003',
-    lotId: 'BLK-2023-X99',
-    typology: MOCK_TYPOLOGIES[2], // Calacatta
-    dimensions: { width: 260, height: 150, thickness: 3, unit: 'cm' },
-    imageUrl: IMG_CALACATTA, 
-    additionalImages: [IMG_DETAIL_1, IMG_CARRARA],
+    id: 'inv-003', // Calacatta (Novos ativos)
+    lotId: 'BLK-2024-CALA-NEW',
+    typology: MOCK_TYPOLOGIES[2],
+    dimensions: { width: 290, height: 170, thickness: 2, unit: 'cm' },
+    imageUrl: IMG_CALACATTA,
     baseCost: 3000,
     minPrice: 5000,
-    quantity: {
-      total: 3,
-      available: 3,
-      reserved: 0,
-      sold: 0,
-      unit: 'slabs'
-    }
-  },
-  {
-    id: 'inv-004',
-    lotId: 'BLK-2024-B52',
-    typology: MOCK_TYPOLOGIES[3], // Travertine
-    dimensions: { width: 290, height: 170, thickness: 2, unit: 'cm' },
-    imageUrl: IMG_TRAVERTINE, 
-    baseCost: 900,
-    minPrice: 1500,
-    quantity: {
-      total: 20,
-      available: 20,
-      reserved: 0,
-      sold: 0,
-      unit: 'slabs'
-    }
-  },
-  {
-    id: 'inv-005',
-    lotId: 'BLK-2023-HIST-01',
-    typology: MOCK_TYPOLOGIES[0], // Carrara (Historic Batch)
-    dimensions: { width: 285, height: 165, thickness: 2, unit: 'cm' },
-    imageUrl: IMG_CARRARA, 
-    baseCost: 1100,
-    minPrice: 1900,
-    quantity: {
-      total: 8,
-      available: 8,
-      reserved: 0,
-      sold: 0,
-      unit: 'slabs'
-    }
+    quantity: { total: 10, available: 5, reserved: 5, sold: 0, unit: 'slabs' }
   }
 ];
 
-// --- 4. DELEGATIONS (B2B Logic) ---
+// --- 5. DELEGATIONS (Distribuição) ---
 export const MOCK_DELEGATIONS: SalesDelegation[] = [
   {
     id: 'del-001',
-    stoneId: 'inv-001', // Carrara
-    sellerId: 'sel-001', // John
-    delegatedQuantity: 5,
+    stoneId: 'inv-001', // Carrara para John
+    sellerId: 'sel-001', 
+    delegatedQuantity: 15,
     agreedMinPrice: 2200,
-    createdAt: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString()
+    createdAt: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000).toISOString()
   },
   {
     id: 'del-002',
-    stoneId: 'inv-002', // Nero
-    sellerId: 'sel-002', // Sarah
-    delegatedQuantity: 3,
-    agreedMinPrice: 3800,
-    createdAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString()
-  },
-  {
-    id: 'del-003',
-    stoneId: 'inv-004', // Travertine
-    sellerId: 'sel-001', // John
-    delegatedQuantity: 10,
-    agreedMinPrice: 1600,
-    createdAt: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000).toISOString()
+    stoneId: 'inv-003', // Calacatta para Sarah
+    sellerId: 'sel-002',
+    delegatedQuantity: 5,
+    agreedMinPrice: 5500,
+    createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString()
   }
 ];
 
-// --- 5. OFFERS & TRANSACTIONS (B2C Logic) ---
-export const MOCK_OFFERS: OfferLink[] = [
-  // 1. History (Sold) - John's Deal
-  {
-    id: 'off-001',
-    delegationId: 'del-001', 
-    stoneId: 'inv-001',
-    clientName: 'Villa Roma Project',
-    finalPrice: 2800,
-    quantityOffered: 2, 
-    status: 'sold',
-    clientViewToken: 'token-sold-1',
-    createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
-    viewLog: [{ timestamp: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString(), durationMs: 120000 }]
-  },
+// --- 6. OFFERS (Transações) ---
+// TOTAL CHECK:
+// ATIVOS: 3 Ofertas (Roberto, Amanda, Construtora em Negociação)
+// VENDIDOS: 2 Ofertas (Construtora Fechado, Amanda Fechado)
+// TOTAL FINANCEIRO DISTINTO
 
-  // 2. Direct Sale by Industry (John should NOT see this in his pipeline/thermometer)
+export const MOCK_OFFERS: OfferLink[] = [
+  // --- ATIVOS (Pipeline / Termômetro) ---
   {
-    id: 'off-002',
-    delegationId: undefined, // DIRECT SALE (No Delegation)
-    stoneId: 'inv-005', 
-    clientName: 'Grand Hyatt Lobby',
+    id: 'off-active-1',
+    delegationId: 'del-001', // John
+    stoneId: 'inv-001', // Carrara
+    clientId: 'cli-001', // Roberto
+    clientName: 'Roberto Valência',
     finalPrice: 2500,
-    quantityOffered: 8, 
-    status: 'sold',
-    clientViewToken: 'token-sold-2',
-    createdAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
-    viewLog: []
-  },
-  
-  // 3. Active - John's Deal
-  {
-    id: 'off-003',
-    delegationId: 'del-001',
-    stoneId: 'inv-001',
-    clientName: 'Downtown Penthouse',
-    finalPrice: 2950,
-    quantityOffered: 1,
+    quantityOffered: 5, // Total: 12,500
     status: 'active',
     clientViewToken: 'token-active-1',
-    createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
-    expiresAt: new Date(Date.now() + 6 * 24 * 60 * 60 * 1000).toISOString(),
-    viewLog: [
-        { timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), durationMs: 15000 },
-        { timestamp: new Date().toISOString(), durationMs: 45000 }
-    ]
+    createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(), // 2 days ago
+    viewLog: [{ timestamp: new Date().toISOString(), durationMs: 45000 }] // Hot
   },
-
-  // 4. Active - John's Deal
   {
-    id: 'off-004',
-    delegationId: 'del-003', 
-    stoneId: 'inv-004',
-    clientName: 'Museum Facade',
-    finalPrice: 1900,
-    quantityOffered: 5,
+    id: 'off-active-2',
+    delegationId: undefined, // Venda Direta HQ
+    stoneId: 'inv-003', // Calacatta
+    clientId: 'cli-003', // Construtora
+    clientName: 'Construtora Horizonte (Negociação)',
+    finalPrice: 6000,
+    quantityOffered: 2, // Total: 12,000
     status: 'active',
     clientViewToken: 'token-active-2',
-    createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-    expiresAt: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(),
+    createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(), // 1 day ago
+    viewLog: [] // Cold
+  },
+  {
+    id: 'off-active-3',
+    delegationId: 'del-002', // Sarah
+    stoneId: 'inv-003', // Calacatta
+    clientId: 'cli-002', // Amanda
+    clientName: 'Amanda Silveira (Projeto Hall)',
+    finalPrice: 6500,
+    quantityOffered: 2, // Total: 13,000
+    status: 'active',
+    clientViewToken: 'token-active-3',
+    createdAt: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(), // 4 hours ago
+    viewLog: [{ timestamp: new Date().toISOString(), durationMs: 120000 }] // Very Hot
+  },
+
+  // --- VENDIDOS (Sales / Financials) ---
+  {
+    id: 'off-sold-1',
+    delegationId: 'del-001', // John
+    stoneId: 'inv-001', // Carrara
+    clientId: 'cli-002', // Amanda
+    clientName: 'Amanda Silveira (Finalizado)',
+    finalPrice: 2800,
+    quantityOffered: 10, // Total: 28,000
+    status: 'sold',
+    clientViewToken: 'token-sold-1',
+    createdAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
+    viewLog: []
+  },
+  {
+    id: 'off-sold-2',
+    delegationId: undefined, // HQ Direto
+    stoneId: 'inv-002', // Nero (Lote Esgotado)
+    clientId: 'cli-003', // Construtora
+    clientName: 'Construtora Horizonte (Obra A)',
+    finalPrice: 3000,
+    quantityOffered: 10, // Total: 30,000
+    status: 'sold',
+    clientViewToken: 'token-sold-2',
+    createdAt: new Date(Date.now() - 45 * 24 * 60 * 60 * 1000).toISOString(),
     viewLog: []
   },
 
-  // 5. Active - Sarah's Deal (John should NOT see this)
+  // --- EXPIRADOS (Não deve aparecer em Pipeline nem Vendas) ---
   {
-    id: 'off-005',
-    delegationId: 'del-002', 
-    stoneId: 'inv-002',
-    clientName: 'Modernist Kitchen',
-    finalPrice: 4200,
+    id: 'off-exp-1',
+    delegationId: 'del-001',
+    stoneId: 'inv-001',
+    clientId: 'cli-001',
+    clientName: 'Roberto Valência (Antigo)',
+    finalPrice: 2500,
     quantityOffered: 2,
-    status: 'active',
-    clientViewToken: 'token-active-3',
-    createdAt: new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString(),
-    expiresAt: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(),
+    status: 'expired',
+    clientViewToken: 'token-exp-1',
+    createdAt: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString(),
     viewLog: []
   }
 ];
