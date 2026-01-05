@@ -1,5 +1,5 @@
 
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import {
    AppState, StoneItem, Seller, SalesDelegation, OfferLink, Notification,
    UserRole, StoneTypology, Client
@@ -34,7 +34,7 @@ import { LotHistoryView } from './components/analytics/LotHistoryView';
 import { ReservationModal } from './components/offers/ReservationModal';
 
 import {
-   Bell, Plus, LayoutGrid, List
+   Bell, Plus, LayoutGrid, List, Menu
 } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 
@@ -66,6 +66,7 @@ const AppContent = () => {
    const [currentSellerId, setCurrentSellerId] = useState<string>('all');
    const [currentView, setCurrentView] = useState<AppState['currentView']>('dashboard');
    const [activePage, setActivePage] = useState<PageView>('dashboard');
+   const [selectedSellerIndustry, setSelectedSellerIndustry] = useState<'all' | string>('all');
 
    // Toggle para visão da Indústria (Lotes vs Catálogo)
    const [inventoryMode, setInventoryMode] = useState<'lots' | 'catalog'>('lots');
@@ -79,36 +80,119 @@ const AppContent = () => {
    }>({ type: null });
 
    const [showNotifications, setShowNotifications] = useState(false);
+   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+   const handleNavigate = (page: PageView) => {
+      setActivePage(page);
+      setIsSidebarOpen(false);
+   };
+
+   const renderIndustryPicker = () => {
+      if (currentUserRole !== 'seller') return null;
+      return (
+         <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+            <div className="text-xs font-semibold text-slate-600">Indústria</div>
+            <select
+               value={selectedSellerIndustry}
+               onChange={(e) => setSelectedSellerIndustry(e.target.value)}
+               className="w-full sm:w-auto border border-slate-300 text-sm font-medium text-slate-700 px-3 py-2 rounded-sm bg-white outline-none transition-all hover:border-[#C2410C] focus:border-[#C2410C] focus:ring-2 focus:ring-[#C2410C]/30"
+            >
+               <option value="all">Todas as indústrias</option>
+               {sellerIndustryOptions.map(id => (
+                  <option key={id} value={id}>{id}</option>
+               ))}
+            </select>
+         </div>
+      );
+   };
+
+   const sellerIndustryOptions = useMemo(() => {
+      const ids = new Set<string>();
+      delegations.forEach(d => {
+         if (d.sellerId === currentSellerId) ids.add(d.tenantId);
+      });
+      offers.forEach(o => {
+         if (!o.delegationId) return;
+         const del = delegations.find(d => d.id === o.delegationId);
+         if (del && del.sellerId === currentSellerId) ids.add(o.tenantId);
+      });
+      return Array.from(ids);
+   }, [delegations, offers, currentSellerId]);
+
+   useEffect(() => {
+      setSelectedSellerIndustry('all');
+   }, [currentUserRole, currentSellerId]);
+
+   const analyticsDelegations = useMemo(() => {
+      if (currentUserRole === 'industry_admin') return tenantDelegations;
+      const bySeller = delegations.filter(d => d.sellerId === currentSellerId);
+      if (selectedSellerIndustry === 'all') return bySeller;
+      return bySeller.filter(d => d.tenantId === selectedSellerIndustry);
+   }, [currentUserRole, tenantDelegations, delegations, currentSellerId, selectedSellerIndustry]);
+
+   const analyticsOffers = useMemo(() => {
+      if (currentUserRole === 'industry_admin') return tenantOffers;
+      const sellerOffers = offers.filter(o => {
+         if (!o.delegationId) return false;
+         const del = delegations.find(d => d.id === o.delegationId);
+         return del && del.sellerId === currentSellerId;
+      });
+      if (selectedSellerIndustry === 'all') return sellerOffers;
+      return sellerOffers.filter(o => o.tenantId === selectedSellerIndustry);
+   }, [currentUserRole, tenantOffers, offers, delegations, currentSellerId, selectedSellerIndustry]);
+
+   const analyticsStones = useMemo(() => {
+      if (currentUserRole === 'industry_admin') return tenantStones;
+      if (selectedSellerIndustry === 'all') return rawStones;
+      return rawStones.filter(s => s.tenantId === selectedSellerIndustry);
+   }, [currentUserRole, tenantStones, rawStones, selectedSellerIndustry]);
+
+   const analyticsSellers = useMemo(() => {
+      return currentUserRole === 'industry_admin' ? tenantSellers : sellers;
+   }, [currentUserRole, tenantSellers, sellers]);
+
+   const sellerDelegations = useMemo(() => delegations.filter(d => d.sellerId === currentSellerId), [delegations, currentSellerId]);
+
+   const sellerOffers = useMemo(() => {
+      return offers.filter(o => {
+         if (!o.delegationId) return false;
+         const del = delegations.find(d => d.id === o.delegationId);
+         return del && del.sellerId === currentSellerId;
+      });
+   }, [offers, delegations, currentSellerId]);
+
+   const sellerStones = useMemo(() => {
+      return rawStones.filter(s => sellerDelegations.some(d => d.stoneId === s.id));
+   }, [rawStones, sellerDelegations]);
 
    // --- 1. FILTRAGEM CENTRAL (Quem pode ver o quê?) ---
    const visibleOffers = useMemo(() => {
-      const list = tenantOffers || [];
+      const list = analyticsOffers || [];
       if (currentUserRole === 'industry_admin') {
          if (currentSellerId === 'all') return list;
          return list.filter(o => {
             if (!o.delegationId) return false;
-            const del = tenantDelegations.find(d => d.id === o.delegationId);
+            const del = analyticsDelegations.find(d => d.id === o.delegationId);
             return del && del.sellerId === currentSellerId;
          });
       } else {
-         // Vendedor vê apenas suas ofertas
          return list.filter(o => {
             if (!o.delegationId) return false;
-            const del = tenantDelegations.find(d => d.id === o.delegationId);
+            const del = analyticsDelegations.find(d => d.id === o.delegationId);
             return del && del.sellerId === currentSellerId;
          });
       }
-   }, [tenantOffers, currentUserRole, currentSellerId, tenantDelegations]);
+   }, [analyticsOffers, currentUserRole, currentSellerId, analyticsDelegations]);
 
    // --- 2. ENRIQUECIMENTO (Adiciona dados de Stone, Seller e Delegation aos links) ---
    const enrichedOffers = useMemo(() => {
       return visibleOffers.map(o => ({
          offer: o,
-         stone: stones.find(s => s.id === o.stoneId)!,
-         seller: o.delegationId ? tenantSellers.find(s => s.id === tenantDelegations.find(d => d.id === o.delegationId)?.sellerId) : undefined,
-         delegation: tenantDelegations.find(d => d.id === o.delegationId)
-      })).filter(item => item.stone); // Remove inconsistências
-   }, [visibleOffers, stones, tenantSellers, tenantDelegations]);
+         stone: analyticsStones.find(s => s.id === o.stoneId)!,
+         seller: o.delegationId ? analyticsSellers.find(s => s.id === analyticsDelegations.find(d => d.id === o.delegationId)?.sellerId) : undefined,
+         delegation: analyticsDelegations.find(d => d.id === o.delegationId)
+      })).filter(item => item.stone);
+   }, [visibleOffers, analyticsStones, analyticsSellers, analyticsDelegations]);
 
    // --- 3. SEGREGAÇÃO (A Chave para corrigir o bug!) ---
    // Pipeline: ativos, pendentes e reservados
@@ -303,7 +387,9 @@ const AppContent = () => {
    // --- RENDER HELPERS ---
 
    const renderInventory = () => {
-      const filteredStones = stones.filter(s => {
+      const baseStones = currentUserRole === 'industry_admin' ? stones : sellerStones;
+
+      const filteredStones = baseStones.filter(s => {
          const matchesSearch = !invSearch || s.typology.name.toLowerCase().includes(invSearch.toLowerCase()) || s.lotId.toLowerCase().includes(invSearch.toLowerCase());
          const matchesType = invTypologyFilter === 'all' || s.typology.id === invTypologyFilter;
 
@@ -368,9 +454,15 @@ const AppContent = () => {
                            key={s.id}
                            stone={s}
                            role={currentUserRole}
+                           delegation={currentUserRole === 'seller' ? sellerDelegations.find(d => d.stoneId === s.id) : undefined}
+                           offerCount={currentUserRole === 'seller' ? sellerOffers.filter(o => o.stoneId === s.id).length : undefined}
                            index={i}
-                           inventorySnapshot={InventoryService.computeProgressSnapshot(s, tenantDelegations, tenantOffers)}
-                           onClick={() => setActiveModal({ type: currentUserRole === 'industry_admin' ? 'industry_inv' : 'seller_inv', data: currentUserRole === 'industry_admin' ? s : { stone: s, delegation: tenantDelegations.find(d => d.stoneId === s.id && d.sellerId === currentSellerId) } })}
+                           inventorySnapshot={InventoryService.computeProgressSnapshot(
+                              s,
+                              currentUserRole === 'industry_admin' ? tenantDelegations : sellerDelegations,
+                              currentUserRole === 'industry_admin' ? tenantOffers : sellerOffers
+                           )}
+                           onClick={() => setActiveModal({ type: currentUserRole === 'industry_admin' ? 'industry_inv' : 'seller_inv', data: currentUserRole === 'industry_admin' ? s : { stone: s, delegation: sellerDelegations.find(d => d.stoneId === s.id) } })}
                            onDelegate={(stone) => setActiveModal({ type: 'delegate', data: stone })}
                            onDirectLink={(stone) => setActiveModal({ type: 'direct', data: stone })}
                         />
@@ -415,14 +507,24 @@ const AppContent = () => {
       <div className="flex min-h-screen bg-[#FDFDFD] font-sans text-slate-900">
          <Sidebar
             activePage={activePage}
-            onNavigate={setActivePage}
+            onNavigate={handleNavigate}
             role={currentUserRole}
             currentUserName={currentUser.name}
             currentUserRoleLabel={currentUser.roleLabel}
+            isMobileOpen={isSidebarOpen}
+            onCloseMobile={() => setIsSidebarOpen(false)}
          />
+
+         {isSidebarOpen && <div className="fixed inset-0 bg-black/40 backdrop-blur-[1px] z-40 lg:hidden" onClick={() => setIsSidebarOpen(false)} />}
 
          <main className="flex-1 flex flex-col h-screen overflow-hidden relative">
             {/* Top Bar */}
+            <div className="absolute top-6 left-4 z-50 lg:hidden">
+               <button onClick={() => setIsSidebarOpen(true)} className="p-2.5 rounded-md bg-white shadow-sm border border-slate-200 text-slate-600 hover:text-[#121212] hover:shadow-md transition-colors">
+                  <Menu className="w-5 h-5" />
+               </button>
+            </div>
+
             <div className="absolute top-6 right-8 z-50 flex items-center space-x-6">
                <div className="relative">
                   <button onClick={() => setShowNotifications(!showNotifications)} className="relative p-2 text-slate-400 hover:text-[#121212] transition-colors bg-white/80 backdrop-blur-sm rounded-full hover:bg-white shadow-sm border border-slate-100">
@@ -470,11 +572,11 @@ const AppContent = () => {
                   {activePage === 'lot_history' && (
                      <div className="pt-8 lg:pt-12">
                         <LotHistoryView
-                           stones={stones}
-                           offers={tenantOffers}
-                           delegations={tenantDelegations}
-                           sellers={tenantSellers}
-                           onSelectLot={(stone) => setActiveModal({ type: currentUserRole === 'industry_admin' ? 'industry_inv' : 'seller_inv', data: currentUserRole === 'industry_admin' ? stone : { stone, delegation: tenantDelegations.find(d => d.stoneId === stone.id && d.sellerId === currentSellerId) } })}
+                           stones={currentUserRole === 'industry_admin' ? stones : sellerStones}
+                           offers={currentUserRole === 'industry_admin' ? tenantOffers : sellerOffers}
+                           delegations={currentUserRole === 'industry_admin' ? tenantDelegations : sellerDelegations}
+                           sellers={currentUserRole === 'industry_admin' ? tenantSellers : analyticsSellers}
+                           onSelectLot={(stone) => setActiveModal({ type: currentUserRole === 'industry_admin' ? 'industry_inv' : 'seller_inv', data: currentUserRole === 'industry_admin' ? stone : { stone, delegation: sellerDelegations.find(d => d.stoneId === stone.id) } })}
                         />
                      </div>
                   )}
@@ -482,7 +584,7 @@ const AppContent = () => {
                      <div className="pt-8 lg:pt-12">
                         <CRMView
                            clients={tenantClients}
-                           offers={tenantOffers}
+                           offers={currentUserRole === 'industry_admin' ? tenantOffers : sellerOffers}
                            role={currentUserRole}
                            currentSellerId={currentSellerId}
                            onAddClient={() => setActiveModal({ type: 'client_form', data: null })}
@@ -494,14 +596,14 @@ const AppContent = () => {
                      <div className="pt-8 lg:pt-12">
                         <InterestThermometerView
                            // Considera ativos, pendentes e reservados
-                           offers={tenantOffers.filter(o => ['active', 'reservation_pending', 'reserved'].includes(o.status))}
-                           stones={stones}
-                           sellers={tenantSellers}
-                           delegations={tenantDelegations}
+                           offers={(currentUserRole === 'industry_admin' ? tenantOffers : sellerOffers).filter(o => ['active', 'reservation_pending', 'reserved'].includes(o.status))}
+                           stones={currentUserRole === 'industry_admin' ? stones : sellerStones}
+                           sellers={currentUserRole === 'industry_admin' ? tenantSellers : analyticsSellers}
+                           delegations={currentUserRole === 'industry_admin' ? tenantDelegations : sellerDelegations}
                            role={currentUserRole}
                            onSelectTransaction={(item) => {
-                              const relatedStone = stones.find(s => s.id === item?.offer?.stoneId);
-                              const relatedSeller = item?.offer?.delegationId ? tenantSellers.find(s => s.id === tenantDelegations.find(d => d.id === item.offer.delegationId)?.sellerId) : undefined;
+                              const relatedStone = (currentUserRole === 'industry_admin' ? stones : sellerStones).find(s => s.id === item?.offer?.stoneId);
+                              const relatedSeller = item?.offer?.delegationId ? (currentUserRole === 'industry_admin' ? tenantSellers : analyticsSellers).find(s => s.id === (currentUserRole === 'industry_admin' ? tenantDelegations : sellerDelegations).find(d => d.id === item.offer.delegationId)?.sellerId) : undefined;
 
                               setActiveModal({
                                  type: 'transaction',
@@ -509,7 +611,7 @@ const AppContent = () => {
                                     offer: item.offer,
                                     stone: relatedStone,
                                     seller: relatedSeller,
-                                    delegation: tenantDelegations.find(d => d.id === item.offer.delegationId)
+                                    delegation: (currentUserRole === 'industry_admin' ? tenantDelegations : sellerDelegations).find(d => d.id === item.offer.delegationId)
                                  }
                               });
                            }}
@@ -527,8 +629,8 @@ const AppContent = () => {
                            title={t('nav.pipeline')}
                            mode="pipeline"
                            role={currentUserRole}
-                           // AQUI ESTÁ A MUDANÇA: Passando apenas pipelineData (active)
                            data={pipelineData}
+                           industrySlot={renderIndustryPicker()}
                            onTransactionClick={(tx) => setActiveModal({ type: 'transaction', data: tx })}
                         />
                      </div>
@@ -541,8 +643,8 @@ const AppContent = () => {
                            title={t('nav.sales')}
                            mode="sales"
                            role={currentUserRole}
-                           // AQUI ESTÁ A MUDANÇA: Passando apenas salesData (sold)
                            data={salesData}
+                           industrySlot={renderIndustryPicker()}
                            onTransactionClick={(tx) => setActiveModal({ type: 'transaction', data: tx })}
                         />
                      </div>
@@ -555,8 +657,8 @@ const AppContent = () => {
                            title={t(currentUserRole === 'industry_admin' ? 'nav.financials_admin' : 'nav.financials_seller')}
                            mode="profit"
                            role={currentUserRole}
-                           // AQUI ESTÁ A MUDANÇA: Passando apenas salesData (sold)
                            data={salesData}
+                           industrySlot={renderIndustryPicker()}
                            onTransactionClick={(tx) => setActiveModal({ type: 'transaction', data: tx })}
                         />
                      </div>

@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { LayoutGrid, TrendingUp, DollarSign, Link as LinkIcon, Package, UserCircle, Archive, Thermometer, Users } from 'lucide-react';
+import { LayoutGrid, TrendingUp, DollarSign, Link as LinkIcon, Package, UserCircle, Archive, Thermometer, Users, X } from 'lucide-react';
 import { UserRole } from '../../types';
 import { useLanguage } from '../../contexts/LanguageContext';
 
@@ -12,28 +12,31 @@ interface SidebarProps {
   role: UserRole;
   currentUserName: string;
   currentUserRoleLabel: string;
-  onLogout?: () => void; 
+  onLogout?: () => void;
+  isMobileOpen?: boolean;
+  onCloseMobile?: () => void;
 }
 
-export const Sidebar: React.FC<SidebarProps> = ({ 
-  activePage, 
-  onNavigate, 
-  role, 
+export const Sidebar: React.FC<SidebarProps> = ({
+  activePage,
+  onNavigate,
+  role,
   currentUserName,
-  currentUserRoleLabel 
+  currentUserRoleLabel,
+  isMobileOpen = false,
+  onCloseMobile
 }) => {
   const { t } = useLanguage();
-  
+
   const NavItem = ({ page, icon: Icon, label }: { page: PageView; icon: any; label: string }) => {
     const isActive = activePage === page;
     return (
       <button
         onClick={() => onNavigate(page)}
-        className={`relative w-full flex items-center space-x-3 px-4 py-3.5 rounded-sm transition-all duration-300 group overflow-hidden ${
-          isActive 
-            ? 'text-white bg-white/10 shadow-[0_0_20px_rgba(255,255,255,0.05)]' 
+        className={`relative w-full flex items-center space-x-3 px-4 py-3.5 rounded-sm transition-all duration-300 group overflow-hidden ${isActive
+            ? 'text-white bg-white/10 shadow-[0_0_20px_rgba(255,255,255,0.05)]'
             : 'text-slate-400 hover:text-white hover:bg-white/5'
-        }`}
+          }`}
       >
         {isActive && (
           <div className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-6 bg-[#C2410C] shadow-[0_0_10px_#C2410C]" />
@@ -45,9 +48,27 @@ export const Sidebar: React.FC<SidebarProps> = ({
   };
 
   return (
-    <aside className="w-72 bg-[#121212] border-r border-white/5 h-screen sticky top-0 flex flex-col hidden lg:flex shadow-2xl z-40 text-white relative overflow-hidden">
+    <aside
+      className={`w-72 bg-[#121212] border-r border-white/5 h-screen fixed inset-y-0 left-0 flex flex-col shadow-2xl z-50 text-white relative overflow-hidden transform transition-transform duration-300
+      ${isMobileOpen ? 'translate-x-0' : '-translate-x-full'}
+      lg:translate-x-0 lg:static lg:flex`}
+    >
       <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-white/5 via-transparent to-transparent pointer-events-none" />
-      <div className="p-8 pb-10 relative z-10">
+      <div className="p-4 pl-6 flex items-center justify-between lg:hidden relative z-10">
+        <div className="flex items-center space-x-3">
+          <div className="w-9 h-9 bg-[#C2410C] rounded-sm flex items-center justify-center shadow-lg shadow-[#C2410C]/20 rotate-3">
+            <span className="text-white font-serif font-bold text-xl">C</span>
+          </div>
+          <div>
+            <h1 className="text-xl font-serif font-bold tracking-tight text-white">CAVA.</h1>
+            <p className="text-[9px] uppercase tracking-[0.3em] text-[#C2410C] font-medium opacity-80">Architecture</p>
+          </div>
+        </div>
+        <button onClick={onCloseMobile} className="text-slate-400 hover:text-white transition-colors">
+          <X className="w-6 h-6" />
+        </button>
+      </div>
+      <div className="p-8 pb-10 relative z-10 hidden lg:block">
         <div className="flex items-center space-x-4">
           <div className="w-10 h-10 bg-[#C2410C] rounded-sm flex items-center justify-center shadow-lg shadow-[#C2410C]/20 rotate-3 transition-transform hover:rotate-0">
             <span className="text-white font-serif font-bold text-2xl">C</span>

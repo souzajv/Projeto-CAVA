@@ -64,6 +64,18 @@ Documento de referência técnica para o backend: modelagem de dados, regras de 
 - Interest Thermometer: lista pipeline (`active`/`reservation_pending`) ordenado por interesse.
 - Lot History: histórico de ofertas por lote.
 
+### Escopos por persona (reforço)
+- **Seller**: todas as telas são filtradas para o seller logado (mock atual: `John Stone`). Ele só vê:
+  - Lotes delegados a ele (Inventory/History), com contadores de links e snapshot calculado apenas com suas ofertas/delegações.
+  - Ofertas criadas a partir de suas delegações (pipeline/sales/financials/thermometer/CRM). Ofertas diretas da indústria não aparecem na visão do seller.
+  - Delegations: apenas as dele; não vê nem manipula as de outros.
+- **Industry Admin**: visão global por tenant, sem restrições adicionais.
+
+### Filtro de indústria na visão do Seller (analytics)
+- Seller pode atender múltiplas indústrias. Nos relatórios de Links Ativos (pipeline), Vendas Realizadas (sales) e Minhas Comissões (profit), há um seletor de indústria.
+- KPIs iniciam agregados (todas as indústrias atendidas pelo seller). Ao selecionar uma indústria, tanto KPIs quanto tabela filtram para `tenantId` escolhido.
+- Backend deve permitir consultas por seller com filtro opcional de `tenantId` para pipeline/sales/profit/thermometer.
+
 ## Status / Campos obrigatórios
 - Sempre incluir `tenantId` em OfferLink, SalesDelegation, StoneItem, Seller, Client, Notification, Typology.
 - OfferLink: `clientViewToken` único; `status` de acordo com transições acima.

@@ -1,5 +1,5 @@
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, ReactNode } from 'react';
 import { OfferLink, StoneItem, Seller, SalesDelegation, UserRole } from '../../types';
 import { Search, Link as LinkIcon, DollarSign, Calendar, TrendingUp, Download, AlertTriangle } from 'lucide-react';
 import { useLanguage } from '../../contexts/LanguageContext';
@@ -19,6 +19,7 @@ interface AnalyticsDetailViewProps {
   data: EnrichedOffer[];
   role: UserRole;
   onTransactionClick?: (item: EnrichedOffer) => void;
+  industrySlot?: ReactNode;
 }
 
 export const AnalyticsDetailView: React.FC<AnalyticsDetailViewProps> = ({
@@ -26,7 +27,8 @@ export const AnalyticsDetailView: React.FC<AnalyticsDetailViewProps> = ({
   mode,
   data,
   role,
-  onTransactionClick
+  onTransactionClick,
+  industrySlot
 }) => {
   const { t, formatCurrency, formatDate } = useLanguage();
   const [searchTerm, setSearchTerm] = useState('');
@@ -130,6 +132,12 @@ export const AnalyticsDetailView: React.FC<AnalyticsDetailViewProps> = ({
           <p className="text-3xl font-serif text-[#121212]">{totals.units} <span className="text-sm font-sans font-bold text-slate-400 tracking-normal">{t('dash.kpi.units')}</span></p>
         </div>
       </div>
+
+      {industrySlot && (
+        <div className="bg-white border border-slate-200 shadow-sm px-6 py-4">
+          {industrySlot}
+        </div>
+      )}
 
       {/* Main Content Area */}
       <div className="bg-white border border-slate-200 shadow-sm rounded-sm overflow-hidden">
