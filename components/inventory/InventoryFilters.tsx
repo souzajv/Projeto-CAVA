@@ -1,8 +1,8 @@
 
 import React from 'react';
 import { Search, Filter, SlidersHorizontal } from 'lucide-react';
-import { StoneTypology } from '../types';
-import { useLanguage } from '../contexts/LanguageContext';
+import { StoneTypology } from '../../types';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 interface InventoryFiltersProps {
   searchTerm: string;

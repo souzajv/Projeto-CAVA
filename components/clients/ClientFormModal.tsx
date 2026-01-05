@@ -1,8 +1,8 @@
 
 import React, { useState } from 'react';
-import { Client, UserRole } from '../types';
+import { Client, UserRole } from '../../types';
 import { X, Save, User, Building2, Mail, Phone, AlignLeft, ShieldCheck } from 'lucide-react';
-import { useLanguage } from '../contexts/LanguageContext';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 interface ClientFormModalProps {
   currentUserId: string;

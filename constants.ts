@@ -1,6 +1,8 @@
 
 import { StoneItem, Seller, SalesDelegation, OfferLink, StoneTypology, Client } from './types';
 
+export const DEMO_TENANT_ID = 'tenant-001';
+
 export const PLATFORM_DOMAIN = "https://cava.platform";
 export const DEFAULT_STONE_IMAGE = "https://images.unsplash.com/photo-1595428774223-ef52624120d2?auto=format&fit=crop&q=80&w=800";
 
@@ -41,6 +43,7 @@ export const MOCK_TYPOLOGIES: StoneTypology[] = [
 export const MOCK_CLIENTS: Client[] = [
   {
     id: 'cli-001',
+    tenantId: DEMO_TENANT_ID,
     name: 'Roberto Valência',
     company: 'Luxury Mansions Inc.',
     email: 'roberto@luxmansions.com',
@@ -52,6 +55,7 @@ export const MOCK_CLIENTS: Client[] = [
   },
   {
     id: 'cli-002',
+    tenantId: DEMO_TENANT_ID,
     name: 'Amanda Silveira',
     company: 'Silveira Interiors',
     email: 'amanda@interiors.com',
@@ -62,6 +66,7 @@ export const MOCK_CLIENTS: Client[] = [
   },
   {
     id: 'cli-003',
+    tenantId: DEMO_TENANT_ID,
     name: 'Construtora Horizonte',
     company: 'Horizonte Engenharia',
     email: 'compras@horizonte.com',
@@ -76,15 +81,25 @@ export const MOCK_CLIENTS: Client[] = [
 export const MOCK_SELLERS: Seller[] = [
   {
     id: 'sel-001',
+    tenantId: DEMO_TENANT_ID,
     name: 'John Stone',
     phone: '+1 555 0101',
-    avatarUrl: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80'
+    avatarUrl: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
+    inviteStatus: 'accepted',
+    invitedById: 'admin',
+    invitedAt: new Date(Date.now() - 25 * 24 * 60 * 60 * 1000).toISOString(),
+    acceptedAt: new Date(Date.now() - 24 * 24 * 60 * 60 * 1000).toISOString()
   },
   {
     id: 'sel-002',
+    tenantId: DEMO_TENANT_ID,
     name: 'Sarah Granite',
     phone: '+1 555 0202',
-    avatarUrl: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-4.0.3&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80'
+    avatarUrl: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-4.0.3&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
+    inviteStatus: 'accepted',
+    invitedById: 'admin',
+    invitedAt: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString(),
+    acceptedAt: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString()
   }
 ];
 
@@ -92,16 +107,18 @@ export const MOCK_SELLERS: Seller[] = [
 export const MOCK_STONES: StoneItem[] = [
   {
     id: 'inv-001', // Carrara (Tem vendas e ativos)
+    tenantId: DEMO_TENANT_ID,
     lotId: 'BLK-2024-CARRARA-01',
     typology: MOCK_TYPOLOGIES[0],
     dimensions: { width: 280, height: 160, thickness: 2, unit: 'cm' },
     imageUrl: IMG_CARRARA,
     baseCost: 1200,
     minPrice: 2000,
-    quantity: { total: 30, available: 10, reserved: 10, sold: 10, unit: 'slabs' } 
+    quantity: { total: 30, available: 10, reserved: 10, sold: 10, unit: 'slabs' }
   },
   {
     id: 'inv-002', // Nero (Totalmente vendido - Histórico)
+    tenantId: DEMO_TENANT_ID,
     lotId: 'BLK-2023-NERO-OLD',
     typology: MOCK_TYPOLOGIES[1],
     dimensions: { width: 300, height: 180, thickness: 3, unit: 'cm' },
@@ -112,6 +129,7 @@ export const MOCK_STONES: StoneItem[] = [
   },
   {
     id: 'inv-003', // Calacatta (Novos ativos)
+    tenantId: DEMO_TENANT_ID,
     lotId: 'BLK-2024-CALA-NEW',
     typology: MOCK_TYPOLOGIES[2],
     dimensions: { width: 290, height: 170, thickness: 2, unit: 'cm' },
@@ -126,14 +144,16 @@ export const MOCK_STONES: StoneItem[] = [
 export const MOCK_DELEGATIONS: SalesDelegation[] = [
   {
     id: 'del-001',
+    tenantId: DEMO_TENANT_ID,
     stoneId: 'inv-001', // Carrara para John
-    sellerId: 'sel-001', 
+    sellerId: 'sel-001',
     delegatedQuantity: 15,
     agreedMinPrice: 2200,
     createdAt: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000).toISOString()
   },
   {
     id: 'del-002',
+    tenantId: DEMO_TENANT_ID,
     stoneId: 'inv-003', // Calacatta para Sarah
     sellerId: 'sel-002',
     delegatedQuantity: 5,
@@ -152,6 +172,7 @@ export const MOCK_OFFERS: OfferLink[] = [
   // --- ATIVOS (Pipeline / Termômetro) ---
   {
     id: 'off-active-1',
+    tenantId: DEMO_TENANT_ID,
     delegationId: 'del-001', // John
     stoneId: 'inv-001', // Carrara
     clientId: 'cli-001', // Roberto
@@ -165,6 +186,7 @@ export const MOCK_OFFERS: OfferLink[] = [
   },
   {
     id: 'off-active-2',
+    tenantId: DEMO_TENANT_ID,
     delegationId: undefined, // Venda Direta HQ
     stoneId: 'inv-003', // Calacatta
     clientId: 'cli-003', // Construtora
@@ -178,6 +200,7 @@ export const MOCK_OFFERS: OfferLink[] = [
   },
   {
     id: 'off-active-3',
+    tenantId: DEMO_TENANT_ID,
     delegationId: 'del-002', // Sarah
     stoneId: 'inv-003', // Calacatta
     clientId: 'cli-002', // Amanda
@@ -193,6 +216,7 @@ export const MOCK_OFFERS: OfferLink[] = [
   // --- VENDIDOS (Sales / Financials) ---
   {
     id: 'off-sold-1',
+    tenantId: DEMO_TENANT_ID,
     delegationId: 'del-001', // John
     stoneId: 'inv-001', // Carrara
     clientId: 'cli-002', // Amanda
@@ -206,6 +230,7 @@ export const MOCK_OFFERS: OfferLink[] = [
   },
   {
     id: 'off-sold-2',
+    tenantId: DEMO_TENANT_ID,
     delegationId: undefined, // HQ Direto
     stoneId: 'inv-002', // Nero (Lote Esgotado)
     clientId: 'cli-003', // Construtora
@@ -221,6 +246,7 @@ export const MOCK_OFFERS: OfferLink[] = [
   // --- EXPIRADOS (Não deve aparecer em Pipeline nem Vendas) ---
   {
     id: 'off-exp-1',
+    tenantId: DEMO_TENANT_ID,
     delegationId: 'del-001',
     stoneId: 'inv-001',
     clientId: 'cli-001',

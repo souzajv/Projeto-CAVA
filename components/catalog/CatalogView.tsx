@@ -1,8 +1,8 @@
 
 import React from 'react';
-import { StoneTypology } from '../types';
+import { StoneTypology } from '../../types';
 import { Pencil, Search } from 'lucide-react';
-import { useLanguage } from '../contexts/LanguageContext';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 interface CatalogViewProps {
   typologies: StoneTypology[];

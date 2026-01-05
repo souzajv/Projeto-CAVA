@@ -1,11 +1,11 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
-import { OfferLink, Seller, StoneItem, SalesDelegation, UserRole } from '../types';
+import { OfferLink, Seller, StoneItem, SalesDelegation, UserRole } from '../../types';
 import { BarChart3, Link as LinkIcon, Users, ExternalLink, CheckSquare, BadgeCheck, Trash2, Calendar, X, ArrowUpRight, AlertCircle, Check, XCircle } from 'lucide-react';
-import { PageView } from './Sidebar';
-import { useLanguage } from '../contexts/LanguageContext';
+import { PageView } from '../layout/Sidebar';
+import { useLanguage } from '../../contexts/LanguageContext';
 import { motion, useSpring, useTransform } from 'framer-motion';
-import { StatusBadge } from './Badge';
+import { StatusBadge } from '../ui/Badge';
 
 function NumberTicker({ value }: { value: number }) {
   const { formatCurrency } = useLanguage();

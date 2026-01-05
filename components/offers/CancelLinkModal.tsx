@@ -1,8 +1,8 @@
 
 import React from 'react';
-import { OfferLink, StoneItem } from '../types';
+import { OfferLink, StoneItem } from '../../types';
 import { AlertTriangle, X, ArrowRight } from 'lucide-react';
-import { useLanguage } from '../contexts/LanguageContext';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 interface CancelLinkModalProps {
   offer: OfferLink;

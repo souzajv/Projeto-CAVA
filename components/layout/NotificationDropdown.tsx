@@ -1,8 +1,8 @@
 
 import React from 'react';
-import { Notification } from '../types';
+import { Notification } from '../../types';
 import { Check, Info, AlertTriangle, CheckCircle2, Bell, X, Clock } from 'lucide-react';
-import { useLanguage } from '../contexts/LanguageContext';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 interface NotificationDropdownProps {
   notifications: Notification[];
@@ -11,14 +11,14 @@ interface NotificationDropdownProps {
   onClose: () => void;
 }
 
-export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
-  notifications,
-  onMarkAllRead,
+export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ 
+  notifications, 
+  onMarkAllRead, 
   onMarkRead,
-  onClose
+  onClose 
 }) => {
   const { t } = useLanguage();
-  const sortedNotifications = [...notifications].sort((a, b) =>
+  const sortedNotifications = [...notifications].sort((a, b) => 
     new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
   );
 
@@ -32,7 +32,7 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
 
   return (
     <div className="absolute top-16 right-0 z-50 w-96 bg-white/95 backdrop-blur-xl rounded-2xl shadow-[0_50px_100px_-20px_rgba(0,0,0,0.15)] border border-slate-100 overflow-hidden animate-in fade-in slide-in-from-top-4 duration-300 ring-1 ring-[#121212]/5">
-
+      
       {/* Header */}
       <div className="px-6 py-5 border-b border-slate-100 flex justify-between items-center bg-white/50">
         <h3 className="font-serif font-bold text-[#121212] text-lg flex items-center">
@@ -40,7 +40,7 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
         </h3>
         <div className="flex items-center space-x-4">
           {notifications.some(n => !n.read) && (
-            <button
+            <button 
               onClick={onMarkAllRead}
               className="text-[10px] font-bold uppercase tracking-widest text-[#C2410C] hover:text-orange-800 transition-colors"
             >
@@ -63,8 +63,8 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
         ) : (
           <div className="divide-y divide-slate-50">
             {sortedNotifications.map(n => (
-              <div
-                key={n.id}
+              <div 
+                key={n.id} 
                 className={`p-5 hover:bg-slate-50 transition-colors flex gap-4 cursor-pointer group ${!n.read ? 'bg-[#C2410C]/5' : ''}`}
                 onClick={() => !n.read && onMarkRead(n.id)}
               >

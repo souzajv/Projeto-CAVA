@@ -1,6 +1,6 @@
 
 import React, { useEffect } from 'react';
-import { Notification } from '../types';
+import { Notification } from '../../types';
 import { Bell, CheckCircle2, AlertTriangle, X } from 'lucide-react';
 import { motion } from 'framer-motion';
 

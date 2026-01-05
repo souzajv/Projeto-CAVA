@@ -1,9 +1,9 @@
 
 import React from 'react';
-import { OfferLink, StoneItem, SalesDelegation } from '../types';
+import { OfferLink, StoneItem, SalesDelegation } from '../../types';
 import { X, ExternalLink, Copy, Calendar, Clock, DollarSign, User, CheckCircle2 } from 'lucide-react';
-import { useLanguage } from '../contexts/LanguageContext';
-import { PLATFORM_DOMAIN } from '../constants';
+import { useLanguage } from '../../contexts/LanguageContext';
+import { PLATFORM_DOMAIN } from '../../constants';
 
 interface LinkHistoryModalProps {
   delegation: SalesDelegation;

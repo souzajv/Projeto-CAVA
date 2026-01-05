@@ -24,11 +24,12 @@ export interface Dimensions {
 
 export interface StoneItem {
   id: string;
+  tenantId: string; // Indústria dona do lote
   typology: StoneTypology;
   lotId: string;
   dimensions: Dimensions;
   imageUrl: string;
-  additionalImages?: string[]; 
+  additionalImages?: string[];
   baseCost: number;
   minPrice: number;
   quantity: {
@@ -42,6 +43,7 @@ export interface StoneItem {
 
 export interface Client {
   id: string;
+  tenantId: string; // Indústria de origem
   name: string;
   company?: string;
   email: string;
@@ -50,47 +52,68 @@ export interface Client {
   notes?: string;
   // Auditoria de Origem do Lead
   createdById: string; // ID do Vendedor ou "admin"
-  createdByRole: UserRole; 
+  createdByRole: UserRole;
 }
+
+export type InviteStatus = 'pending' | 'accepted' | 'expired';
 
 export interface Seller {
   id: string;
+  tenantId: string; // Indústria que convidou
   name: string;
   phone: string;
   avatarUrl?: string;
+  inviteStatus: InviteStatus;
+  invitedById?: string; // Admin que enviou o convite
+  invitedAt?: string;
+  acceptedAt?: string;
 }
 
 export interface SalesDelegation {
   id: string;
+  tenantId: string;
   stoneId: string;
   sellerId: string;
-  delegatedQuantity: number; 
+  delegatedQuantity: number;
   agreedMinPrice: number;
-  createdAt: string; 
+  createdAt: string;
 }
 
 export type OfferStatus = 'active' | 'sold' | 'expired' | 'reservation_pending' | 'reserved';
 
 export interface OfferLink {
   id: string;
-  delegationId?: string; 
-  stoneId: string; 
-  clientId: string; 
+  tenantId: string;
+  delegationId?: string;
+  stoneId: string;
+  clientId: string;
   clientName: string; // Denormalização para performance
   finalPrice: number;
   quantityOffered: number;
   status: OfferStatus;
   clientViewToken: string;
-  createdAt: string; 
-  expiresAt?: string; 
-  viewLog: { 
-    timestamp: string; 
-    durationMs?: number; 
+  createdAt: string;
+  expiresAt?: string;
+  // Metadados de reserva para trilha de auditoria
+  reservation?: {
+    requestedByRole: UserRole;
+    requestedById?: string;
+    requestedAt: string;
+    note?: string;
+    reviewedAt?: string;
+    reviewerId?: string;
+    reviewerRole?: UserRole;
+    reviewNote?: string;
+  };
+  viewLog: {
+    timestamp: string;
+    durationMs?: number;
   }[];
 }
 
 export interface Notification {
   id: string;
+  tenantId: string;
   recipientId: string;
   message: string;
   type: 'info' | 'success' | 'alert';
@@ -110,7 +133,8 @@ export interface AppState {
   delegations: SalesDelegation[];
   offers: OfferLink[];
   notifications: Notification[];
+  currentTenantId: string;
   currentUserRole: UserRole;
-  currentSellerId?: string; 
+  currentSellerId?: string;
   currentView: 'dashboard' | { type: 'client_view', token: string };
 }

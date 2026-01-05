@@ -1,6 +1,16 @@
 
 import { StoneItem, SalesDelegation, OfferLink } from '../../types';
 
+export interface InventoryProgressSnapshot {
+  total: number;
+  sold: number;
+  reserved: number; // Hard-locked reservations (status: reserved)
+  softReserved: number; // Delegated balance + direct active/pending links
+  available: number;
+  delegatedHold: number;
+  directHold: number;
+}
+
 /**
  * InventoryService
  * 
@@ -16,10 +26,10 @@ import { StoneItem, SalesDelegation, OfferLink } from '../../types';
  *    b. O saldo de delegações (Cota do vendedor - O que ele já vendeu ou está reservado hard).
  */
 export class InventoryService {
-  
+
   public static reconcile(
-    baseStones: StoneItem[], 
-    delegations: SalesDelegation[], 
+    baseStones: StoneItem[],
+    delegations: SalesDelegation[],
     offers: OfferLink[]
   ): StoneItem[] {
     return (baseStones || []).map(stone => {
@@ -45,6 +55,57 @@ export class InventoryService {
     });
   }
 
+  public static computeProgressSnapshot(
+    stone: StoneItem,
+    delegations: SalesDelegation[],
+    offers: OfferLink[]
+  ): InventoryProgressSnapshot {
+    const total = stone.quantity.total || 0;
+
+    const sold = (offers || [])
+      .filter(o => o.stoneId === stone.id && o.status === 'sold')
+      .reduce((sum, o) => sum + (o.quantityOffered || 0), 0);
+
+    const reserved = (offers || [])
+      .filter(o => o.stoneId === stone.id && o.status === 'reserved')
+      .reduce((sum, o) => sum + (o.quantityOffered || 0), 0);
+
+    const directHold = (offers || [])
+      .filter(o =>
+        o.stoneId === stone.id &&
+        !o.delegationId &&
+        (o.status === 'active' || o.status === 'reservation_pending')
+      )
+      .reduce((sum, o) => sum + (o.quantityOffered || 0), 0);
+
+    const delegatedHold = (delegations || [])
+      .filter(d => d.stoneId === stone.id)
+      .reduce((sum, d) => {
+        const consumedByDelegation = (offers || [])
+          .filter(o =>
+            o.delegationId === d.id &&
+            (o.status === 'sold' || o.status === 'reserved')
+          )
+          .reduce((acc, o) => acc + (o.quantityOffered || 0), 0);
+
+        const remainingBalance = Math.max(0, d.delegatedQuantity - consumedByDelegation);
+        return sum + remainingBalance;
+      }, 0);
+
+    const softReserved = directHold + delegatedHold;
+    const available = Math.max(0, total - sold - reserved - softReserved);
+
+    return {
+      total,
+      sold,
+      reserved,
+      softReserved,
+      available,
+      delegatedHold,
+      directHold
+    };
+  }
+
   private static calculateTotalSoldOrLocked(stoneId: string, offers: OfferLink[]): number {
     return offers
       .filter(o => o.stoneId === stoneId && (o.status === 'sold' || o.status === 'reserved'))
@@ -52,16 +113,16 @@ export class InventoryService {
   }
 
   private static calculateTotalSoftReserved(
-    stoneId: string, 
-    delegations: SalesDelegation[], 
+    stoneId: string,
+    delegations: SalesDelegation[],
     offers: OfferLink[]
   ): number {
-    
+
     // A. Reservas Diretas da Indústria (Sem intermediário) - Active or Pending
     const activeDirectQuantity = offers
-      .filter(o => 
-        o.stoneId === stoneId && 
-        !o.delegationId && 
+      .filter(o =>
+        o.stoneId === stoneId &&
+        !o.delegationId &&
         (o.status === 'active' || o.status === 'reservation_pending')
       )
       .reduce((sum, o) => sum + (o.quantityOffered || 0), 0);
@@ -73,18 +134,18 @@ export class InventoryService {
     const delegatedReservedQuantity = delegations
       .filter(d => d.stoneId === stoneId)
       .reduce((sum, d) => {
-         // Quanto dessa delegação já virou venda confirmada ou reserva aprovada?
-         const consumedByDelegation = offers
-            .filter(o => 
-                o.delegationId === d.id && 
-                (o.status === 'sold' || o.status === 'reserved')
-            )
-            .reduce((acc, o) => acc + o.quantityOffered, 0);
-         
-         // O que resta da cota original é o que está "Reservado" na mão do vendedor.
-         const remainingBalance = Math.max(0, d.delegatedQuantity - consumedByDelegation);
-         
-         return sum + remainingBalance;
+        // Quanto dessa delegação já virou venda confirmada ou reserva aprovada?
+        const consumedByDelegation = offers
+          .filter(o =>
+            o.delegationId === d.id &&
+            (o.status === 'sold' || o.status === 'reserved')
+          )
+          .reduce((acc, o) => acc + o.quantityOffered, 0);
+
+        // O que resta da cota original é o que está "Reservado" na mão do vendedor.
+        const remainingBalance = Math.max(0, d.delegatedQuantity - consumedByDelegation);
+
+        return sum + remainingBalance;
       }, 0);
 
     return activeDirectQuantity + delegatedReservedQuantity;

@@ -9,7 +9,7 @@ export interface UseSellerOfferReturn {
   quantity: number;
   clientId: string;
   clientName: string;
-  
+
   // Computed
   profit: number;
   errors: Record<string, string>;
@@ -38,7 +38,7 @@ export const useSellerOffer = (delegation: SalesDelegation, maxQuantity: number)
   const [quantity, setQuantity] = useState<number>(1);
   const [clientId, setClientId] = useState<string>('');
   const [clientName, setClientName] = useState<string>('');
-  
+
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [generatedUrl, setGeneratedUrl] = useState<string | null>(null);
 
@@ -80,7 +80,7 @@ export const useSellerOffer = (delegation: SalesDelegation, maxQuantity: number)
   // 3. Action: Generate Link (Simulation)
   const generateLink = useCallback(async (): Promise<OfferLink | null> => {
     if (!isValid) return null;
-    
+
     setIsSubmitting(true);
 
     // Simulate Network Latency
@@ -88,10 +88,11 @@ export const useSellerOffer = (delegation: SalesDelegation, maxQuantity: number)
 
     const token = Math.random().toString(36).substring(7);
     const mockUrl = `${PLATFORM_DOMAIN}/view/${token}`;
-    
+
     // Fixed: Added required clientId property to newOffer
     const newOffer: OfferLink = {
       id: `off-${Date.now()}`,
+      tenantId: delegation.tenantId,
       delegationId: delegation.id,
       stoneId: delegation.stoneId,
       clientId: clientId,

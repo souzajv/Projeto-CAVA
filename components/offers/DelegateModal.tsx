@@ -1,8 +1,8 @@
 
 import React, { useState } from 'react';
-import { Seller, StoneItem } from '../types';
+import { Seller, StoneItem } from '../../types';
 import { X, Check, Lock, ChevronDown, User, DollarSign, Layers } from 'lucide-react';
-import { useLanguage } from '../contexts/LanguageContext';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 interface DelegateModalProps {
   stone: StoneItem;

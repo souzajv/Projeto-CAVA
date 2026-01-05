@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { OfferLink, StoneItem, Seller, SalesDelegation, UserRole } from '../types';
+import { OfferLink, StoneItem, Seller, SalesDelegation, UserRole } from '../../types';
 import { X, Search, ArrowUpRight, DollarSign, Calendar, User, TrendingUp, Filter } from 'lucide-react';
 
 export type KPIMode = 'pipeline' | 'sales' | 'profit';

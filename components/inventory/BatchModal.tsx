@@ -1,21 +1,22 @@
 
 import React, { useState, useEffect } from 'react';
-import { StoneItem, StoneTypology } from '../types';
+import { StoneItem, StoneTypology } from '../../types';
 import { X, Save, Ruler, DollarSign, Layers, Tag, Image as ImageIcon, CheckCircle2, RefreshCw, ChevronDown } from 'lucide-react';
-import { useLanguage } from '../contexts/LanguageContext';
-import { DEFAULT_STONE_IMAGE } from '../constants';
+import { useLanguage } from '../../contexts/LanguageContext';
+import { DEFAULT_STONE_IMAGE } from '../../constants';
 
 interface BatchModalProps {
   typologies: StoneTypology[];
+  tenantId: string;
   onClose: () => void;
   onSave: (item: StoneItem) => void;
 }
 
-export const BatchModal: React.FC<BatchModalProps> = ({ typologies, onClose, onSave }) => {
+export const BatchModal: React.FC<BatchModalProps> = ({ typologies, tenantId, onClose, onSave }) => {
   const { t } = useLanguage();
   const [selectedTypologyId, setSelectedTypologyId] = useState<string>('');
   const [lotId, setLotId] = useState('');
-  
+
   const [width, setWidth] = useState<number>(0);
   const [height, setHeight] = useState<number>(0);
   const [thickness, setThickness] = useState<number>(2);
@@ -24,7 +25,7 @@ export const BatchModal: React.FC<BatchModalProps> = ({ typologies, onClose, onS
   const [quantity, setQuantity] = useState<number>(1);
   const [baseCost, setBaseCost] = useState<number>(0);
   const [minPrice, setMinPrice] = useState<number>(0);
-  
+
   const [batchImageUrl, setBatchImageUrl] = useState('');
 
   const selectedTypology = typologies.find(t => t.id === selectedTypologyId);
@@ -59,6 +60,7 @@ export const BatchModal: React.FC<BatchModalProps> = ({ typologies, onClose, onS
 
     const newItem: StoneItem = {
       id: `inv-${Date.now()}`,
+      tenantId,
       typology: selectedTypology,
       lotId,
       dimensions: { width, height, thickness, unit },
@@ -79,15 +81,15 @@ export const BatchModal: React.FC<BatchModalProps> = ({ typologies, onClose, onS
   };
 
   return (
-    <div 
+    <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-[#121212]/90 backdrop-blur-md p-4 animate-in fade-in duration-300"
       onClick={onClose}
     >
-      <div 
+      <div
         className="bg-white rounded-sm shadow-2xl w-full max-w-6xl h-[95vh] overflow-hidden flex flex-col border border-white/10"
         onClick={(e) => e.stopPropagation()}
       >
-        
+
         {/* Header */}
         <div className="px-8 py-6 border-b border-[#222] flex justify-between items-center bg-[#121212] text-white shrink-0">
           <div>
@@ -100,7 +102,7 @@ export const BatchModal: React.FC<BatchModalProps> = ({ typologies, onClose, onS
         </div>
 
         <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-10 space-y-12">
-          
+
           {/* Section 1: Product Definition */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
             <div className="space-y-4">
@@ -121,7 +123,7 @@ export const BatchModal: React.FC<BatchModalProps> = ({ typologies, onClose, onS
                 </select>
                 <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
               </div>
-              
+
               {/* Preview Selected Typology */}
               {selectedTypology && (
                 <div className="flex items-center p-4 bg-slate-50 border border-slate-100 mt-4">
@@ -138,10 +140,10 @@ export const BatchModal: React.FC<BatchModalProps> = ({ typologies, onClose, onS
             <div className="space-y-4">
               <label className="text-xs font-bold uppercase tracking-widest text-slate-400 flex items-center justify-between">
                 <span className="flex items-center"><Tag className="w-3 h-3 mr-2" /> {t('modal.batch.lot_id')} <span className="text-[#C2410C] ml-1">*</span></span>
-                
+
                 {selectedTypology && (
-                  <button 
-                    type="button" 
+                  <button
+                    type="button"
                     onClick={handleRegenerateId}
                     className="text-[10px] font-bold text-[#121212] hover:text-[#C2410C] flex items-center transition-colors uppercase tracking-wider"
                   >
@@ -149,8 +151,8 @@ export const BatchModal: React.FC<BatchModalProps> = ({ typologies, onClose, onS
                   </button>
                 )}
               </label>
-              <input 
-                type="text" 
+              <input
+                type="text"
                 required
                 value={lotId}
                 onChange={e => setLotId(e.target.value)}
@@ -167,50 +169,50 @@ export const BatchModal: React.FC<BatchModalProps> = ({ typologies, onClose, onS
             <h3 className="text-sm font-bold text-[#121212] mb-8 flex items-center uppercase tracking-[0.2em]">
               <Ruler className="w-4 h-4 mr-3 text-slate-400" /> {t('modal.batch.dim_qty')}
             </h3>
-            
-            <div className="flex flex-col lg:flex-row gap-12">
-               <div className="grid grid-cols-4 gap-6 flex-[2]">
-                  <div className="space-y-2">
-                     <label className="text-[10px] uppercase font-bold text-slate-400 tracking-widest">{t('modal.batch.width')}</label>
-                     <input type="number" required min={0} value={width} onChange={e => setWidth(Number(e.target.value))} className="w-full py-2 bg-white border-b border-slate-200 text-lg font-medium focus:border-[#121212] outline-none" />
-                  </div>
-                  <div className="space-y-2">
-                     <label className="text-[10px] uppercase font-bold text-slate-400 tracking-widest">{t('modal.batch.height')}</label>
-                     <input type="number" required min={0} value={height} onChange={e => setHeight(Number(e.target.value))} className="w-full py-2 bg-white border-b border-slate-200 text-lg font-medium focus:border-[#121212] outline-none" />
-                  </div>
-                  <div className="space-y-2">
-                     <label className="text-[10px] uppercase font-bold text-slate-400 tracking-widest">{t('modal.batch.thick')}</label>
-                     <input type="number" required min={0} value={thickness} onChange={e => setThickness(Number(e.target.value))} className="w-full py-2 bg-white border-b border-slate-200 text-lg font-medium focus:border-[#121212] outline-none" />
-                  </div>
-                  <div className="space-y-2">
-                     <label className="text-[10px] uppercase font-bold text-slate-400 tracking-widest">{t('modal.batch.unit')}</label>
-                     <select value={unit} onChange={(e) => setUnit(e.target.value as any)} className="w-full py-2.5 bg-white border-b border-slate-200 text-lg font-medium focus:border-[#121212] outline-none appearance-none rounded-none">
-                       <option value="cm">cm</option>
-                       <option value="m">m</option>
-                       <option value="mm">mm</option>
-                     </select>
-                  </div>
-               </div>
 
-               <div className="w-full lg:w-64 space-y-3">
-                  <label className="text-xs font-bold uppercase tracking-widest text-slate-400 flex items-center">
-                    <Layers className="w-4 h-4 mr-2" /> {t('modal.batch.qty')} <span className="text-[#C2410C] ml-1">*</span>
-                  </label>
-                  <div className="flex items-baseline border-b border-slate-200">
-                    <input 
-                        type="number" 
-                        required
-                        min={1}
-                        value={quantity}
-                        onChange={e => setQuantity(Number(e.target.value))}
-                        className="w-full py-2 bg-white text-3xl font-serif text-[#121212] focus:outline-none"
-                        placeholder={t('modal.batch.placeholder_qty')}
-                    />
-                    <span className="text-xs font-bold uppercase tracking-widest text-slate-400 ml-2 pb-3 whitespace-nowrap">
-                        {t(`unit.${unit === 'm' ? 'm2' : 'slabs'}`)}
-                    </span>
-                  </div>
-               </div>
+            <div className="flex flex-col lg:flex-row gap-12">
+              <div className="grid grid-cols-4 gap-6 flex-[2]">
+                <div className="space-y-2">
+                  <label className="text-[10px] uppercase font-bold text-slate-400 tracking-widest">{t('modal.batch.width')}</label>
+                  <input type="number" required min={0} value={width} onChange={e => setWidth(Number(e.target.value))} className="w-full py-2 bg-white border-b border-slate-200 text-lg font-medium focus:border-[#121212] outline-none" />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[10px] uppercase font-bold text-slate-400 tracking-widest">{t('modal.batch.height')}</label>
+                  <input type="number" required min={0} value={height} onChange={e => setHeight(Number(e.target.value))} className="w-full py-2 bg-white border-b border-slate-200 text-lg font-medium focus:border-[#121212] outline-none" />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[10px] uppercase font-bold text-slate-400 tracking-widest">{t('modal.batch.thick')}</label>
+                  <input type="number" required min={0} value={thickness} onChange={e => setThickness(Number(e.target.value))} className="w-full py-2 bg-white border-b border-slate-200 text-lg font-medium focus:border-[#121212] outline-none" />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[10px] uppercase font-bold text-slate-400 tracking-widest">{t('modal.batch.unit')}</label>
+                  <select value={unit} onChange={(e) => setUnit(e.target.value as any)} className="w-full py-2.5 bg-white border-b border-slate-200 text-lg font-medium focus:border-[#121212] outline-none appearance-none rounded-none">
+                    <option value="cm">cm</option>
+                    <option value="m">m</option>
+                    <option value="mm">mm</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="w-full lg:w-64 space-y-3">
+                <label className="text-xs font-bold uppercase tracking-widest text-slate-400 flex items-center">
+                  <Layers className="w-4 h-4 mr-2" /> {t('modal.batch.qty')} <span className="text-[#C2410C] ml-1">*</span>
+                </label>
+                <div className="flex items-baseline border-b border-slate-200">
+                  <input
+                    type="number"
+                    required
+                    min={1}
+                    value={quantity}
+                    onChange={e => setQuantity(Number(e.target.value))}
+                    className="w-full py-2 bg-white text-3xl font-serif text-[#121212] focus:outline-none"
+                    placeholder={t('modal.batch.placeholder_qty')}
+                  />
+                  <span className="text-xs font-bold uppercase tracking-widest text-slate-400 ml-2 pb-3 whitespace-nowrap">
+                    {t(`unit.${unit === 'm' ? 'm2' : 'slabs'}`)}
+                  </span>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -222,8 +224,8 @@ export const BatchModal: React.FC<BatchModalProps> = ({ typologies, onClose, onS
               <label className="text-xs font-bold uppercase tracking-widest text-slate-400 flex items-center">
                 <DollarSign className="w-3 h-3 mr-1" /> {t('modal.batch.cost_unit')}
               </label>
-              <input 
-                type="number" 
+              <input
+                type="number"
                 required
                 min={0}
                 value={baseCost}
@@ -236,8 +238,8 @@ export const BatchModal: React.FC<BatchModalProps> = ({ typologies, onClose, onS
               <label className="text-xs font-bold uppercase tracking-widest text-slate-400 flex items-center">
                 <DollarSign className="w-3 h-3 mr-1" /> {t('modal.batch.min_unit')}
               </label>
-              <input 
-                type="number" 
+              <input
+                type="number"
                 required
                 min={0}
                 value={minPrice}
@@ -253,8 +255,8 @@ export const BatchModal: React.FC<BatchModalProps> = ({ typologies, onClose, onS
             <label className="text-xs font-bold uppercase tracking-widest text-slate-400 flex items-center justify-between">
               <div className="flex items-center"><ImageIcon className="w-3 h-3 mr-2" /> {t('modal.batch.image_opt')}</div>
               {selectedTypology && (
-                <button 
-                  type="button" 
+                <button
+                  type="button"
                   onClick={() => setBatchImageUrl(selectedTypology.imageUrl)}
                   className="text-[10px] font-bold text-[#121212] hover:text-[#C2410C] uppercase tracking-wider transition-colors"
                 >
@@ -262,8 +264,8 @@ export const BatchModal: React.FC<BatchModalProps> = ({ typologies, onClose, onS
                 </button>
               )}
             </label>
-            <input 
-              type="url" 
+            <input
+              type="url"
               value={batchImageUrl}
               onChange={e => setBatchImageUrl(e.target.value)}
               className="w-full py-3 bg-white border-b border-slate-200 text-sm focus:border-[#121212] outline-none"
@@ -274,13 +276,13 @@ export const BatchModal: React.FC<BatchModalProps> = ({ typologies, onClose, onS
         </form>
 
         <div className="px-10 py-6 bg-[#FAFAFA] border-t border-slate-200 flex justify-end space-x-4 shrink-0">
-          <button 
+          <button
             onClick={onClose}
             className="px-6 py-3 text-xs font-bold uppercase tracking-widest text-slate-500 hover:text-[#121212] transition-colors"
           >
             {t('common.cancel')}
           </button>
-          <button 
+          <button
             onClick={handleSubmit}
             disabled={!selectedTypology}
             className="px-8 py-3 bg-[#121212] text-white text-xs font-bold uppercase tracking-widest hover:bg-[#C2410C] flex items-center shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"

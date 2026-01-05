@@ -1,8 +1,8 @@
 
 import React from 'react';
 import { LayoutGrid, TrendingUp, DollarSign, Link as LinkIcon, Package, UserCircle, Archive, Thermometer, Users } from 'lucide-react';
-import { UserRole } from '../types';
-import { useLanguage } from '../contexts/LanguageContext';
+import { UserRole } from '../../types';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 export type PageView = 'inventory' | 'lot_history' | 'dashboard' | 'pipeline' | 'sales' | 'financials' | 'thermometer' | 'clients';
 

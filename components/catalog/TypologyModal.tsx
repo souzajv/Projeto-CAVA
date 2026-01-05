@@ -1,9 +1,9 @@
 
 import React, { useState, useEffect } from 'react';
-import { StoneTypology } from '../types';
+import { StoneTypology } from '../../types';
 import { X, Save, Image as ImageIcon, MapPin, Hammer, AlignLeft, Type } from 'lucide-react';
-import { useLanguage } from '../contexts/LanguageContext';
-import { DEFAULT_STONE_IMAGE } from '../constants';
+import { useLanguage } from '../../contexts/LanguageContext';
+import { DEFAULT_STONE_IMAGE } from '../../constants';
 
 interface TypologyModalProps {
   typology?: StoneTypology; // If provided, edit mode. If null, create mode.

@@ -1,8 +1,8 @@
 
 import React from 'react';
-import { OfferLink, StoneItem } from '../types';
+import { OfferLink, StoneItem } from '../../types';
 import { BadgeCheck, X, ArrowRight, DollarSign } from 'lucide-react';
-import { useLanguage } from '../contexts/LanguageContext';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 interface ConfirmSaleModalProps {
   offer: OfferLink;

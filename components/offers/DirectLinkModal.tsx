@@ -1,8 +1,8 @@
 
 import React, { useState } from 'react';
-import { StoneItem, Client } from '../types';
+import { StoneItem, Client } from '../../types';
 import { X, Link as LinkIcon, Layers, Calendar, DollarSign, User } from 'lucide-react';
-import { useLanguage } from '../contexts/LanguageContext';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 interface DirectLinkModalProps {
   stone: StoneItem;

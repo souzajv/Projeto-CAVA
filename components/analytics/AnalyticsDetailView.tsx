@@ -1,8 +1,8 @@
 
 import React, { useState, useMemo } from 'react';
-import { OfferLink, StoneItem, Seller, SalesDelegation, UserRole } from '../types';
+import { OfferLink, StoneItem, Seller, SalesDelegation, UserRole } from '../../types';
 import { Search, Link as LinkIcon, DollarSign, Calendar, TrendingUp, Download, AlertTriangle } from 'lucide-react';
-import { useLanguage } from '../contexts/LanguageContext';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 export type AnalyticsMode = 'pipeline' | 'sales' | 'profit';
 
