@@ -1,51 +1,28 @@
-# CAVA - Plataforma para a Indústria de Rochas
+# CAVA.
 
-A **CAVA** é uma solução digital desenhada especificamente para modernizar a forma como indústrias de pedras (mármores, granitos, quartzitos) gerenciam seu estoque e se conectam com parceiros de vendas e clientes finais.
+## Resumo
 
-Imagine a CAVA como uma ponte inteligente que leva o material que está no pátio da sua fábrica até a tela do celular do comprador final, com total segurança e profissionalismo.
+A aplicação é um SPA em React + TypeScript com contexto de idioma, hooks de domínio e componentes específicos para cada papel (indústria e vendedor). Os dados são mockados em memória e encadeados por serviços e hooks para manter regras de estoque e de negociação consistentes.
 
----
+## Requisitos funcionais
 
-## 👥 Como a plataforma funciona?
+- Gestão de inventário (lotes e catálogo), com filtros, status e visualização por papel (indústria vs. vendedor) em [App.tsx](App.tsx), [components/inventory/InventoryFilters.tsx](components/inventory/InventoryFilters.tsx) e [components/inventory/StoneCard.tsx](components/inventory/StoneCard.tsx).
+- Delegação de estoque para parceiros, respeitando saldo disponível e piso de preço, controlado pelo domínio em [App.tsx](App.tsx) e [domain/services/InventoryService.ts](domain/services/InventoryService.ts).
+- Geração de links de oferta (indústria e vendedor), validação de preço/quantidade e criação de tokens seguros em [App.tsx](App.tsx) e no hook [hooks/useSellerOffer.ts](hooks/useSellerOffer.ts).
+- Ciclo de reservas (solicitar, aprovar, rejeitar) com travamento de estoque e notificações em [App.tsx](App.tsx) e painel de acompanhamento em [components/dashboard/Dashboard.tsx](components/dashboard/Dashboard.tsx).
+- Fechamento/cancelamento de vendas com atualização de estoque e delegações em [App.tsx](App.tsx) e visão de pipeline/financeiro em [components/dashboard/Dashboard.tsx](components/dashboard/Dashboard.tsx).
+- CRM de clientes (listagem, criação/edição e uso nos links) operado em [App.tsx](App.tsx) e modais dedicados em `components/clients/`.
+- Analytics, KPIs e termômetro de interesse baseados em segregação de ofertas/delegações em [App.tsx](App.tsx) e [components/analytics/](components/analytics/).
+- Notificações e toasts (avisos de erros, reservas e vendas) disparadas a partir de [App.tsx](App.tsx) e exibidas via [components/layout/NotificationDropdown.tsx](components/layout/NotificationDropdown.tsx) e [components/ui/Toast.tsx](components/ui/Toast.tsx).
+- Internacionalização e formatação de datas/moedas providas por [contexts/LanguageContext.tsx](contexts/LanguageContext.tsx).
 
-O ecossistema é dividido em três perfis principais, cada um com sua visão e ferramentas:
+## Fluxos principais 
 
-### 1. A Indústria (O Coração)
-É o dono do material. A indústria utiliza a plataforma para:
-*   **Organizar o Catálogo:** Cadastrar os tipos de pedras disponíveis (Ex: "Granito Branco Prime").
-*   **Controlar o Estoque Real:** Registrar a entrada de lotes e blocos específicos, com fotos reais de cada chapa.
-*   **Distribuir Oportunidades:** "Delegar" quantidades de pedras para vendedores parceiros, definindo o preço mínimo que aceita receber por elas.
-*   **Visão Global:** Acompanhar em tempo real qual material está sendo mais visualizado e quais vendas foram fechadas.
-
-### 2. O Vendedor (O Motor)
-É o parceiro comercial que encontra o comprador. Ele utiliza a plataforma para:
-*   **Showroom Pessoal:** Visualizar apenas o estoque que a indústria liberou para ele vender.
-*   **Ofertas Exclusivas:** Criar links de vendas personalizados para seus clientes. Ele pode definir o seu próprio preço de venda acima do valor mínimo da fábrica (sua comissão).
-*   **Rastreamento de Interesse:** Receber notificações no momento exato em que um cliente abre o link de uma oferta.
-
-### 3. O Cliente Final (O Destino)
-É quem recebe a proposta. Sem precisar instalar nada, ele acessa uma:
-*   **Vitrine Digital:** Uma página elegante e segura que mostra as fotos reais da pedra, as medidas exatas e a descrição técnica.
-*   **Reserva Prática:** Um canal direto para confirmar o interesse e garantir o material.
-
----
-
-## 🚀 O Ciclo de Venda na CAVA
-
-1.  **Entrada de Material:** A fábrica recebe um novo lote de chapas e o cadastra no sistema com fotos e medidas.
-2.  **Parceria:** A fábrica decide que o "Vendedor João" terá direito a vender 5 dessas chapas.
-3.  **Oferta Digital:** O João tem um cliente interessado. Ele entra no sistema, seleciona as chapas e gera um link seguro.
-4.  **Engajamento:** O cliente abre o link. O sistema avisa o João: *"O cliente acabou de ver sua oferta!"*.
-5.  **Fechamento:** O cliente aceita. A fábrica confirma a venda e o estoque é atualizado automaticamente para todos.
-
----
-
-## ✨ Por que usar CAVA?
-
-*   **Fim dos Erros de Estoque:** Venda apenas o que você realmente tem disponível. O sistema trava o material assim que ele entra em negociação.
-*   **Profissionalismo:** Substitua fotos espalhadas no WhatsApp por uma página de vendas sofisticada que valoriza o seu produto.
-*   **Agilidade:** Crie propostas comerciais completas em menos de 30 segundos.
-*   **Informação é Poder:** Saiba exatamente quais pedras estão "quentes" no mercado através dos dados de visualização.
-
----
-*CAVA Stone Platform - Transformando blocos de pedra em fluxos de sucesso.*
+- Inventário em tempo real: `InventoryService.reconcile` aplica regras de soft/hard lock e devolve disponibilidade calculada para cada pedra, usado em [App.tsx](App.tsx) e exibido em [components/inventory/StoneCard.tsx](components/inventory/StoneCard.tsx).
+- Delegar estoque: `handleDelegate` verifica disponibilidade, cria `SalesDelegation` e gera toast; UI é aberta pela action de delegado em StoneCard (indústria) e modais em `components/offers/DelegateModal.tsx`.
+- Criar oferta (vendedor): `useSellerOffer` valida preço acima do piso, limita quantidade ao saldo delegado e gera `OfferLink` com token; acionado por `OfferModal` em [components/offers/OfferModal.tsx](components/offers/OfferModal.tsx).
+- Links diretos (indústria): `handleCreateOffer` cria oferta sem delegação e atualiza lista de ofertas, disparando toast; entry point via ações de StoneCard para admin e `DirectLinkModal`.
+- Reservas: `requestReservation` altera status para `reservation_pending`; `approveReservation` valida disponibilidade e marca como `reserved`; `rejectReservation` retorna para `active`; painel de pendências renderizado em [components/dashboard/Dashboard.tsx](components/dashboard/Dashboard.tsx).
+- Venda e cancelamento: `handleFinalizeSale` marca `sold`, abate delegação quando aplicável e recalcula KPIs; `handleCancelLink` expira link e libera estoque; efeitos visíveis na tabela de transações do dashboard.
+- Filtragem por papel e contexto: memos em [App.tsx](App.tsx) segregam dados por tenant, papel do usuário e indústria selecionada, alimentando views (dashboard, pipeline, analytics, CRM, inventário).
+- Notificação/alerta: `addNotification` cria registros tanto para dropdown quanto para toasts; eventos são disparados de cada ação de negócio (delegar, reserva, venda, cancelamento, CRM).
