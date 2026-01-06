@@ -6,20 +6,28 @@ Documento de referência técnica para o backend: modelagem de dados, regras de 
 ## Entidades (domínio)
 - Tenant
   - `id`, `name`
+  - Notas: raiz de multi-tenant; todo registro de domínio referencia `tenantId` para isolamento lógico.
 - StoneTypology
   - `id`, `tenantId`, `name`, `description`, `origin`, `hardness`, `imageUrl`, `technicalFileUrl?`
+  - Notas: catálogo de tipologias (granito, mármore, etc.); `technicalFileUrl` é opcional para anexos técnicos; usada como foreign key em StoneItem.
 - StoneItem (lote)
   - `id`, `tenantId`, `typologyId`, `lotId`, `dimensions { width, height, thickness, unit: cm|mm|m }`, `imageUrl`, `additionalImages?`, `baseCost`, `minPrice`, `quantity { total, available, reserved, sold, unit: slabs|m2 }`, timestamps opcionais
+  - Notas: representa um lote concreto de chapas/metros; `lotId` é identificador humano exibido em UI e histórico; `typologyId` referencia o material; `baseCost` é custo unitário (m2 ou chapa) usado para cálculo de lucro da indústria; `minPrice` é piso de venda direta da indústria e piso para delegações; `quantity` guarda snapshot derivado do reconcile (não editar direto via UI, apenas via service); `dimensions` é para ficha técnica e cálculos de área quando unidade for m2.
 - Seller
   - `id`, `tenantId`, `name`, `phone`, `avatarUrl?`, `inviteStatus: pending|accepted|expired`, `invitedById?`, `invitedAt?`, `acceptedAt?`
+  - Notas: representa usuários vendedores (mesmo que atendam múltiplas indústrias cada registro é por tenant); `inviteStatus` controla fluxo de convite; `invitedById` aponta para usuário admin que convidou (não modelado no front ainda, backend precisa de user table para chave estrangeira ou referência solta).
 - Client
   - `id`, `tenantId`, `name`, `company?`, `email`, `phone`, `createdAt`, `notes?`, `createdById`, `createdByRole: industry_admin|seller`
+  - Notas: cliente associado às ofertas; `createdBy*` indicam quem cadastrou (para auditoria e filtros por vendedor); pode ser reutilizado em vários OfferLink.
 - SalesDelegation (cota de um vendedor sobre um lote)
   - `id`, `tenantId`, `stoneId`, `sellerId`, `delegatedQuantity`, `agreedMinPrice`, `createdAt`
+  - Notas: relaciona um Seller a um StoneItem; `delegatedQuantity` é a quantidade máxima que o seller pode vender daquele lote (unidade acompanha a do StoneItem); `agreedMinPrice` é o piso negociado para o seller (Offer inicial começa 15% acima); consumo de quantidade acontece via OfferLink `reserved` ou `sold` que referenciam essa delegação.
 - OfferLink (link de venda)
   - `id`, `tenantId`, `stoneId`, `delegationId?` (null => link direto da indústria), `clientId`, `clientName`, `finalPrice`, `quantityOffered`, `status: active|reservation_pending|reserved|sold|expired`, `clientViewToken` (único para página pública), `createdAt`, `expiresAt?`, `viewLog[] { timestamp, durationMs? }`, `reservation? { requestedByRole, requestedById?, requestedAt, note?, reviewedAt?, reviewerId?, reviewerRole?, reviewNote? }`
+  - Notas: representa uma proposta enviada ao cliente; `delegationId` define se é oferta direta (null) ou de seller; `clientName` é mantido como denormalizado para snapshot mesmo que `clientId` exista; `finalPrice` é o preço negociado por unidade; `quantityOffered` deve respeitar estoque e delegação; `clientViewToken` gera URL pública `/view/{token}` e deve ser único; `viewLog` alimenta analytics de interesse; `reservation` captura o fluxo de aprovação quando um seller pede reserva.
 - Notification
   - `id`, `tenantId`, `recipientId`, `message`, `type: info|success|alert`, `timestamp`, `read`, `isToast?`
+  - Notas: feed de notificações in-app; `recipientId` referencia usuário (admin ou seller); `isToast` indica se também deve aparecer como toast imediato no front.
 
 ## Regras de Estoque (InventoryService.reconcile)
 - Hard lock: ofertas com status `sold` ou `reserved` abatem do estoque global.

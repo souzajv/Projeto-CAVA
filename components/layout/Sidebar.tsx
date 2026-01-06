@@ -32,10 +32,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
     const isActive = activePage === page;
     return (
       <button
-        onClick={() => onNavigate(page)}
+        onClick={() => {
+          onNavigate(page);
+          onCloseMobile?.();
+        }}
         className={`relative w-full flex items-center space-x-3 px-4 py-3.5 rounded-sm transition-all duration-300 group overflow-hidden ${isActive
-            ? 'text-white bg-white/10 shadow-[0_0_20px_rgba(255,255,255,0.05)]'
-            : 'text-slate-400 hover:text-white hover:bg-white/5'
+          ? 'text-white bg-white/10 shadow-[0_0_20px_rgba(255,255,255,0.05)]'
+          : 'text-slate-400 hover:text-white hover:bg-white/5'
           }`}
       >
         {isActive && (
@@ -49,9 +52,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   return (
     <aside
-      className={`w-72 bg-[#121212] border-r border-white/5 h-screen fixed inset-y-0 left-0 flex flex-col shadow-2xl z-50 text-white relative overflow-hidden transform transition-transform duration-300
-      ${isMobileOpen ? 'translate-x-0' : '-translate-x-full'}
-      lg:translate-x-0 lg:static lg:flex`}
+      className={`w-72 bg-[#121212] border-r border-white/5 h-screen fixed inset-y-0 left-0 flex flex-col shadow-2xl z-50 text-white relative overflow-hidden transform transition-transform duration-300 will-change-transform
+      ${isMobileOpen ? 'translate-x-0 pointer-events-auto' : '-translate-x-full pointer-events-none'}
+      lg:translate-x-0 lg:pointer-events-auto`}
     >
       <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-white/5 via-transparent to-transparent pointer-events-none" />
       <div className="p-4 pl-6 flex items-center justify-between lg:hidden relative z-10">
@@ -78,6 +81,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <p className="text-[9px] uppercase tracking-[0.3em] text-[#C2410C] font-medium opacity-80">Architecture</p>
           </div>
         </div>
+        <button onClick={onCloseMobile} className="absolute top-6 right-6 text-slate-500 hover:text-white transition-colors">
+          <X className="w-5 h-5" />
+        </button>
       </div>
       <div className="flex-1 px-4 space-y-1 relative z-10 overflow-y-auto dark-scroll">
         <div className="px-4 py-2 text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] mb-2 mt-2">

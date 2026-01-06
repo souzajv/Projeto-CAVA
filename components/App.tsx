@@ -1,5 +1,5 @@
 
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import {
    AppState, StoneItem, Seller, SalesDelegation, OfferLink, Notification,
    UserRole, StoneTypology, Client
@@ -33,7 +33,7 @@ import { ClientDetailsModal } from './clients/ClientDetailsModal';
 import { LotHistoryView } from './analytics/LotHistoryView';
 
 import {
-   Bell, Plus, LayoutGrid, List
+   Bell, Plus, LayoutGrid, List, Menu
 } from 'lucide-react';
 
 const AppContent = () => {
@@ -58,6 +58,18 @@ const AppContent = () => {
    const [currentSellerId, setCurrentSellerId] = useState<string>('all');
    const [currentView, setCurrentView] = useState<AppState['currentView']>('dashboard');
    const [activePage, setActivePage] = useState<PageView>('dashboard');
+   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+   const [isDesktop, setIsDesktop] = useState(false);
+
+   useEffect(() => {
+      const syncSidebar = () => {
+         const desktop = typeof window !== 'undefined' && window.innerWidth >= 1024;
+         setIsDesktop(desktop);
+      };
+      syncSidebar();
+      window.addEventListener('resize', syncSidebar);
+      return () => window.removeEventListener('resize', syncSidebar);
+   }, []);
 
    const [inventoryMode, setInventoryMode] = useState<'lots' | 'catalog'>('lots');
    const [invSearch, setInvSearch] = useState('');
@@ -349,42 +361,72 @@ const AppContent = () => {
    }
 
    return (
-      <div className="flex min-h-screen bg-[#FDFDFD] font-sans text-slate-900">
+      <div className="relative min-h-screen bg-[#FDFDFD] font-sans text-slate-900 overflow-x-hidden">
          <Sidebar
             activePage={activePage}
             onNavigate={setActivePage}
             role={currentUserRole}
             currentUserName={currentUser.name}
             currentUserRoleLabel={currentUser.roleLabel}
+            isMobileOpen={isSidebarOpen}
+            onCloseMobile={() => setIsSidebarOpen(false)}
          />
 
-         <main className="flex-1 flex flex-col h-screen overflow-hidden relative">
-            <div className="absolute top-6 right-8 z-50 flex items-center space-x-6">
-               <div className="relative">
-                  <button onClick={() => setShowNotifications(!showNotifications)} className="relative p-2 text-slate-400 hover:text-[#121212] transition-colors bg-white/80 backdrop-blur-sm rounded-full hover:bg-white shadow-sm border border-slate-100">
-                     <Bell className="w-5 h-5" />
-                     {notifications.some(n => !n.read) && <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-rose-500 rounded-full border border-white" />}
+         {isSidebarOpen && !isDesktop && (
+            <div
+               className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm"
+               onClick={() => setIsSidebarOpen(false)}
+            />
+         )}
+
+         <main className="relative min-h-screen flex flex-col overflow-x-hidden">
+            <header className="sticky top-0 z-30 flex items-center justify-between px-4 sm:px-6 lg:px-12 py-5 bg-[#FDFDFD]/90 backdrop-blur-sm border-b border-slate-200/80">
+               <div className="flex items-center gap-3">
+                  <button
+                     onClick={() => setIsSidebarOpen(true)}
+                     className="p-2 rounded-md border border-slate-200 bg-white shadow-sm text-slate-700 hover:border-slate-300 hover:text-[#121212] transition-colors"
+                     aria-label="Open navigation menu"
+                  >
+                     <Menu className="w-5 h-5" />
                   </button>
-                  {showNotifications && (
-                     <NotificationDropdown
-                        notifications={notifications}
-                        onMarkRead={(id) => setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n))}
-                        onMarkAllRead={() => setNotifications(prev => prev.map(n => ({ ...n, read: true })))}
-                        onClose={() => setShowNotifications(false)}
-                     />
-                  )}
+                  <div className="flex items-center gap-2">
+                     <div className="w-9 h-9 bg-[#121212] text-white rounded-sm flex items-center justify-center font-serif font-bold text-lg shadow-md shadow-[#121212]/20">
+                        C
+                     </div>
+                     <div>
+                        <p className="text-xs uppercase tracking-[0.2em] text-slate-500">CAVA</p>
+                        <p className="text-sm font-semibold text-[#121212]">Architecture</p>
+                     </div>
+                  </div>
                </div>
 
-               <div className="flex items-center space-x-2 bg-slate-100/90 backdrop-blur-sm p-1 rounded-lg border border-slate-200 shadow-sm">
-                  <button onClick={() => { setCurrentUserRole('industry_admin'); setCurrentSellerId('all'); setActivePage('dashboard'); }} className={`px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest rounded-md transition-all ${currentUserRole === 'industry_admin' ? 'bg-white shadow-sm text-[#121212]' : 'text-slate-400'}`}>Admin</button>
-                  <button onClick={() => { setCurrentUserRole('seller'); setCurrentSellerId('sel-001'); setActivePage('dashboard'); }} className={`px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest rounded-md transition-all ${currentUserRole === 'seller' ? 'bg-white shadow-sm text-[#121212]' : 'text-slate-400'}`}>Seller</button>
-               </div>
-            </div>
+               <div className="flex items-center gap-4">
+                  <div className="relative">
+                     <button onClick={() => setShowNotifications(!showNotifications)} className="relative p-2 text-slate-400 hover:text-[#121212] transition-colors bg-white/80 backdrop-blur-sm rounded-full hover:bg-white shadow-sm border border-slate-100">
+                        <Bell className="w-5 h-5" />
+                        {notifications.some(n => !n.read) && <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-rose-500 rounded-full border border-white" />}
+                     </button>
+                     {showNotifications && (
+                        <NotificationDropdown
+                           notifications={notifications}
+                           onMarkRead={(id) => setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n))}
+                           onMarkAllRead={() => setNotifications(prev => prev.map(n => ({ ...n, read: true })))}
+                           onClose={() => setShowNotifications(false)}
+                        />
+                     )}
+                  </div>
 
-            <div className="flex-1 overflow-y-auto px-8 pb-8 lg:px-12 lg:pb-12 pt-0 scroll-smooth">
+                  <div className="flex items-center space-x-2 bg-slate-100/90 backdrop-blur-sm p-1 rounded-lg border border-slate-200 shadow-sm">
+                     <button onClick={() => { setCurrentUserRole('industry_admin'); setCurrentSellerId('all'); setActivePage('dashboard'); }} className={`px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest rounded-md transition-all ${currentUserRole === 'industry_admin' ? 'bg-white shadow-sm text-[#121212]' : 'text-slate-400'}`}>Admin</button>
+                     <button onClick={() => { setCurrentUserRole('seller'); setCurrentSellerId('sel-001'); setActivePage('dashboard'); }} className={`px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest rounded-md transition-all ${currentUserRole === 'seller' ? 'bg-white shadow-sm text-[#121212]' : 'text-slate-400'}`}>Seller</button>
+                  </div>
+               </div>
+            </header>
+
+            <div className="flex-1 overflow-y-auto px-4 sm:px-6 lg:px-12 pb-8 lg:pb-12 pt-6 scroll-smooth">
                <div className="max-w-[1600px] mx-auto h-full">
                   {activePage === 'dashboard' && (
-                     <div className="pt-8 lg:pt-12">
+                     <div className="pt-6 lg:pt-10">
                         <Dashboard
                            role={currentUserRole}
                            kpi={kpi}
@@ -404,7 +446,7 @@ const AppContent = () => {
                   )}
                   {activePage === 'inventory' && renderInventory()}
                   {activePage === 'lot_history' && (
-                     <div className="pt-8 lg:pt-12">
+                     <div className="pt-6 lg:pt-10">
                         <LotHistoryView
                            stones={stones}
                            offers={offers}
@@ -415,7 +457,7 @@ const AppContent = () => {
                      </div>
                   )}
                   {activePage === 'clients' && (
-                     <div className="pt-8 lg:pt-12">
+                     <div className="pt-6 lg:pt-10">
                         <CRMView
                            clients={clients}
                            offers={offers}
@@ -427,7 +469,7 @@ const AppContent = () => {
                      </div>
                   )}
                   {activePage === 'thermometer' && (
-                     <div className="pt-8 lg:pt-12">
+                     <div className="pt-6 lg:pt-10">
                         <InterestThermometerView
                            offers={offers.filter(o => o.status === 'active' || o.status === 'reservation_pending')}
                            stones={stones}
@@ -454,7 +496,7 @@ const AppContent = () => {
                   )}
 
                   {activePage === 'pipeline' && (
-                     <div className="pt-8 lg:pt-12">
+                     <div className="pt-6 lg:pt-10">
                         <AnalyticsDetailView
                            title={t('nav.pipeline')}
                            mode="pipeline"
@@ -466,7 +508,7 @@ const AppContent = () => {
                   )}
 
                   {activePage === 'sales' && (
-                     <div className="pt-8 lg:pt-12">
+                     <div className="pt-6 lg:pt-10">
                         <AnalyticsDetailView
                            title={t('nav.sales')}
                            mode="sales"
@@ -478,7 +520,7 @@ const AppContent = () => {
                   )}
 
                   {activePage === 'financials' && (
-                     <div className="pt-8 lg:pt-12">
+                     <div className="pt-6 lg:pt-10">
                         <AnalyticsDetailView
                            title={t(currentUserRole === 'industry_admin' ? 'nav.financials_admin' : 'nav.financials_seller')}
                            mode="profit"
