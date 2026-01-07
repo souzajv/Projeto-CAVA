@@ -9,57 +9,57 @@ interface CatalogViewProps {
   onEditTypology: (typology: StoneTypology) => void;
 }
 
-export const CatalogView: React.FC<CatalogViewProps> = ({ 
-  typologies, 
-  onEditTypology 
+export const CatalogView: React.FC<CatalogViewProps> = ({
+  typologies,
+  onEditTypology
 }) => {
   const { t } = useLanguage();
 
   return (
-    <div className="animate-in fade-in duration-500">
+    <div className="animate-in fade-in duration-500 px-2 sm:px-0">
       {typologies.length === 0 ? (
-        <div className="py-20 text-center text-slate-400 border border-dashed border-slate-200 rounded-sm bg-white">
-           <Search className="w-12 h-12 mx-auto mb-4 opacity-10" />
-           <p className="text-lg font-medium font-serif italic">{t('inv.no_results')}</p>
+        <div className="py-14 sm:py-20 px-4 text-center text-slate-400 border border-dashed border-slate-200 rounded-sm bg-white">
+          <Search className="w-12 h-12 mx-auto mb-4 opacity-10" />
+          <p className="text-lg font-medium font-serif italic">{t('inv.no_results')}</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 sm:gap-8">
           {typologies.map((typology) => (
-            <div 
-              key={typology.id} 
+            <div
+              key={typology.id}
               onClick={() => onEditTypology(typology)}
-              className="group bg-white rounded-sm border border-slate-100 shadow-sm hover:shadow-2xl transition-all duration-500 overflow-hidden flex flex-col h-full cursor-pointer hover:-translate-y-1"
+              className="group bg-white rounded-sm border border-slate-100 shadow-sm hover:shadow-2xl transition-all duration-500 overflow-hidden flex flex-col h-full w-full min-w-0 cursor-pointer hover:-translate-y-1 touch-manipulation"
             >
-              
+
               {/* Image Area */}
-              <div className="relative h-64 bg-slate-100 overflow-hidden">
-                 {typology.imageUrl ? (
-                   <img src={typology.imageUrl} alt={typology.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
-                 ) : (
-                   <div className="w-full h-full flex items-center justify-center text-slate-300 font-serif italic">{t('cat.no_image')}</div>
-                 )}
-                 
-                 <div 
-                   className="absolute top-4 right-4 p-2 bg-white rounded-full text-[#121212] shadow-lg opacity-0 group-hover:opacity-100 transition-all translate-x-2 group-hover:translate-x-0 duration-300"
-                 >
-                   <Pencil className="w-4 h-4" />
-                 </div>
+              <div className="relative h-48 sm:h-56 md:h-64 bg-slate-100 overflow-hidden">
+                {typology.imageUrl ? (
+                  <img src={typology.imageUrl} alt={typology.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-slate-300 font-serif italic">{t('cat.no_image')}</div>
+                )}
+
+                <div
+                  className="absolute top-4 right-4 p-2 bg-white rounded-full text-[#121212] shadow-lg opacity-0 group-hover:opacity-100 transition-all translate-x-2 group-hover:translate-x-0 duration-300"
+                >
+                  <Pencil className="w-4 h-4" />
+                </div>
               </div>
 
-              <div className="p-6 flex-1 flex flex-col">
-                <h3 className="text-xl font-serif text-[#121212] mb-3 leading-tight group-hover:text-[#C2410C] transition-colors">{typology.name}</h3>
-                <p className="text-sm text-slate-500 line-clamp-3 mb-6 flex-1 font-light leading-relaxed">
+              <div className="p-5 sm:p-6 flex-1 flex flex-col">
+                <h3 className="text-lg sm:text-xl font-serif text-[#121212] mb-3 leading-tight group-hover:text-[#C2410C] transition-colors">{typology.name}</h3>
+                <p className="text-sm text-slate-500 line-clamp-4 sm:line-clamp-3 mb-6 flex-1 font-light leading-relaxed">
                   {typology.description}
                 </p>
 
                 <div className="space-y-3 pt-4 border-t border-slate-100">
-                  <div className="flex items-center text-xs">
-                    <span className="font-bold uppercase tracking-widest text-slate-400 w-20">{t('client.origin')}</span>
-                    <span className="text-[#121212] font-medium">{typology.origin}</span>
+                  <div className="flex flex-col sm:flex-row sm:items-center text-xs gap-1 sm:gap-2">
+                    <span className="font-bold uppercase tracking-widest text-slate-400 sm:w-24">{t('client.origin')}</span>
+                    <span className="text-[#121212] font-medium break-words">{typology.origin}</span>
                   </div>
-                  <div className="flex items-center text-xs">
-                    <span className="font-bold uppercase tracking-widest text-slate-400 w-20">{t('modal.type.hardness')}</span>
-                    <span className="text-[#121212] font-medium">{typology.hardness}</span>
+                  <div className="flex flex-col sm:flex-row sm:items-center text-xs gap-1 sm:gap-2">
+                    <span className="font-bold uppercase tracking-widest text-slate-400 sm:w-24">{t('modal.type.hardness')}</span>
+                    <span className="text-[#121212] font-medium break-words">{typology.hardness}</span>
                   </div>
                 </div>
               </div>

@@ -2,10 +2,10 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { OfferLink, Seller, StoneItem, SalesDelegation, UserRole } from '../types';
 import { BarChart3, Link as LinkIcon, Users, ExternalLink, CheckSquare, BadgeCheck, Trash2, Calendar, X, ArrowUpRight, AlertCircle, Check, XCircle } from 'lucide-react';
-import { PageView } from './Sidebar';
+import { PageView } from './layout/Sidebar';
 import { useLanguage } from '../contexts/LanguageContext';
 import { motion, useSpring, useTransform } from 'framer-motion';
-import { StatusBadge } from './Badge';
+import { StatusBadge } from './ui/Badge';
 
 function NumberTicker({ value }: { value: number }) {
   const { formatCurrency } = useLanguage();
@@ -226,7 +226,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                 <span className="kpi-dot w-2 h-2 bg-blue-500" />
                 {t('dash.kpi.pipeline')}
               </p>
-              <span className="inline-flex items-center px-2.5 py-1 rounded-full bg-amber-50 text-amber-700 text-[10px] font-bold uppercase tracking-wider border border-amber-100">
+              <span className="inline-flex items-center px-2.5 py-1 bg-amber-50 text-amber-700 text-[10px] font-bold uppercase tracking-wider border border-amber-100">
                 {t('dash.kpi.reserved_links')}: {kpi.reservedLinks}
               </span>
             </div>

@@ -1,7 +1,7 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import { OfferLink, StoneItem, Seller, UserRole, StoneTypology } from '../../types';
-import { Ruler, ShieldCheck, Maximize2, X, ChevronRight, ChevronLeft, Grid } from 'lucide-react';
+import { Ruler, ShieldCheck, Maximize2, X, ChevronRight, ChevronLeft, Grid, ArrowLeft, ChevronDown } from 'lucide-react';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { LanguageSwitcher } from '../layout/LanguageSwitcher';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -11,9 +11,10 @@ interface ClientViewProps {
    offer: OfferLink;
    stone: StoneItem;
    seller?: Seller;
-   allTypologies?: StoneTypology[]; // For the "Other Stones" catalog feature
+   allTypologies?: StoneTypology[];
    onExit?: (durationMs: number) => void;
    onSwitchPersona?: (role: UserRole | 'client') => void;
+   currentUserRole?: UserRole | 'client';
 }
 
 export const ClientView: React.FC<ClientViewProps> = ({
@@ -22,7 +23,8 @@ export const ClientView: React.FC<ClientViewProps> = ({
    seller,
    allTypologies = [],
    onExit,
-   onSwitchPersona
+   onSwitchPersona,
+   currentUserRole = 'client'
 }) => {
    const { t, formatCurrency } = useLanguage();
    const startTimeRef = useRef<number>(Date.now());
@@ -35,6 +37,11 @@ export const ClientView: React.FC<ClientViewProps> = ({
    // --- CATALOG STATE ---
    const [isCatalogOpen, setIsCatalogOpen] = useState(false);
 
+   // --- SCROLL INDICATOR STATE ---
+   const [isScrollIndicatorVisible, setIsScrollIndicatorVisible] = useState(true);
+   const [hasUserScrolled, setHasUserScrolled] = useState(false);
+   const scrollIndicatorRef = useRef<HTMLDivElement>(null);
+
    useEffect(() => {
       return () => {
          const duration = Date.now() - startTimeRef.current;
@@ -43,6 +50,41 @@ export const ClientView: React.FC<ClientViewProps> = ({
          }
       };
    }, [onExit]);
+
+   // Intersection Observer para controlar visibilidade da seta de scroll
+   useEffect(() => {
+      if (!scrollIndicatorRef.current) return;
+
+      const observer = new IntersectionObserver(
+         (entries) => {
+            entries.forEach((entry) => {
+               setIsScrollIndicatorVisible(entry.isIntersecting);
+            });
+         },
+         { threshold: 0.5 }
+      );
+
+      observer.observe(scrollIndicatorRef.current);
+
+      return () => {
+         if (scrollIndicatorRef.current) {
+            observer.unobserve(scrollIndicatorRef.current);
+         }
+      };
+   }, []);
+
+   // Detectar scroll do usuário
+   useEffect(() => {
+      const handleScroll = () => {
+         setHasUserScrolled(true);
+      };
+
+      window.addEventListener('scroll', handleScroll, { once: true });
+
+      return () => {
+         window.removeEventListener('scroll', handleScroll);
+      };
+   }, []);
 
    const handleNextImage = (e?: React.MouseEvent) => {
       e?.stopPropagation();
@@ -150,7 +192,7 @@ export const ClientView: React.FC<ClientViewProps> = ({
                               <h3 className="text-xl font-serif text-white mb-2 group-hover:text-[#C2410C] transition-colors">{item.name}</h3>
                               <p className="text-sm text-slate-400 font-light leading-relaxed line-clamp-2">{item.description}</p>
                               <div className="mt-4 flex items-center text-xs font-bold uppercase tracking-widest text-slate-500">
-                                 <Ruler className="w-3 h-3 mr-2" /> {item.hardness}
+                                 <Ruler className="w-3 h-3 mr-2" strokeWidth={0.8} /> {item.hardness}
                               </div>
                            </motion.div>
                         ))}
@@ -171,17 +213,17 @@ export const ClientView: React.FC<ClientViewProps> = ({
             initial={{ y: -20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-            className="fixed top-0 w-full bg-white/80 backdrop-blur-md z-50 border-b border-slate-100"
+            className="fixed top-0 w-full bg-white/90 backdrop-blur-md z-50 border-b border-slate-100"
          >
-            <div className="max-w-[1600px] mx-auto px-4 md:px-8 h-24 flex items-center justify-between">
+            <div className="max-w-[1600px] mx-auto px-4 md:px-8 h-20 md:h-24 flex items-center justify-between gap-4">
 
                {/* Logo & Industry Identity */}
                <div className="flex items-center">
-                  <div className="text-3xl font-serif font-bold tracking-tight">CAVA.</div>
+                  <div className="text-2xl md:text-3xl font-serif font-bold tracking-tight">CAVA.</div>
 
                   <div className="h-8 w-px bg-slate-200 mx-6 hidden md:block"></div>
 
-                  {/* New Industry Header Container with Explicit Button */}
+                  {/* Industry Header Container */}
                   <div className="hidden md:flex items-center gap-6">
                      <div className="flex flex-col">
                         <span className="text-[9px] uppercase tracking-widest text-slate-400 mb-0.5">{t('client.produced_by')}</span>
@@ -199,7 +241,7 @@ export const ClientView: React.FC<ClientViewProps> = ({
                   </div>
                </div>
 
-               <div className="flex items-center space-x-4 md:space-x-8">
+               <div className="flex items-center space-x-3 sm:space-x-4 md:space-x-8">
                   {/* Prototyping Switcher */}
                   <div className="hidden md:flex items-center bg-slate-50 rounded-sm p-1 border border-slate-200">
                      <button onClick={() => onSwitchPersona?.('industry_admin')} className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-slate-400 hover:text-[#121212] transition-colors">{t('role.industry')}</button>
@@ -207,8 +249,8 @@ export const ClientView: React.FC<ClientViewProps> = ({
                      <button className="px-3 py-1.5 bg-[#121212] text-white shadow-sm text-[10px] font-bold uppercase tracking-widest">{t('role.client')}</button>
                   </div>
 
-                  <div className="flex items-center space-x-4">
-                     <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#C2410C] border border-[#C2410C] px-3 py-1 hidden lg:block">
+                  <div className="flex items-center space-x-2 sm:space-x-3">
+                     <div className="text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.2em] text-[#C2410C] border border-[#C2410C] px-2 sm:px-3 py-1 hidden lg:block">
                         {t('client.nav.secure')}
                      </div>
                      <LanguageSwitcher />
@@ -219,25 +261,28 @@ export const ClientView: React.FC<ClientViewProps> = ({
 
          <main className="pt-24 pb-20">
             {/* Hero Section */}
-            <section className="max-w-[1600px] mx-auto px-8 py-12 lg:py-24">
-               <div className="grid grid-cols-1 lg:grid-cols-12 gap-20 items-start">
+            <section className="max-w-[1600px] mx-auto px-4 sm:px-6 md:px-8 py-8 pb-0 lg:py-14 relative">
+
+
+               <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 md:gap-16 lg:gap-20 items-start">
 
                   {/* Left: Content (Sticky) */}
-                  <div className="lg:col-span-5 flex flex-col space-y-16 lg:sticky lg:top-40 order-2 lg:order-1">
+                  <div className="lg:col-span-5 flex flex-col space-y-8 md:space-y-14 lg:space-y-16 lg:sticky lg:top-40 order-1">
                      <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.8, delay: 0.2 }}
                      >
-                        <div className="flex items-center space-x-4 mb-8">
+                        <div className="flex items-center space-x-4 mb-6 md:mb-8">
                            <span className="h-px w-10 bg-[#121212]"></span>
                            <span className="text-xs font-bold uppercase tracking-[0.3em] text-[#121212]">{t('client.badge.exclusive')}</span>
                         </div>
 
-                        <h1 className="text-6xl md:text-8xl font-serif font-medium leading-[0.9] mb-10 tracking-tight text-[#121212]">
+                        <h1 className="text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-serif font-medium leading-[0.95] mb-6 md:mb-10 tracking-tight text-[#121212]">
                            {stone.typology.name}
                         </h1>
-                        <p className="text-xl md:text-2xl text-slate-500 leading-relaxed font-light font-serif italic max-w-lg">
+                        <div className=""></div>
+                        <p className="text-lg sm:text-xl md:text-2xl text-slate-500 leading-relaxed font-light font-serif italic max-w-xl">
                            "{stone.typology.description}"
                         </p>
                      </motion.div>
@@ -246,10 +291,10 @@ export const ClientView: React.FC<ClientViewProps> = ({
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         transition={{ duration: 0.8, delay: 0.4 }}
-                        className="space-y-12 border-t border-slate-200 pt-12"
+                        className="space-y-12 border-t border-slate-200 pt-4 md:pt-12"
                      >
                         {/* Specifications */}
-                        <div className="grid grid-cols-2 gap-12">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-12 relative">
                            <div>
                               <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-3">{t('client.origin')}</p>
                               <p className="text-2xl font-serif text-[#121212]">{stone.typology.origin}</p>
@@ -261,50 +306,29 @@ export const ClientView: React.FC<ClientViewProps> = ({
                                  <span className="text-sm font-medium text-slate-400">{stone.dimensions.unit}</span>
                               </div>
                            </div>
+                           <motion.div
+                              ref={scrollIndicatorRef}
+                              initial={{ opacity: 0, y: 10 }}
+                              animate={{ opacity: isScrollIndicatorVisible && !hasUserScrolled ? 1 : 0, y: isScrollIndicatorVisible && !hasUserScrolled ? 0 : 10 }}
+                              transition={{ duration: 0.3 }}
+                              className="hidden sm:flex absolute -bottom-28 left-0 z-[1000000] pointer-events-none"
+                           >
+                              <motion.div
+                                 animate={{ y: [0, 12, 0] }}
+                                 transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+                                 className="flex flex-col items-center gap-2"
+                              >
+                                 <ChevronDown className="size-14 text-slate-900" strokeWidth={0.5} />
+                              </motion.div>
+                           </motion.div>
                         </div>
-
-                        {/* Price Block */}
-                        {isReserved ? (
-                           <div className="p-10 bg-[#C2410C]/10 border border-[#C2410C]/20 shadow-xl relative overflow-hidden group">
-                              <div className="absolute top-0 left-0 w-full h-1 bg-[#C2410C]" />
-                              <div className="text-center py-8">
-                                 <Lock className="w-12 h-12 text-[#C2410C] mx-auto mb-4" />
-                                 <h3 className="text-2xl font-serif text-[#121212] mb-2">Reserved for {offer.clientName}</h3>
-                                 <p className="text-sm text-slate-500 mb-6">This material is currently held exclusively for you.</p>
-                                 <div className="text-4xl font-serif text-[#C2410C]">{formatCurrency(offer.finalPrice * offer.quantityOffered)}</div>
-                              </div>
-                           </div>
-                        ) : (
-                           <div className="p-10 bg-white border border-slate-100 shadow-[0_30px_60px_-15px_rgba(0,0,0,0.05)] relative overflow-hidden group">
-                              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#C2410C] to-transparent" />
-
-                              <div className="flex justify-between items-end mb-8">
-                                 <div>
-                                    <span className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">{t('client.price_unit')}</span>
-                                    <span className="text-5xl font-serif text-[#121212]">{formatCurrency(offer.finalPrice)}</span>
-                                 </div>
-                                 <div className="text-right">
-                                    <span className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">{t('client.qty_offered')}</span>
-                                    <span className="text-xl font-medium text-[#121212]">{offer.quantityOffered} {t(`unit.${stone.quantity.unit}`)}</span>
-                                 </div>
-                              </div>
-
-                              {/* REMOVED RESERVE BUTTON HERE */}
-
-                              <div className="text-center mt-6 flex items-center justify-center space-x-2">
-                                 <ShieldCheck className="w-4 h-4 text-slate-300" />
-                                 <p className="text-[10px] text-slate-400 font-medium uppercase tracking-wider">
-                                    {t('client.validity')} <span className="text-[#121212]">{offer.clientName}</span>
-                                 </p>
-                              </div>
-                           </div>
-                        )}
-
                      </motion.div>
                   </div>
 
+
+
                   {/* Right: Visuals (Carousel) */}
-                  <div className="lg:col-span-7 space-y-8 order-1 lg:order-2">
+                  <div className="lg:col-span-7 space-y-8 order-2 min-w-0">
                      <motion.div
                         initial={{ scale: 1.05, opacity: 0, clipPath: 'inset(10% 0 10% 0)' }}
                         animate={{ scale: 1, opacity: 1, clipPath: 'inset(0 0 0 0)' }}
@@ -312,7 +336,7 @@ export const ClientView: React.FC<ClientViewProps> = ({
                         className="relative shadow-2xl group"
                      >
                         {/* Main Image Container */}
-                        <div className="aspect-square md:aspect-[4/3] bg-slate-200 relative overflow-hidden cursor-zoom-in" onClick={() => setIsLightboxOpen(true)}>
+                        <div className="aspect-[4/5] sm:aspect-square md:aspect-[4/3] bg-slate-200 relative overflow-hidden cursor-zoom-in" onClick={() => setIsLightboxOpen(true)}>
                            <AnimatePresence mode="wait">
                               <motion.img
                                  key={currentImageIndex}
@@ -363,13 +387,13 @@ export const ClientView: React.FC<ClientViewProps> = ({
                         )}
                      </motion.div>
 
-                     <div className="grid grid-cols-2 gap-4">
-                        <div className="aspect-square md:aspect-[2/1] bg-slate-100 flex items-center justify-center text-slate-300 font-serif italic text-2xl border border-slate-200/50">
-                           <Grid className="w-8 h-8 mr-3 opacity-30" />
+                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="aspect-[3/2] sm:aspect-square md:aspect-[2/1] bg-slate-100 flex items-center justify-center text-slate-300 font-serif italic text-2xl border border-slate-200/50">
+                           <Grid className="w-8 h-8 mr-3 opacity-30" strokeWidth={0.8} />
                            <span>Texture Detail</span>
                         </div>
-                        <div className="aspect-square md:aspect-[2/1] bg-[#121212] p-8 flex flex-col justify-between text-white">
-                           <Ruler className="w-8 h-8 text-[#C2410C]" />
+                        <div className="aspect-[3/2] sm:aspect-square md:aspect-[2/1] bg-[#121212] p-8 flex flex-col justify-between text-white">
+                           <Ruler className="w-8 h-8 text-[#C2410C]" strokeWidth={0.8} />
                            <div>
                               <p className="text-[10px] uppercase tracking-[0.3em] opacity-60 mb-2">{t('modal.type.hardness')}</p>
                               <p className="text-3xl font-serif">{stone.typology.hardness}</p>
@@ -379,14 +403,143 @@ export const ClientView: React.FC<ClientViewProps> = ({
                   </div>
 
                </div>
+
+               {/* Price Block - Full Width Luxury Design */}
+               <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.8, delay: 0.6 }}
+                  className="mt-10 md:mt-16 lg:mt-20"
+               >
+                  {isReserved ? (
+                     <div className="relative bg-gradient-to-br from-[#C2410C]/5 via-white to-[#C2410C]/5 border-2 border-[#C2410C]/30 shadow-2xl overflow-hidden">
+                        {/* Decorative corners */}
+                        <div className="absolute top-0 left-0 w-20 h-20 border-t-2 border-l-2 border-[#C2410C]" />
+                        <div className="absolute top-0 right-0 w-20 h-20 border-t-2 border-r-2 border-[#C2410C]" />
+                        <div className="absolute bottom-0 left-0 w-20 h-20 border-b-2 border-l-2 border-[#C2410C]" />
+                        <div className="absolute bottom-0 right-0 w-20 h-20 border-b-2 border-r-2 border-[#C2410C]" />
+
+                        <div className="relative z-10 text-center py-16 px-8">
+                           <div className="inline-flex items-center justify-center w-20 h-20 bg-[#C2410C] rounded-full mb-8 shadow-xl">
+                              <Lock className="w-10 h-10 text-white" />
+                           </div>
+                           <div className="max-w-2xl mx-auto space-y-6">
+                              <div className="space-y-3">
+                                 <div className="flex items-center justify-center gap-3 mb-4">
+                                    <span className="h-px w-12 bg-[#C2410C]" />
+                                    <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-[#C2410C]">{t('client.reserved_badge')}</span>
+                                    <span className="h-px w-12 bg-[#C2410C]" />
+                                 </div>
+                                 <h3 className="text-3xl md:text-4xl font-serif text-[#121212] tracking-tight leading-tight">
+                                    {t('client.reserved_for')}<br /><span className="text-[#C2410C]">{offer.clientName}</span>
+                                 </h3>
+                                 <p className="text-sm text-slate-500 font-light max-w-lg mx-auto leading-relaxed">
+                                    {t('client.reserved_msg')}
+                                 </p>
+                              </div>
+
+                              <div className="pt-8 border-t border-[#C2410C]/20">
+                                 <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-slate-400 mb-3">{t('client.investment_value')}</p>
+                                 <p className="text-5xl md:text-6xl font-serif text-[#C2410C] tracking-tight">{formatCurrency(offer.finalPrice * offer.quantityOffered)}</p>
+                              </div>
+                           </div>
+                        </div>
+                     </div>
+                  ) : (
+                     <div className="relative bg-white border border-slate-200 shadow-[0_40px_100px_-20px_rgba(0,0,0,0.1)] overflow-hidden">
+                        {/* Top accent bar */}
+                        <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-transparent via-[#C2410C] to-transparent" />
+                        <div className="relative z-10 p-8 pt-12">
+                           {/* Main pricing grid */}
+                           <div className="mx-auto">
+                              <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12 mb-8">
+                                 {/* Unit Price */}
+                                 <div className="text-center md:text-left space-y-3 border-b md:border-b-0 md:border-r border-slate-200">
+                                    <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-slate-400 flex items-center justify-center md:justify-start gap-2">
+                                       <span className="w-1.5 h-1.5 bg-[#C2410C] rounded-full" />
+                                       {t('client.price_unit')}
+                                    </p>
+                                    <p className="text-3xl md:text-5xl font-serif text-[#121212] tracking-tight">{formatCurrency(offer.finalPrice)}</p>
+                                    <p className="text-xs text-slate-500 font-medium pb-8 md:pb-0">{t('client.per_unit')} {t(`unit.${stone.quantity.unit}`)}</p>
+                                 </div>
+
+                                 {/* Quantity */}
+                                 <div className="text-center space-y-3 border-b md:border-b-0 md:border-r border-slate-200">
+                                    <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-slate-400 flex items-center justify-center gap-2">
+                                       <span className="w-1.5 h-1.5 bg-[#C2410C] rounded-full" />
+                                       {t('client.qty_offered')}
+                                    </p>
+                                    <p className="text-3xl md:text-5xl font-serif text-[#121212] tracking-tight">{offer.quantityOffered}</p>
+                                    <p className="text-xs text-slate-500 font-medium pb-8 md:pb-0">{t(`unit.${stone.quantity.unit}`)} {t('client.available')}</p>
+                                 </div>
+
+                                 {/* Total Investment */}
+                                 <div className="text-center md:text-right space-y-3">
+                                    <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-[#C2410C] flex items-center justify-center md:justify-end gap-2">
+                                       <span className="w-1.5 h-1.5 bg-[#C2410C] rounded-full" />
+                                       {t('client.total_investment')}
+                                    </p>
+                                    <p className="text-3xl md:text-6xl font-serif text-[#121212] tracking-tight leading-none">
+                                       {formatCurrency(offer.finalPrice * offer.quantityOffered)}
+                                    </p>
+                                    <p className="text-xs text-slate-500 font-medium pb-4 md:pb-0">{t('client.final_value')}</p>
+                                 </div>
+                              </div>
+
+                              {/* Footer badge */}
+                              <div className="pt-4 border-t border-slate-200">
+                                 <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                                    <div className="flex items-center gap-3">
+                                       <div className="flex items-center justify-center w-10 h-10 md:bg-slate-100">
+                                          <ShieldCheck className="w-5 h-5 text-slate-400" />
+                                       </div>
+                                       <div className="text-left">
+                                          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">{t('client.secured_proposal')}</p>
+                                          <p className="text-sm font-medium text-[#121212]">{t('client.valid_for')} {offer.clientName}</p>
+                                       </div>
+                                    </div>
+
+                                    <div className={`flex items-center gap-2 px-4 py-2 border rounded-sm ${offer.status === 'active' ? 'bg-emerald-50 border-emerald-200' :
+                                       offer.status === 'sold' ? 'bg-blue-50 border-blue-200' :
+                                          offer.status === 'expired' ? 'bg-slate-50 border-slate-200' :
+                                             offer.status === 'reservation_pending' ? 'bg-amber-50 border-amber-200' :
+                                                'bg-slate-50 border-slate-200'
+                                       }`}>
+                                       <span className={`w-2 h-2 rounded-full ${offer.status === 'active' ? 'bg-emerald-500 animate-pulse' :
+                                          offer.status === 'sold' ? 'bg-blue-500' :
+                                             offer.status === 'expired' ? 'bg-slate-400' :
+                                                offer.status === 'reservation_pending' ? 'bg-amber-500 animate-pulse' :
+                                                   'bg-slate-400'
+                                          }`} />
+                                       <span className={`text-[10px] font-bold uppercase tracking-wider ${offer.status === 'active' ? 'text-emerald-700' :
+                                          offer.status === 'sold' ? 'text-blue-700' :
+                                             offer.status === 'expired' ? 'text-slate-600' :
+                                                offer.status === 'reservation_pending' ? 'text-amber-700' :
+                                                   'text-slate-600'
+                                          }`}>{t(`client.status.${offer.status}`)}</span>
+                                    </div>
+                                 </div>
+                              </div>
+                           </div>
+                        </div>
+                     </div>
+                  )}
+               </motion.div>
             </section>
 
             {/* Return Button */}
-            <div className="fixed bottom-8 right-8 z-50">
-               <button onClick={() => onSwitchPersona?.('industry_admin')} className="w-12 h-12 bg-white rounded-full shadow-2xl flex items-center justify-center text-slate-300 hover:text-[#121212] transition-colors border border-slate-100" title="Back to Admin">
-                  <div className="w-2 h-2 bg-current rounded-full" />
-               </button>
-            </div>
+            {currentUserRole !== 'client' && (
+               <div className="fixed bottom-8 right-8 z-50">
+                  <button
+                     onClick={() => onSwitchPersona?.('industry_admin')}
+                     className="flex items-center gap-2 px-4 py-2.5 bg-white text-[#121212] font-bold uppercase text-xs tracking-widest hover:bg-[#121212] hover:text-white transition-all duration-300 border border-slate-200 hover:border-[#121212] shadow-lg"
+                     title={t('client.btn.back')}
+                  >
+                     <ArrowLeft className="w-4 h-4" />
+                     {t('client.btn.back')}
+                  </button>
+               </div>
+            )}
          </main>
       </div>
    );

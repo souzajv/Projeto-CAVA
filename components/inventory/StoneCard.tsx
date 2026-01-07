@@ -61,11 +61,11 @@ export const StoneCard: React.FC<StoneCardProps> = ({
   return (
     <div
       onClick={onClick}
-      className={`group relative bg-white rounded-sm border border-slate-100 overflow-hidden hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.1)] transition-all duration-500 flex flex-col h-full ${onClick ? 'cursor-pointer' : ''} animate-in fade-in slide-in-from-bottom-8 duration-1000 fill-mode-backwards hover:-translate-y-1`}
+      className={`group relative bg-white rounded-sm border border-slate-100 overflow-hidden hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.1)] transition-all duration-500 flex flex-col h-full w-full min-w-0 ${onClick ? 'cursor-pointer' : ''} animate-in fade-in slide-in-from-bottom-8 duration-1000 fill-mode-backwards hover:-translate-y-1`}
       style={{ animationDelay: index ? `${index * 100}ms` : '0ms' }}
     >
       {/* Image Header with "Magazine" Overlay */}
-      <div className="relative h-64 overflow-hidden bg-slate-100">
+      <div className="relative h-48 sm:h-56 lg:h-64 overflow-hidden bg-slate-100">
         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors z-10 duration-500" />
 
         <ImageWithLoader
@@ -90,7 +90,7 @@ export const StoneCard: React.FC<StoneCardProps> = ({
         </div>
       </div>
 
-      <div className="p-6 flex-1 flex flex-col">
+      <div className="p-5 sm:p-6 flex-1 flex flex-col">
         {/* Typology Info */}
         <div className="mb-6">
           <h3 className="font-serif font-medium text-slate-900 text-xl leading-snug group-hover:text-[#C2410C] transition-colors duration-300">
@@ -117,7 +117,7 @@ export const StoneCard: React.FC<StoneCardProps> = ({
               <div style={{ width: `${reservedPct}%` }} className="bg-amber-500" />
               <div style={{ width: `${availPct}%` }} className="bg-slate-300" />
             </div>
-            <div className="flex justify-between text-[10px] font-bold uppercase tracking-wider text-slate-400">
+            <div className="grid grid-cols-2 sm:flex sm:justify-between text-[10px] font-bold uppercase tracking-wider text-slate-400 gap-2 sm:gap-0">
               <span className={soldPct > 0 ? "text-emerald-800" : ""}>{t('card.sold')} {soldQty}</span>
               <span className={sentPct > 0 ? "text-[#C2410C]" : ""}>{t('card.sent_short')} {sentQty}</span>
               <span className={reservedPct > 0 ? "text-amber-600" : ""}>{t('card.reserved')} {reservedQty}</span>

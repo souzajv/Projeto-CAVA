@@ -81,7 +81,7 @@ export const CRMView: React.FC<CRMViewProps> = ({
 
         <button
           onClick={onAddClient}
-          className="flex items-center px-6 py-3 bg-[#121212] text-white text-xs font-bold uppercase tracking-widest hover:bg-[#C2410C] transition-all shadow-lg rounded-sm"
+          className="flex items-center justify-center px-6 py-3 bg-[#121212] text-white text-xs font-bold uppercase tracking-widest hover:bg-[#C2410C] transition-all shadow-lg rounded-sm w-full md:w-auto"
         >
           <UserPlus className="w-4 h-4 mr-2" />
           {t('cli.add')}
@@ -89,7 +89,7 @@ export const CRMView: React.FC<CRMViewProps> = ({
       </div>
 
       {/* CRM KPIs */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
         <div className="p-8 bg-white border border-slate-100 shadow-sm rounded-sm">
           <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-4 flex items-center">
             <Users className="w-3 h-3 mr-2 text-[#C2410C]" /> {t('cli.kpi.total_clients')}
@@ -115,7 +115,7 @@ export const CRMView: React.FC<CRMViewProps> = ({
       {/* Search & Table */}
       <div className="bg-white border border-slate-200 shadow-sm rounded-sm overflow-hidden">
         <div className="p-6 border-b border-slate-100 bg-[#FAFAFA]">
-          <div className="relative group max-w-md">
+          <div className="relative group w-full max-w-xl">
             <Search className="absolute left-0 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-[#C2410C] transition-colors ml-1" />
             <input
               type="text"
@@ -127,22 +127,99 @@ export const CRMView: React.FC<CRMViewProps> = ({
           </div>
         </div>
 
-        <div className="overflow-x-auto">
+        {/* Mobile Cards */}
+        <div className="md:hidden p-4 space-y-4">
+          {filteredClients.length === 0 ? (
+            <div className="py-16 text-center text-slate-400 border border-dashed border-slate-200 bg-slate-50">
+              <div className="flex flex-col items-center">
+                <Info className="w-10 h-10 mb-3 opacity-20" />
+                <p className="font-serif italic">{t('inv.no_results')}</p>
+              </div>
+            </div>
+          ) : (
+            filteredClients.map((client) => {
+              const clientOffers = offers.filter(o => o?.clientId === client.id);
+              const soldOffers = clientOffers.filter(o => o.status === 'sold');
+              const reservedOffers = clientOffers.filter(o => o.status === 'reserved');
+              const soldCount = soldOffers.length;
+              const totalSpent = soldOffers.reduce((sum, o) => sum + (o.finalPrice * o.quantityOffered), 0);
+              const hasActive = clientOffers.some(o => o.status === 'active');
+
+              return (
+                <button
+                  key={client.id}
+                  onClick={() => onSelectClient(client)}
+                  className="w-full text-left bg-white border border-slate-200 shadow-sm rounded-sm p-4 flex flex-col gap-3 hover:border-[#121212] transition-all"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center text-[#121212] font-serif font-bold text-lg">
+                      {(client.name || '?').charAt(0)}
+                    </div>
+                    <div className="min-w-0">
+                      <div className="font-bold text-[#121212] text-sm truncate">{client.name}</div>
+                      <div className="flex items-center text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-0.5 truncate">
+                        <Building2 className="w-3 h-3 mr-1" /> {client.company || 'Private Client'}
+                      </div>
+                    </div>
+                    <ChevronRight className="w-5 h-5 text-slate-300 ml-auto" />
+                  </div>
+
+                  <div className="text-xs text-slate-600 flex items-center gap-2 truncate">
+                    <Mail className="w-3 h-3 opacity-40" /> {client.email}
+                  </div>
+                  <div className="text-xs text-slate-600 flex items-center gap-2 truncate">
+                    <Phone className="w-3 h-3 opacity-40" /> {client.phone}
+                  </div>
+
+                  <div className="flex items-center justify-between pt-2 border-t border-slate-100">
+                    <div className="flex flex-col">
+                      <span className="text-sm font-bold text-[#121212]">{clientOffers.length}</span>
+                      <span className="text-[9px] text-slate-400 font-bold uppercase">{soldCount} {t('card.sold')}</span>
+                    </div>
+                    <div className="text-right">
+                      <span className="font-serif text-lg text-[#121212] whitespace-nowrap">{formatCurrency(totalSpent)}</span>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-wrap gap-2 pt-1">
+                    {hasActive ? (
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-none text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-100 uppercase tracking-wider">
+                        {t('cli.status.hot')}
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-none text-[10px] font-bold bg-slate-100 text-slate-500 border border-slate-200 uppercase tracking-wider">
+                        {t('cli.status.inactive')}
+                      </span>
+                    )}
+                    {reservedOffers.length > 0 && (
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-none text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-100 uppercase tracking-wider">
+                        {t('dash.kpi.reserved_links')}: {reservedOffers.length}
+                      </span>
+                    )}
+                  </div>
+                </button>
+              );
+            })
+          )}
+        </div>
+
+        {/* Desktop Table */}
+        <div className="hidden md:block overflow-x-auto min-w-0">
           <table className="w-full text-left">
             <thead className="text-[10px] text-slate-400 uppercase font-bold tracking-widest border-b border-slate-100 bg-[#FAFAFA]">
               <tr>
-                <th className="px-8 py-6">{t('cli.table.client')}</th>
-                <th className="px-8 py-6">{t('cli.table.contact')}</th>
-                <th className="px-8 py-6 text-center">{t('cli.table.offers')}</th>
-                <th className="px-8 py-6 text-right">{t('cli.table.total_purchased')}</th>
-                <th className="px-8 py-6 text-center">{t('cli.table.status')}</th>
-                <th className="px-8 py-6"></th>
+                <th className="px-4 sm:px-6 lg:px-8 py-4 sm:py-6">{t('cli.table.client')}</th>
+                <th className="px-4 sm:px-6 lg:px-8 py-4 sm:py-6">{t('cli.table.contact')}</th>
+                <th className="px-4 sm:px-6 lg:px-8 py-4 sm:py-6 text-center">{t('cli.table.offers')}</th>
+                <th className="px-4 sm:px-6 lg:px-8 py-4 sm:py-6 text-right">{t('cli.table.total_purchased')}</th>
+                <th className="px-4 sm:px-6 lg:px-8 py-4 sm:py-6 text-center">{t('cli.table.status')}</th>
+                <th className="px-4 sm:px-6 lg:px-8 py-4 sm:py-6"></th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50">
               {filteredClients.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-8 py-32 text-center text-slate-400">
+                  <td colSpan={6} className="px-4 sm:px-6 lg:px-8 py-24 sm:py-32 text-center text-slate-400">
                     <div className="flex flex-col items-center">
                       <Info className="w-10 h-10 mb-3 opacity-20" />
                       <p className="font-serif italic">{t('inv.no_results')}</p>
@@ -164,7 +241,7 @@ export const CRMView: React.FC<CRMViewProps> = ({
                       onClick={() => onSelectClient(client)}
                       className="hover:bg-slate-50 cursor-pointer transition-colors group"
                     >
-                      <td className="px-8 py-6">
+                      <td className="px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
                         <div className="flex items-center gap-4">
                           <div className="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center text-[#121212] font-serif font-bold text-lg group-hover:bg-[#C2410C] group-hover:text-white transition-colors shrink-0">
                             {(client.name || '?').charAt(0)}
@@ -178,7 +255,7 @@ export const CRMView: React.FC<CRMViewProps> = ({
                         </div>
                       </td>
 
-                      <td className="px-8 py-6">
+                      <td className="px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
                         <div className="flex flex-col gap-1 min-w-[150px]">
                           <div className="text-xs text-slate-600 flex items-center truncate">
                             <Mail className="w-3 h-3 mr-2 opacity-40 shrink-0" /> {client.email}
@@ -189,20 +266,20 @@ export const CRMView: React.FC<CRMViewProps> = ({
                         </div>
                       </td>
 
-                      <td className="px-8 py-6 text-center">
+                      <td className="px-4 sm:px-6 lg:px-8 py-4 sm:py-6 text-center">
                         <div className="inline-flex flex-col">
                           <span className="text-sm font-bold text-[#121212]">{clientOffers.length}</span>
                           <span className="text-[9px] text-slate-400 font-bold uppercase">{soldCount} {t('card.sold')}</span>
                         </div>
                       </td>
 
-                      <td className="px-8 py-6 text-right">
+                      <td className="px-4 sm:px-6 lg:px-8 py-4 sm:py-6 text-right">
                         <span className="font-serif text-lg text-[#121212] group-hover:text-[#C2410C] transition-colors whitespace-nowrap">
                           {formatCurrency(totalSpent)}
                         </span>
                       </td>
 
-                      <td className="px-8 py-6 text-center space-y-1">
+                      <td className="px-4 sm:px-6 lg:px-8 py-4 sm:py-6 text-center space-y-1">
                         {hasActive ? (
                           <span className="inline-flex items-center px-2.5 py-0.5 rounded-none text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-100 uppercase tracking-wider">
                             {t('cli.status.hot')}
@@ -219,7 +296,7 @@ export const CRMView: React.FC<CRMViewProps> = ({
                         )}
                       </td>
 
-                      <td className="px-8 py-6 text-right">
+                      <td className="px-4 sm:px-6 lg:px-8 py-4 sm:py-6 text-right">
                         <ChevronRight className="w-5 h-5 text-slate-300 group-hover:text-[#C2410C] group-hover:translate-x-1 transition-all" />
                       </td>
                     </tr>

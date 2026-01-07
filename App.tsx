@@ -82,6 +82,17 @@ const AppContent = () => {
    const [showNotifications, setShowNotifications] = useState(false);
    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
+   // Prevent body scroll when mobile sidebar is open
+   useEffect(() => {
+      if (typeof document === 'undefined') return;
+      if (isSidebarOpen) {
+         const prev = document.body.style.overflow;
+         document.body.style.overflow = 'hidden';
+         return () => { document.body.style.overflow = prev; };
+      }
+      document.body.style.overflow = '';
+   }, [isSidebarOpen]);
+
    const handleNavigate = (page: PageView) => {
       setActivePage(page);
       setIsSidebarOpen(false);
@@ -406,26 +417,26 @@ const AppContent = () => {
       });
 
       return (
-         <div className="space-y-8 pt-8 lg:pt-12">
+         <div className="space-y-8 pt-8 md:pt-4">
             <div className="flex flex-col md:flex-row justify-between md:items-end gap-4 border-b border-slate-200 pb-8">
                <div>
                   <h2 className="text-4xl font-serif mb-2">{t('nav.inventory')}</h2>
                   <p className="text-slate-500 font-light text-lg">{t('inv.your_inventory')}</p>
                </div>
 
-               <div className="flex items-center gap-4">
+               <div className="flex flex-col sm:flex-row items-center sm:justify-end gap-3 sm:gap-4 text-center">
                   {/* View Switcher (Industry Only) */}
                   {currentUserRole === 'industry_admin' && (
-                     <div className="bg-slate-100 p-1 rounded-sm flex">
+                     <div className="bg-slate-100 p-1 rounded-sm flex justify-center w-full sm:w-auto">
                         <button
                            onClick={() => setInventoryMode('lots')}
-                           className={`px-4 py-2 flex items-center text-xs font-bold uppercase tracking-widest rounded-sm transition-all ${inventoryMode === 'lots' ? 'bg-white shadow-sm text-[#121212]' : 'text-slate-400 hover:text-slate-600'}`}
+                           className={`w-full px-4 py-2 flex items-center text-xs font-bold uppercase tracking-widest rounded-sm transition-all ${inventoryMode === 'lots' ? 'bg-white shadow-sm text-[#121212]' : 'text-slate-400 hover:text-slate-600'}`}
                         >
                            <LayoutGrid className="w-4 h-4 mr-2" /> Lots
                         </button>
                         <button
                            onClick={() => setInventoryMode('catalog')}
-                           className={`px-4 py-2 flex items-center text-xs font-bold uppercase tracking-widest rounded-sm transition-all ${inventoryMode === 'catalog' ? 'bg-white shadow-sm text-[#121212]' : 'text-slate-400 hover:text-slate-600'}`}
+                           className={`w-full px-4 py-2 flex items-center text-xs font-bold uppercase tracking-widest rounded-sm transition-all ${inventoryMode === 'catalog' ? 'bg-white shadow-sm text-[#121212]' : 'text-slate-400 hover:text-slate-600'}`}
                         >
                            <List className="w-4 h-4 mr-2" /> Catalog
                         </button>
@@ -433,12 +444,12 @@ const AppContent = () => {
                   )}
 
                   {currentUserRole === 'industry_admin' && inventoryMode === 'lots' && (
-                     <button onClick={() => setActiveModal({ type: 'batch' })} className="px-6 py-3 bg-[#121212] text-white text-xs font-bold uppercase tracking-widest flex items-center rounded-sm hover:bg-[#C2410C] transition-colors shadow-lg">
+                     <button onClick={() => setActiveModal({ type: 'batch' })} className="w-full sm:w-auto px-6 py-3 bg-[#121212] text-white text-xs font-bold uppercase tracking-widest flex items-center justify-center rounded-sm hover:bg-[#C2410C] transition-colors shadow-lg">
                         <Plus className="w-4 h-4 mr-2" /> {t('inv.add_batch')}
                      </button>
                   )}
                   {currentUserRole === 'industry_admin' && inventoryMode === 'catalog' && (
-                     <button onClick={() => setActiveModal({ type: 'typology', data: null })} className="px-6 py-3 bg-[#121212] text-white text-xs font-bold uppercase tracking-widest flex items-center rounded-sm hover:bg-[#C2410C] transition-colors shadow-lg">
+                     <button onClick={() => setActiveModal({ type: 'typology', data: null })} className="w-full sm:w-auto px-6 py-3 bg-[#121212] text-white text-xs font-bold uppercase tracking-widest flex items-center justify-center rounded-sm hover:bg-[#C2410C] transition-colors shadow-lg">
                         <Plus className="w-4 h-4 mr-2" /> New Typology
                      </button>
                   )}
@@ -504,7 +515,7 @@ const AppContent = () => {
 
    // --- MAIN APP ---
    return (
-      <div className="flex min-h-screen bg-[#FDFDFD] font-sans text-slate-900">
+      <div className="flex min-h-screen bg-[#FDFDFD] font-sans text-slate-900 overflow-x-hidden">
          <Sidebar
             activePage={activePage}
             onNavigate={handleNavigate}
@@ -517,40 +528,53 @@ const AppContent = () => {
 
          {isSidebarOpen && <div className="fixed inset-0 bg-black/40 backdrop-blur-[1px] z-40 lg:hidden" onClick={() => setIsSidebarOpen(false)} />}
 
-         <main className="flex-1 flex flex-col h-screen overflow-hidden relative">
-            {/* Top Bar */}
-            <div className="absolute top-6 left-4 z-50 lg:hidden">
-               <button onClick={() => setIsSidebarOpen(true)} className="p-2.5 rounded-md bg-white shadow-sm border border-slate-200 text-slate-600 hover:text-[#121212] hover:shadow-md transition-colors">
-                  <Menu className="w-5 h-5" />
-               </button>
-            </div>
+         <main className="flex-1 flex flex-col h-screen relative">
+            <header className="sticky top-0 z-30 bg-[#FDFDFD]/90 backdrop-blur border-b border-slate-200">
+               <div className="flex items-center justify-between px-4 py-3 lg:px-8">
+                  <div className="flex items-center gap-3 lg:hidden">
+                     <div className="w-9 h-9 bg-[#C2410C] rounded-sm flex items-center justify-center shadow-lg shadow-[#C2410C]/20 rotate-3">
+                        <span className="text-white font-serif font-bold text-xl">C</span>
+                     </div>
+                     <div className="hidden sm:flex flex-col leading-tight">
+                        <span className="text-lg font-serif font-bold tracking-tight text-[#121212]">CAVA.</span>
+                        <span className="text-[10px] uppercase tracking-[0.3em] text-[#C2410C] font-semibold">Architecture</span>
+                     </div>
+                  </div>
 
-            <div className="absolute top-6 right-8 z-50 flex items-center space-x-6">
-               <div className="relative">
-                  <button onClick={() => setShowNotifications(!showNotifications)} className="relative p-2 text-slate-400 hover:text-[#121212] transition-colors bg-white/80 backdrop-blur-sm rounded-full hover:bg-white shadow-sm border border-slate-100">
-                     <Bell className="w-5 h-5" />
-                     {notifications.some(n => !n.read && n.tenantId === currentTenantId) && <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-rose-500 rounded-full border border-white" />}
-                  </button>
-                  {showNotifications && (
-                     <NotificationDropdown
-                        notifications={notifications.filter(n => n.tenantId === currentTenantId)}
-                        onMarkRead={(id) => setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n))}
-                        onMarkAllRead={() => setNotifications(prev => prev.map(n => n.tenantId === currentTenantId ? ({ ...n, read: true }) : n))}
-                        onClose={() => setShowNotifications(false)}
-                     />
-                  )}
+                  <div className="hidden lg:block" aria-hidden />
+
+                  <div className="flex items-center gap-3">
+                     <div className="hidden md:flex items-center space-x-2 bg-slate-100/90 backdrop-blur-sm p-1 rounded-lg border border-slate-200 shadow-sm">
+                        <button onClick={() => { setCurrentUserRole('industry_admin'); setCurrentSellerId('all'); setActivePage('dashboard'); }} className={`px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest rounded-md transition-all ${currentUserRole === 'industry_admin' ? 'bg-white shadow-sm text-[#121212]' : 'text-slate-400'}`}>Admin</button>
+                        <button onClick={() => { setCurrentUserRole('seller'); setCurrentSellerId('sel-001'); setActivePage('dashboard'); }} className={`px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest rounded-md transition-all ${currentUserRole === 'seller' ? 'bg-white shadow-sm text-[#121212]' : 'text-slate-400'}`}>Seller</button>
+                     </div>
+
+                     <div className="relative">
+                        <button onClick={() => setShowNotifications(!showNotifications)} className="relative p-2 text-slate-500 hover:text-[#121212] transition-colors bg-white/80 backdrop-blur-sm rounded-full hover:bg-white shadow-sm border border-slate-100">
+                           <Bell className="w-5 h-5" />
+                           {notifications.some(n => !n.read && n.tenantId === currentTenantId) && <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-rose-500 rounded-full border border-white" />}
+                        </button>
+                        {showNotifications && (
+                           <NotificationDropdown
+                              notifications={notifications.filter(n => n.tenantId === currentTenantId)}
+                              onMarkRead={(id) => setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n))}
+                              onMarkAllRead={() => setNotifications(prev => prev.map(n => n.tenantId === currentTenantId ? ({ ...n, read: true }) : n))}
+                              onClose={() => setShowNotifications(false)}
+                           />
+                        )}
+                     </div>
+
+                     <button onClick={() => setIsSidebarOpen(true)} className="p-2.5 rounded-md bg-white shadow-sm border border-slate-200 text-slate-600 hover:text-[#121212] hover:shadow-md transition-colors lg:hidden">
+                        <Menu className="w-5 h-5" />
+                     </button>
+                  </div>
                </div>
+            </header>
 
-               <div className="flex items-center space-x-2 bg-slate-100/90 backdrop-blur-sm p-1 rounded-lg border border-slate-200 shadow-sm">
-                  <button onClick={() => { setCurrentUserRole('industry_admin'); setCurrentSellerId('all'); setActivePage('dashboard'); }} className={`px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest rounded-md transition-all ${currentUserRole === 'industry_admin' ? 'bg-white shadow-sm text-[#121212]' : 'text-slate-400'}`}>Admin</button>
-                  <button onClick={() => { setCurrentUserRole('seller'); setCurrentSellerId('sel-001'); setActivePage('dashboard'); }} className={`px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest rounded-md transition-all ${currentUserRole === 'seller' ? 'bg-white shadow-sm text-[#121212]' : 'text-slate-400'}`}>Seller</button>
-               </div>
-            </div>
-
-            <div className="flex-1 overflow-y-auto px-8 pb-8 lg:px-12 lg:pb-12 pt-0 scroll-smooth">
-               <div className="max-w-[1600px] mx-auto h-full">
+            <div className="flex-1 overflow-y-auto overflow-x-hidden px-6 lg:px-0 pb-10 pt-6 lg:pb-12 scroll-smooth">
+               <div className="max-w-screen-2xl mx-auto w-full h-full">
                   {activePage === 'dashboard' && (
-                     <div className="pt-8 lg:pt-12">
+                     <div className="pt-8 md:pt-4">
                         <Dashboard
                            role={currentUserRole}
                            kpi={kpi}
@@ -570,7 +594,7 @@ const AppContent = () => {
                   )}
                   {activePage === 'inventory' && renderInventory()}
                   {activePage === 'lot_history' && (
-                     <div className="pt-8 lg:pt-12">
+                     <div className="pt-8 md:pt-4">
                         <LotHistoryView
                            stones={currentUserRole === 'industry_admin' ? stones : sellerStones}
                            offers={currentUserRole === 'industry_admin' ? tenantOffers : sellerOffers}
@@ -581,7 +605,7 @@ const AppContent = () => {
                      </div>
                   )}
                   {activePage === 'clients' && (
-                     <div className="pt-8 lg:pt-12">
+                     <div className="pt-8 md:pt-4">
                         <CRMView
                            clients={tenantClients}
                            offers={currentUserRole === 'industry_admin' ? tenantOffers : sellerOffers}
@@ -593,7 +617,7 @@ const AppContent = () => {
                      </div>
                   )}
                   {activePage === 'thermometer' && (
-                     <div className="pt-8 lg:pt-12">
+                     <div className="pt-8 md:pt-4">
                         <InterestThermometerView
                            // Considera ativos, pendentes e reservados
                            offers={(currentUserRole === 'industry_admin' ? tenantOffers : sellerOffers).filter(o => ['active', 'reservation_pending', 'reserved'].includes(o.status))}
@@ -624,7 +648,7 @@ const AppContent = () => {
 
                   {/* 1. PIPELINE (Links Ativos/Pendentes/Reservados) */}
                   {activePage === 'pipeline' && (
-                     <div className="pt-8 lg:pt-12">
+                     <div className="pt-8 md:pt-4">
                         <AnalyticsDetailView
                            title={t('nav.pipeline')}
                            mode="pipeline"
@@ -638,7 +662,7 @@ const AppContent = () => {
 
                   {/* 2. SALES (Vendas Realizadas) */}
                   {activePage === 'sales' && (
-                     <div className="pt-8 lg:pt-12">
+                     <div className="pt-8 md:pt-4">
                         <AnalyticsDetailView
                            title={t('nav.sales')}
                            mode="sales"
@@ -652,7 +676,7 @@ const AppContent = () => {
 
                   {/* 3. FINANCIALS (Lucro Líquido / Comissões) */}
                   {activePage === 'financials' && (
-                     <div className="pt-8 lg:pt-12">
+                     <div className="pt-8 md:pt-4">
                         <AnalyticsDetailView
                            title={t(currentUserRole === 'industry_admin' ? 'nav.financials_admin' : 'nav.financials_seller')}
                            mode="profit"

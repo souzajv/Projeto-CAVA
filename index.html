@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
 
 <head>
   <meta charset="UTF-8" />
@@ -101,8 +101,17 @@
       border-radius: 0 !important;
     }
 
-    /* Allow round status dots where explicitly marked */
-    .kpi-dot {
+    /* Allow round status dots and UI elements */
+    .kpi-dot,
+    [class*="rounded-full"] {
+      border-radius: 9999px !important;
+    }
+
+    /* Allow round badges and indicators */
+    [class*="w-2"][class*="h-2"][class*="rounded-full"],
+    [class*="w-1.5"][class*="h-1.5"][class*="rounded-full"],
+    [class*="w-10"][class*="h-10"][class*="rounded-full"],
+    [class*="w-2.5"][class*="h-2.5"][class*="rounded-full"] {
       border-radius: 9999px !important;
     }
   </style>

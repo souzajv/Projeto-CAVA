@@ -29,15 +29,15 @@ export const InventoryFilters: React.FC<InventoryFiltersProps> = ({
   const iconClass = "absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400";
 
   return (
-    <div className="mb-10 animate-in fade-in slide-in-from-top-2 duration-500">
-      <div className="flex flex-col md:flex-row gap-4">
-        
+    <div className="mb-10 animate-in fade-in slide-in-from-top-2 duration-500 w-full">
+      <div className="flex flex-col md:flex-row gap-4 w-full">
+
         {/* Search Input */}
-        <div className="flex-1 relative group">
+        <div className="flex-1 relative group w-full">
           <div className={iconClass}>
             <Search className="w-4 h-4 group-focus-within:text-[#121212] transition-colors" />
           </div>
-          <input 
+          <input
             type="text"
             placeholder={t('inv.search_placeholder')}
             value={searchTerm}
@@ -47,10 +47,10 @@ export const InventoryFilters: React.FC<InventoryFiltersProps> = ({
         </div>
 
         {/* Filters Wrapper */}
-        <div className="flex gap-4">
-          
+        <div className="flex flex-col sm:flex-row gap-4 sm:flex-wrap justify-end">
+
           {/* Typology Filter */}
-          <div className="relative min-w-[200px] group">
+          <div className="relative w-full sm:w-1/2 md:w-auto sm:min-w-[220px] group">
             <div className={iconClass}>
               <Filter className="w-4 h-4 group-focus-within:text-[#121212] transition-colors" />
             </div>
@@ -67,7 +67,7 @@ export const InventoryFilters: React.FC<InventoryFiltersProps> = ({
           </div>
 
           {/* Status Filter */}
-          <div className="relative min-w-[200px] group">
+          <div className="relative w-full sm:w-1/2 md:w-auto sm:min-w-[220px] group">
             <div className={iconClass}>
               <SlidersHorizontal className="w-4 h-4 group-focus-within:text-[#121212] transition-colors" />
             </div>

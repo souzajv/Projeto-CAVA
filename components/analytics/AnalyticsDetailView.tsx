@@ -92,44 +92,44 @@ export const AnalyticsDetailView: React.FC<AnalyticsDetailViewProps> = ({
       {/* Header Section */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-slate-200 pb-6">
         <div>
-          <h1 className="text-4xl font-serif text-[#121212] tracking-tight mb-2">{title}</h1>
-          <p className="text-slate-500 font-light">{t('analytics.desc')}</p>
+          <h1 className="text-3xl sm:text-4xl font-serif text-[#121212] tracking-tight mb-2">{title}</h1>
+          <p className="text-slate-500 font-light text-sm sm:text-base">{t('analytics.desc')}</p>
         </div>
 
-        <button onClick={handleExport} className="flex items-center px-6 py-3 bg-[#121212] text-white text-xs font-bold uppercase tracking-widest hover:bg-[#C2410C] transition-all shadow-lg">
+        <button onClick={handleExport} className="flex items-center justify-center px-5 sm:px-6 py-3 bg-[#121212] text-white text-xs font-bold uppercase tracking-widest hover:bg-[#C2410C] transition-all shadow-lg w-full md:w-auto">
           <Download className="w-4 h-4 mr-2" />
           {t('analytics.export')}
         </button>
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-        <div className="p-8 bg-white border border-slate-100 shadow-sm">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
+        <div className="p-6 sm:p-7 lg:p-8 bg-white border border-slate-100 shadow-sm">
           <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-4">
             {mode === 'pipeline' ? t('dash.kpi.potential_revenue') : t('dash.kpi.revenue')}
           </p>
-          <p className="text-3xl font-serif text-[#121212]">{formatCurrency(totals.revenue)}</p>
+          <p className="text-2xl sm:text-3xl font-serif text-[#121212]">{formatCurrency(totals.revenue)}</p>
         </div>
         {mode === 'pipeline' && (
-          <div className="p-8 bg-white border border-slate-100 shadow-sm flex flex-col justify-center">
+          <div className="p-6 sm:p-7 lg:p-8 bg-white border border-slate-100 shadow-sm flex flex-col justify-center">
             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-4">{t('dash.kpi.reserved_links')}</p>
-            <p className="text-3xl font-serif text-[#121212]">{reservedCount}</p>
+            <p className="text-2xl sm:text-3xl font-serif text-[#121212]">{reservedCount}</p>
           </div>
         )}
         {mode === 'profit' && (
-          <div className="p-8 bg-[#121212] text-white shadow-xl relative overflow-hidden">
+          <div className="p-6 sm:p-7 lg:p-8 bg-[#121212] text-white shadow-xl relative overflow-hidden">
             <div className="absolute top-0 left-0 w-full h-1 bg-[#C2410C]" />
             <p className="text-[10px] font-bold text-[#C2410C] uppercase tracking-[0.2em] mb-4">{t('dash.kpi.profit')}</p>
-            <p className="text-3xl font-serif text-white">{formatCurrency(totals.profit)}</p>
+            <p className="text-2xl sm:text-3xl font-serif text-white">{formatCurrency(totals.profit)}</p>
           </div>
         )}
-        <div className="p-8 bg-white border border-slate-100 shadow-sm">
+        <div className="p-6 sm:p-7 lg:p-8 bg-white border border-slate-100 shadow-sm">
           <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-4">{t('dash.kpi.transactions')}</p>
-          <p className="text-3xl font-serif text-[#121212]">{totals.count}</p>
+          <p className="text-2xl sm:text-3xl font-serif text-[#121212]">{totals.count}</p>
         </div>
-        <div className="p-8 bg-white border border-slate-100 shadow-sm">
+        <div className="p-6 sm:p-7 lg:p-8 bg-white border border-slate-100 shadow-sm">
           <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-4">{t('dash.kpi.volume')}</p>
-          <p className="text-3xl font-serif text-[#121212]">{totals.units} <span className="text-sm font-sans font-bold text-slate-400 tracking-normal">{t('dash.kpi.units')}</span></p>
+          <p className="text-2xl sm:text-3xl font-serif text-[#121212]">{totals.units} <span className="text-sm font-sans font-bold text-slate-400 tracking-normal">{t('dash.kpi.units')}</span></p>
         </div>
       </div>
 
@@ -140,13 +140,13 @@ export const AnalyticsDetailView: React.FC<AnalyticsDetailViewProps> = ({
       )}
 
       {/* Main Content Area */}
-      <div className="bg-white border border-slate-200 shadow-sm rounded-sm overflow-hidden">
+      <div className="bg-white border border-slate-200 shadow-sm rounded-sm overflow-hidden min-w-0">
 
         {/* Filters */}
-        <div className="p-6 border-b border-slate-100 bg-[#FAFAFA]">
-          <div className="flex flex-col md:flex-row gap-6 items-center">
+        <div className="p-4 sm:p-6 border-b border-slate-100 bg-[#FAFAFA]">
+          <div className="flex flex-col lg:flex-row gap-4 lg:gap-6 items-center w-full">
 
-            <div className="relative flex-1 w-full group">
+            <div className="relative flex-1 w-full group min-w-0">
               <Search className="absolute left-0 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-[#C2410C] transition-colors" />
               <input
                 type="text"
@@ -157,7 +157,7 @@ export const AnalyticsDetailView: React.FC<AnalyticsDetailViewProps> = ({
               />
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto justify-between lg:justify-start">
               <input
                 type="date"
                 value={startDate}
@@ -175,97 +175,152 @@ export const AnalyticsDetailView: React.FC<AnalyticsDetailViewProps> = ({
           </div>
         </div>
 
-        {/* Table */}
-        <div className="overflow-x-auto">
-          <table className="w-full text-left">
-            <thead className="text-[10px] text-slate-400 uppercase font-bold tracking-widest border-b border-slate-100 bg-[#FAFAFA]">
-              <tr>
-                <th className="px-8 py-6">{t('dash.table.created')}</th>
-                <th className="px-8 py-6">{t('dash.table.client')}</th>
-                <th className="px-8 py-6">{t('dash.table.stone')}</th>
-                {role === 'industry_admin' && <th className="px-8 py-6">{t('dash.table.seller')}</th>}
-                <th className="px-8 py-6 text-right">{t('dash.table.value')}</th>
-                {mode === 'profit' && (
-                  <>
-                    <th className="px-8 py-6 text-right text-slate-300">Base</th>
-                    <th className="px-8 py-6 text-right text-emerald-600">{t('dash.kpi.profit')}</th>
-                  </>
-                )}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-50">
-              {filteredData.length === 0 ? (
-                <tr>
-                  <td colSpan={7} className="px-8 py-32 text-center text-slate-400 font-serif italic">
-                    {t('inv.no_results')}
-                  </td>
-                </tr>
-              ) : (
-                filteredData.map((item) => {
-                  const revenue = item.offer.finalPrice * item.offer.quantityOffered;
-                  let costBasis = 0;
-                  if (role === 'industry_admin') {
-                    costBasis = (item.stone?.baseCost || 0) * item.offer.quantityOffered;
-                  } else {
-                    costBasis = (item.delegation?.agreedMinPrice || 0) * item.offer.quantityOffered;
-                  }
-                  const profit = revenue - costBasis;
+        {/* Responsive List & Table */}
+        <div className="space-y-4">
+          {/* Mobile Cards */}
+          <div className="md:hidden space-y-3 px-4 pb-4 pt-2">
+            {filteredData.length === 0 ? (
+              <div className="py-10 text-center text-slate-400 font-serif italic">{t('inv.no_results')}</div>
+            ) : (
+              filteredData.map((item) => {
+                const revenue = item.offer.finalPrice * item.offer.quantityOffered;
+                const costBasis = role === 'industry_admin'
+                  ? (item.stone?.baseCost || 0) * item.offer.quantityOffered
+                  : (item.delegation?.agreedMinPrice || 0) * item.offer.quantityOffered;
+                const profit = revenue - costBasis;
 
-                  return (
-                    <tr
-                      key={item.offer.id}
-                      onClick={() => onTransactionClick?.(item)}
-                      className="hover:bg-slate-50 cursor-pointer transition-colors group"
-                    >
-                      <td className="px-8 py-6 text-slate-500 text-xs font-bold uppercase tracking-wider">
-                        {formatDate(item.offer.createdAt)}
-                      </td>
-
-                      <td className="px-8 py-6">
-                        <div className="font-bold text-[#121212] text-sm group-hover:text-[#C2410C] transition-colors">{item.offer.clientName}</div>
-                      </td>
-
-                      <td className="px-8 py-6">
+                return (
+                  <div
+                    key={item.offer.id}
+                    onClick={() => onTransactionClick?.(item)}
+                    className="border border-slate-200 bg-white shadow-sm p-4 space-y-3"
+                  >
+                    <div className="flex items-start justify-between">
+                      <div className="space-y-1 min-w-0 flex-1">
+                        <div className="text-xs font-bold uppercase tracking-wider text-slate-500">{formatDate(item.offer.createdAt)}</div>
+                        <div className="font-bold text-[#121212] text-base">{item.offer.clientName}</div>
                         {item.stone ? (
-                          <>
-                            <div className="font-serif text-lg text-[#121212]">{item.stone.typology.name}</div>
-                            <div className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">
-                              {item.stone.lotId} • {item.offer.quantityOffered} {t(`unit.${item.stone.quantity.unit}`)}
-                            </div>
-                          </>
+                          <div className="text-sm text-slate-600 flex flex-col md:flex-row md:items-center md:gap-2">
+                            <span className='truncate'></span>{item.stone.typology.name}
+                            <span className='hidden md:block'>•</span>
+                            <span className='truncate'></span>{item.stone.lotId}</div>
                         ) : (
-                          <div className="flex items-center text-rose-500 text-xs font-bold uppercase tracking-widest">
+                          <div className="flex items-center text-rose-500 text-xs font-bold uppercase tracking-wider">
                             <AlertTriangle className="w-4 h-4 mr-1" /> Unknown Stone
                           </div>
                         )}
-                      </td>
+                      </div>
+                    </div>
 
-                      {role === 'industry_admin' && (
-                        <td className="px-8 py-6 text-sm font-medium text-slate-600">
-                          {item.seller ? item.seller.name : t('common.direct_sale')}
+                    <div className="flex items-center justify-between text-sm text-slate-600">
+                      <span>{item.offer.quantityOffered} {item.stone ? t(`unit.${item.stone.quantity.unit}`) : ''}</span>
+                      <span className="font-serif text-lg text-[#121212]">{formatCurrency(revenue)}</span>
+                    </div>
+
+                    {mode === 'profit' && (
+                      <div className="flex items-center justify-between text-xs text-slate-500">
+                        <span>{t('dash.table.value')} - Base</span>
+                        <span className="font-bold text-emerald-600">{formatCurrency(profit)}</span>
+                      </div>
+                    )}
+                  </div>
+                );
+              })
+            )}
+          </div>
+
+          {/* Desktop Table */}
+          <div className="hidden md:block overflow-x-auto">
+            <table className="w-full text-left">
+              <thead className="text-[10px] text-slate-400 uppercase font-bold tracking-widest border-b border-slate-100 bg-[#FAFAFA]">
+                <tr>
+                  <th className="px-8 py-6">{t('dash.table.created')}</th>
+                  <th className="px-8 py-6">{t('dash.table.client')}</th>
+                  <th className="px-8 py-6">{t('dash.table.stone')}</th>
+                  {role === 'industry_admin' && <th className="px-8 py-6">{t('dash.table.seller')}</th>}
+                  <th className="px-8 py-6 text-right">{t('dash.table.value')}</th>
+                  {mode === 'profit' && (
+                    <>
+                      <th className="px-8 py-6 text-right text-slate-300">Base</th>
+                      <th className="px-8 py-6 text-right text-emerald-600">{t('dash.kpi.profit')}</th>
+                    </>
+                  )}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-50">
+                {filteredData.length === 0 ? (
+                  <tr>
+                    <td colSpan={7} className="px-8 py-32 text-center text-slate-400 font-serif italic">
+                      {t('inv.no_results')}
+                    </td>
+                  </tr>
+                ) : (
+                  filteredData.map((item) => {
+                    const revenue = item.offer.finalPrice * item.offer.quantityOffered;
+                    let costBasis = 0;
+                    if (role === 'industry_admin') {
+                      costBasis = (item.stone?.baseCost || 0) * item.offer.quantityOffered;
+                    } else {
+                      costBasis = (item.delegation?.agreedMinPrice || 0) * item.offer.quantityOffered;
+                    }
+                    const profit = revenue - costBasis;
+
+                    return (
+                      <tr
+                        key={item.offer.id}
+                        onClick={() => onTransactionClick?.(item)}
+                        className="hover:bg-slate-50 cursor-pointer transition-colors group"
+                      >
+                        <td className="px-8 py-6 text-slate-500 text-xs font-bold uppercase tracking-wider">
+                          {formatDate(item.offer.createdAt)}
                         </td>
-                      )}
 
-                      <td className="px-8 py-6 text-right">
-                        <span className="font-serif text-lg text-[#121212] group-hover:text-[#C2410C] transition-colors">{formatCurrency(revenue)}</span>
-                      </td>
+                        <td className="px-8 py-6">
+                          <div className="font-bold text-[#121212] text-sm group-hover:text-[#C2410C] transition-colors">{item.offer.clientName}</div>
+                        </td>
 
-                      {mode === 'profit' && (
-                        <>
-                          <td className="px-8 py-6 text-right text-slate-400 text-sm font-medium">
-                            {formatCurrency(costBasis)}
+                        <td className="px-8 py-6">
+                          {item.stone ? (
+                            <>
+                              <div className="font-serif text-lg text-[#121212]">{item.stone.typology.name}</div>
+                              <div className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">
+                                {item.stone.lotId} • {item.offer.quantityOffered} {t(`unit.${item.stone.quantity.unit}`)}
+                              </div>
+                            </>
+                          ) : (
+                            <div className="flex items-center text-rose-500 text-xs font-bold uppercase tracking-widest">
+                              <AlertTriangle className="w-4 h-4 mr-1" /> Unknown Stone
+                            </div>
+                          )}
+                        </td>
+
+                        {role === 'industry_admin' && (
+                          <td className="px-8 py-6 text-sm font-medium text-slate-600">
+                            {item.seller ? item.seller.name : t('common.direct_sale')}
                           </td>
-                          <td className="px-8 py-6 text-right font-bold text-emerald-600">
-                            {formatCurrency(profit)}
-                          </td>
-                        </>
-                      )}
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
+                        )}
+
+                        <td className="px-8 py-6 text-right">
+                          <span className="font-serif text-lg text-[#121212] group-hover:text-[#C2410C] transition-colors">{formatCurrency(revenue)}</span>
+                        </td>
+
+                        {mode === 'profit' && (
+                          <>
+                            <td className="px-8 py-6 text-right text-slate-400 text-sm font-medium">
+                              {formatCurrency(costBasis)}
+                            </td>
+                            <td className="px-8 py-6 text-right font-bold text-emerald-600">
+                              {formatCurrency(profit)}
+                            </td>
+                          </>
+                        )}
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>

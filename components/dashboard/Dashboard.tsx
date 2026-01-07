@@ -145,8 +145,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-6 border-b border-slate-200 pb-8">
         <div>
-          <h2 className="text-5xl font-serif text-[#121212] tracking-tight mb-3">{role === 'industry_admin' ? t('dash.title_admin') : t('dash.title_seller')}</h2>
-          <p className="text-slate-500 font-light text-lg max-w-2xl">
+          <h2 className="text-3xl sm:text-5xl font-serif text-[#121212] tracking-tight mb-3">{role === 'industry_admin' ? t('dash.title_admin') : t('dash.title_seller')}</h2>
+          <p className="text-slate-500 font-light text-base sm:text-lg max-w-2xl">
             {role === 'industry_admin' ? t('dash.subtitle_admin') : t('dash.subtitle_seller')}
           </p>
         </div>
@@ -210,12 +210,12 @@ export const Dashboard: React.FC<DashboardProps> = ({
       )}
 
       {/* KPI Cards - Editorial Style */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 md:gap-8">
         {/* Pipeline Card */}
         <motion.button
           whileHover={{ y: -4 }}
           onClick={() => onNavigate?.('pipeline')}
-          className="bg-white p-10 rounded-sm border border-slate-100 shadow-[0_20px_40px_-15px_rgba(0,0,0,0.05)] text-left group relative overflow-hidden flex flex-col justify-between min-h-[240px]"
+          className="bg-white p-6 sm:p-8 lg:p-10 rounded-sm border border-slate-100 shadow-[0_20px_40px_-15px_rgba(0,0,0,0.05)] text-left group relative overflow-hidden flex flex-col justify-between min-h-[200px] sm:min-h-[220px] md:min-h-[240px]"
         >
           <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
             <LinkIcon className="w-32 h-32 rotate-12" />
@@ -226,11 +226,11 @@ export const Dashboard: React.FC<DashboardProps> = ({
                 <span className="kpi-dot w-2 h-2 bg-blue-500" />
                 {t('dash.kpi.pipeline')}
               </p>
-              <span className="inline-flex items-center px-2.5 py-1 rounded-full bg-amber-50 text-amber-700 text-[10px] font-bold uppercase tracking-wider border border-amber-100">
+              <span className="inline-flex items-center px-2.5 py-1 bg-amber-50 text-amber-700 text-[10px] font-bold uppercase tracking-wider border border-amber-100">
                 {t('dash.kpi.reserved_links')}: {kpi.reservedLinks}
               </span>
             </div>
-            <h3 className="text-5xl font-serif text-[#121212]">
+            <h3 className="text-4xl sm:text-5xl font-serif text-[#121212]">
               <NumberTicker value={kpi.pipelineRevenue} />
             </h3>
           </div>
@@ -244,7 +244,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
         <motion.button
           whileHover={{ y: -4 }}
           onClick={() => onNavigate?.('sales')}
-          className="bg-white p-10 rounded-sm border border-slate-100 shadow-[0_20px_40px_-15px_rgba(0,0,0,0.05)] text-left group relative overflow-hidden flex flex-col justify-between min-h-[240px]"
+          className="bg-white p-6 sm:p-8 lg:p-10 rounded-sm border border-slate-100 shadow-[0_20px_40px_-15px_rgba(0,0,0,0.05)] text-left group relative overflow-hidden flex flex-col justify-between min-h-[200px] sm:min-h-[220px] md:min-h-[240px]"
         >
           <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
             <CheckSquare className="w-32 h-32 rotate-12" />
@@ -254,7 +254,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
               <span className="kpi-dot w-2 h-2 bg-emerald-500" />
               {t('dash.kpi.sold')}
             </p>
-            <h3 className="text-5xl font-serif text-[#121212]">
+            <h3 className="text-4xl sm:text-5xl font-serif text-[#121212]">
               <NumberTicker value={kpi.soldRevenue} />
             </h3>
           </div>
@@ -268,7 +268,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
         <motion.button
           whileHover={{ y: -4 }}
           onClick={() => onNavigate?.('financials')}
-          className="bg-[#121212] p-10 rounded-sm shadow-2xl text-left group relative overflow-hidden flex flex-col justify-between min-h-[240px]"
+          className="bg-[#121212] p-6 sm:p-8 lg:p-10 rounded-sm shadow-2xl text-left group relative overflow-hidden flex flex-col justify-between min-h-[200px] sm:min-h-[220px] md:min-h-[240px]"
         >
           <div className="absolute -right-8 -bottom-8 opacity-20">
             <BarChart3 className="w-48 h-48 text-white rotate-12" />
@@ -278,7 +278,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
               <span className="kpi-dot w-2 h-2 bg-[#C2410C] animate-pulse" />
               {kpi.labelProfit}
             </p>
-            <h3 className="text-5xl font-serif text-white">
+            <h3 className="text-4xl sm:text-5xl font-serif text-white">
               <NumberTicker value={kpi.totalProfit} />
             </h3>
           </div>
@@ -290,8 +290,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
       {/* Transactions Table */}
       <div className="space-y-6">
-        <div className="flex flex-col sm:flex-row justify-between items-end gap-6 border-b border-slate-200 pb-4">
-          <h3 className="font-serif text-2xl text-[#121212]">{t('dash.recent_transactions')}</h3>
+        <div className="flex flex-col sm:flex-row justify-between items-center sm:items-end gap-6 border-b border-slate-200 pb-4">
+          <h3 className="font-serif text-2xl text-[#121212] flex-1 text-center sm:text-start">{t('dash.recent_transactions')}</h3>
 
           <div className="flex flex-wrap items-center gap-2">
             {dateFilter === 'custom' && (
@@ -313,69 +313,122 @@ export const Dashboard: React.FC<DashboardProps> = ({
           </div>
         </div>
 
-        <div className="bg-white rounded-sm border border-slate-200 overflow-hidden shadow-sm">
-          <table className="w-full text-left border-collapse">
-            <thead className="bg-[#FAFAFA] text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-200">
-              <tr>
-                <th className="px-8 py-6 pl-10 font-medium">{t('dash.table.status')}</th>
-                <th className="px-8 py-6 font-medium">{t('dash.table.stone')}</th>
-                <th className="px-8 py-6 font-medium">{t('dash.table.client')}</th>
-                <th className="px-8 py-6 text-right font-medium">{t('dash.table.value')}</th>
-                <th className="px-8 py-6 text-center font-medium">{t('dash.table.actions')}</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {sortedOffers.map((transaction, i) => {
-                const { offer, stone } = transaction;
-                const total = offer.finalPrice * offer.quantityOffered;
-                const isSold = offer.status === 'sold';
-                const isExpired = offer.status === 'expired';
+        <div className="md:hidden space-y-3">
+          {sortedOffers.map((transaction, i) => {
+            const { offer, stone } = transaction;
+            const total = offer.finalPrice * offer.quantityOffered;
+            const isSold = offer.status === 'sold';
+            const isExpired = offer.status === 'expired';
 
-                return (
-                  <motion.tr
-                    key={offer.id}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: i * 0.05 }}
-                    onClick={() => onSelectTransaction?.(transaction)}
-                    className="hover:bg-slate-50 cursor-pointer transition-colors group"
-                  >
-                    <td className="px-8 py-6 pl-10">
-                      <StatusBadge status={offer.status} />
-                    </td>
+            return (
+              <motion.div
+                key={offer.id}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.03 }}
+                className="rounded-md border border-slate-200 bg-white shadow-sm p-4 space-y-3"
+                onClick={() => onSelectTransaction?.(transaction)}
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="space-y-1">
+                    <div className="font-serif text-xl text-[#121212] leading-tight">{stone.typology.name}</div>
+                    <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">{stone.lotId}</div>
+                    <div className="text-sm font-bold text-[#121212]">{offer.clientName}</div>
+                    <div className="text-[11px] text-slate-500">{formatDate(offer.createdAt)}</div>
+                  </div>
+                  <StatusBadge status={offer.status} />
+                </div>
 
-                    <td className="px-8 py-6">
-                      <div className="font-serif text-xl text-[#121212] mb-1">{stone.typology.name}</div>
-                      <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{stone.lotId}</div>
-                    </td>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-slate-500">{offer.quantityOffered} {stone.quantity.unit}</span>
+                  <span className="font-serif text-lg text-[#121212]">{formatCurrency(total)}</span>
+                </div>
 
-                    <td className="px-8 py-6">
-                      <div className="text-[#121212] font-bold text-sm tracking-wide">{offer.clientName}</div>
-                      <div className="text-[10px] text-slate-400 mt-1 uppercase tracking-wider font-medium">{formatDate(offer.createdAt)}</div>
-                    </td>
+                <div className="flex items-center justify-end gap-4">
+                  {!isSold && !isExpired && (
+                    <>
+                      <button onClick={(e) => { e.stopPropagation(); onFinalizeSale?.(offer); }} className="text-slate-400 hover:text-emerald-600" title="Finalize Sale">
+                        <BadgeCheck className="w-5 h-5" />
+                      </button>
+                      <button onClick={(e) => { e.stopPropagation(); onCancelLink?.(offer); }} className="text-slate-400 hover:text-rose-500" title="Cancel Link">
+                        <Trash2 className="w-5 h-5" />
+                      </button>
+                    </>
+                  )}
+                  <button onClick={(e) => { e.stopPropagation(); onViewClientPage?.(offer.clientViewToken); }} className="text-slate-400 hover:text-[#C2410C]" title="View Page">
+                    <ExternalLink className="w-5 h-5" />
+                  </button>
+                </div>
+              </motion.div>
+            );
+          })}
+        </div>
 
-                    <td className="px-8 py-6 text-right font-serif text-lg font-medium text-[#121212]">
-                      {formatCurrency(total)}
-                    </td>
+        <div className="hidden md:block bg-white rounded-sm border border-slate-200 overflow-hidden shadow-sm">
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[760px] text-left border-collapse">
+              <thead className="bg-[#FAFAFA] text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-200">
+                <tr>
+                  <th className="px-8 py-6 pl-10 font-medium">{t('dash.table.status')}</th>
+                  <th className="px-8 py-6 font-medium">{t('dash.table.stone')}</th>
+                  <th className="px-8 py-6 font-medium">{t('dash.table.client')}</th>
+                  <th className="px-8 py-6 text-right font-medium">{t('dash.table.value')}</th>
+                  <th className="px-8 py-6 text-center font-medium">{t('dash.table.actions')}</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {sortedOffers.map((transaction, i) => {
+                  const { offer, stone } = transaction;
+                  const total = offer.finalPrice * offer.quantityOffered;
+                  const isSold = offer.status === 'sold';
+                  const isExpired = offer.status === 'expired';
 
-                    <td className="px-8 py-6 text-center" onClick={(e) => e.stopPropagation()}>
-                      <div className="flex items-center justify-center space-x-6">
-                        {!isSold && !isExpired && (
-                          <>
-                            <button onClick={() => onFinalizeSale?.(offer)} className="text-slate-300 hover:text-emerald-600 transition-colors" title="Finalize Sale"><BadgeCheck className="w-5 h-5" /></button>
-                            <button onClick={() => onCancelLink?.(offer)} className="text-slate-300 hover:text-rose-500 transition-colors" title="Cancel Link"><Trash2 className="w-5 h-5" /></button>
-                          </>
-                        )}
-                        <button onClick={() => onViewClientPage?.(offer.clientViewToken)} className="text-slate-300 hover:text-[#C2410C] transition-colors" title="View Page">
-                          <ExternalLink className="w-5 h-5" />
-                        </button>
-                      </div>
-                    </td>
-                  </motion.tr>
-                );
-              })}
-            </tbody>
-          </table>
+                  return (
+                    <motion.tr
+                      key={offer.id}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: i * 0.05 }}
+                      onClick={() => onSelectTransaction?.(transaction)}
+                      className="hover:bg-slate-50 cursor-pointer transition-colors group"
+                    >
+                      <td className="px-8 py-6 pl-10">
+                        <StatusBadge status={offer.status} />
+                      </td>
+
+                      <td className="px-8 py-6">
+                        <div className="font-serif text-xl text-[#121212] mb-1">{stone.typology.name}</div>
+                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{stone.lotId}</div>
+                      </td>
+
+                      <td className="px-8 py-6">
+                        <div className="text-[#121212] font-bold text-sm tracking-wide">{offer.clientName}</div>
+                        <div className="text-[10px] text-slate-400 mt-1 uppercase tracking-wider font-medium">{formatDate(offer.createdAt)}</div>
+                      </td>
+
+                      <td className="px-8 py-6 text-right font-serif text-lg font-medium text-[#121212]">
+                        {formatCurrency(total)}
+                      </td>
+
+                      <td className="px-8 py-6 text-center" onClick={(e) => e.stopPropagation()}>
+                        <div className="flex items-center justify-center space-x-6">
+                          {!isSold && !isExpired && (
+                            <>
+                              <button onClick={() => onFinalizeSale?.(offer)} className="text-slate-300 hover:text-emerald-600 transition-colors" title="Finalize Sale"><BadgeCheck className="w-5 h-5" /></button>
+                              <button onClick={() => onCancelLink?.(offer)} className="text-slate-300 hover:text-rose-500 transition-colors" title="Cancel Link"><Trash2 className="w-5 h-5" /></button>
+                            </>
+                          )}
+                          <button onClick={() => onViewClientPage?.(offer.clientViewToken)} className="text-slate-300 hover:text-[#C2410C] transition-colors" title="View Page">
+                            <ExternalLink className="w-5 h-5" />
+                          </button>
+                        </div>
+                      </td>
+                    </motion.tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>

@@ -25,23 +25,23 @@ export const DelegateModal: React.FC<DelegateModalProps> = ({ stone, sellers, on
   const formatCurrency = (val: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(val);
 
   return (
-    <div 
+    <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-[#121212]/80 backdrop-blur-sm p-4 transition-all duration-500"
       onClick={onClose}
     >
-      <div 
+      <div
         className="bg-white rounded-sm shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh] animate-in fade-in zoom-in-95 duration-300 border border-white/10"
         onClick={(e) => e.stopPropagation()}
       >
-        
+
         {/* Obsidian Header */}
         <div className="px-8 py-6 border-b border-[#222] flex justify-between items-center bg-[#121212] sticky top-0 z-10">
           <div>
             <h2 className="text-xl font-serif text-white tracking-wide">{t('modal.delegate.title')}</h2>
             <p className="text-xs text-slate-400 uppercase tracking-widest mt-1">{t('modal.delegate.subtitle')}</p>
           </div>
-          <button 
-            onClick={onClose} 
+          <button
+            onClick={onClose}
             className="text-slate-500 hover:text-white transition-colors"
           >
             <X className="w-6 h-6" />
@@ -50,19 +50,19 @@ export const DelegateModal: React.FC<DelegateModalProps> = ({ stone, sellers, on
 
         <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto">
           <div className="p-8 space-y-8">
-            
+
             {/* Product Context - Editorial Card */}
-            <div className="flex gap-6 p-6 bg-[#FAFAFA] border border-slate-100">
-              <div className="h-24 w-24 shrink-0 overflow-hidden bg-slate-200 shadow-sm">
+            <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 p-4 sm:p-6 bg-[#FAFAFA] border border-slate-100">
+              <div className="h-40 w-full sm:h-24 sm:w-24 shrink-0 overflow-hidden bg-slate-200 shadow-sm">
                 <img src={stone.imageUrl} alt={stone.typology.name} className="h-full w-full object-cover" />
               </div>
-              <div className="flex flex-col justify-center">
-                <h3 className="font-serif text-2xl text-[#121212] mb-2">{stone.typology.name}</h3>
-                <div className="flex items-center text-xs space-x-4">
+              <div className="flex flex-col justify-center space-y-2">
+                <h3 className="font-serif text-xl sm:text-2xl text-[#121212]">{stone.typology.name}</h3>
+                <div className="flex flex-col sm:flex-row sm:items-center text-xs sm:space-x-4 space-y-1 sm:space-y-0">
                   <span className="font-bold uppercase tracking-widest text-slate-400">
                     {t('card.lot')}: <span className="text-[#121212]">{stone.lotId}</span>
                   </span>
-                  <span className="w-px h-3 bg-slate-300" />
+                  <span className="hidden sm:inline-block w-px h-3 bg-slate-300" />
                   <span className="font-bold uppercase tracking-widest text-emerald-600">
                     {t('modal.offer.available')}: {stone.quantity.available} {stone.quantity.unit}
                   </span>
@@ -80,7 +80,7 @@ export const DelegateModal: React.FC<DelegateModalProps> = ({ stone, sellers, on
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400 group-focus-within:text-[#121212]">
                     <User className="w-4 h-4" />
                   </div>
-                  <select 
+                  <select
                     value={selectedSellerId}
                     onChange={(e) => setSelectedSellerId(e.target.value)}
                     className="w-full pl-10 pr-10 py-3 bg-white border-b border-slate-200 text-sm font-medium text-[#121212] focus:border-[#C2410C] outline-none appearance-none rounded-none transition-colors"
@@ -105,7 +105,7 @@ export const DelegateModal: React.FC<DelegateModalProps> = ({ stone, sellers, on
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400 group-focus-within:text-[#121212]">
                     <Layers className="w-4 h-4" />
                   </div>
-                  <input 
+                  <input
                     type="number"
                     required
                     min={1}
@@ -129,7 +129,7 @@ export const DelegateModal: React.FC<DelegateModalProps> = ({ stone, sellers, on
                   <Lock className="w-3 h-3 text-slate-300" />
                 </label>
                 <div className="w-full py-3 px-0 border-b border-slate-100 text-lg font-serif text-slate-300 cursor-not-allowed select-none">
-                    {formatCurrency(stone.baseCost)}
+                  {formatCurrency(stone.baseCost)}
                 </div>
               </div>
 
@@ -142,7 +142,7 @@ export const DelegateModal: React.FC<DelegateModalProps> = ({ stone, sellers, on
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400 group-focus-within:text-[#121212]">
                     <DollarSign className="w-4 h-4" />
                   </div>
-                  <input 
+                  <input
                     type="number"
                     required
                     min={stone.minPrice}
@@ -157,14 +157,14 @@ export const DelegateModal: React.FC<DelegateModalProps> = ({ stone, sellers, on
 
           {/* Footer */}
           <div className="px-8 py-6 bg-[#FAFAFA] border-t border-slate-200 flex items-center justify-end space-x-4">
-            <button 
-              type="button" 
+            <button
+              type="button"
               onClick={onClose}
               className="px-6 py-3 text-xs font-bold uppercase tracking-widest text-slate-500 hover:text-[#121212] transition-colors"
             >
               {t('common.cancel')}
             </button>
-            <button 
+            <button
               type="submit"
               className="px-8 py-3 bg-[#121212] text-white text-xs font-bold uppercase tracking-widest hover:bg-[#C2410C] transition-all shadow-lg flex items-center"
             >

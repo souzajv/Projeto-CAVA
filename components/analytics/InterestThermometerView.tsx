@@ -123,13 +123,13 @@ export const InterestThermometerView: React.FC<InterestThermometerViewProps> = (
   return (
     <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-700 pb-20">
       <div className="border-b border-slate-200 pb-8">
-        <h2 className="text-4xl font-serif text-[#121212] tracking-tight mb-2 flex items-center">
+        <h2 className="text-3xl sm:text-4xl font-serif text-[#121212] tracking-tight mb-2 flex items-center">
           {t('interest.title')}
         </h2>
-        <p className="text-slate-500 font-light text-lg">{t('interest.subtitle')}</p>
+        <p className="text-slate-500 font-light text-base sm:text-lg">{t('interest.subtitle')}</p>
       </div>
 
-      <div className="flex flex-col md:flex-row gap-6 items-start">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 items-stretch">
         <KPICard
           level="cold"
           count={stats.cold}
@@ -157,8 +157,8 @@ export const InterestThermometerView: React.FC<InterestThermometerViewProps> = (
       </div>
 
       <div className="bg-white border border-slate-200 shadow-sm rounded-sm overflow-hidden">
-        <div className="px-8 py-5 border-b border-slate-200 bg-[#FAFAFA] flex flex-col md:flex-row justify-between items-center gap-4">
-          <h3 className="font-serif font-bold text-[#121212] text-lg flex items-center">
+        <div className="px-6 sm:px-8 py-5 border-b border-slate-200 bg-[#FAFAFA] flex flex-col md:flex-row justify-between items-center gap-4">
+          <h3 className="font-serif font-bold text-[#121212] text-lg flex items-center text-center md:text-left">
             {t('interest.table_title')}
             {activeKpi !== 'all' && (
               <span className="ml-3 text-xs bg-[#121212] text-white px-2 py-0.5 rounded-sm uppercase tracking-wider font-sans animate-in zoom-in-95 duration-300">

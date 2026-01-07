@@ -50,7 +50,7 @@ export const StatusBadge: React.FC<BadgeProps> = ({ status }) => {
   const label = t(labelKeys[status] || '') || fallback[status] || status;
 
   return (
-    <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${styles[styleKey] || styles.active}`}>
+    <span className={`px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider border ${styles[styleKey] || styles.active}`}>
       {label}
     </span>
   );

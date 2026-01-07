@@ -98,13 +98,13 @@ export const ClientDetailsModal: React.FC<ClientDetailsModalProps> = ({
          <div className="bg-white rounded-sm shadow-2xl w-full max-w-7xl h-[90vh] overflow-hidden flex flex-col border border-white/10" onClick={(e) => e.stopPropagation()}>
 
             {/* Header */}
-            <div className="px-8 py-6 bg-[#121212] text-white flex justify-between items-center border-b border-[#222] shrink-0">
-               <div className="flex items-center gap-4">
+            <div className="px-4 sm:px-6 md:px-8 py-5 sm:py-6 bg-[#121212] text-white flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-[#222] shrink-0">
+               <div className="flex items-center gap-4 min-w-0">
                   <div className="w-14 h-14 bg-[#C2410C] flex items-center justify-center font-serif font-bold text-2xl shadow-lg border border-white/10">
                      {client.name.charAt(0)}
                   </div>
                   <div>
-                     <h2 className="font-serif text-3xl tracking-wide">{client.name}</h2>
+                     <h2 className="font-serif text-3xl tracking-wide truncate">{client.name}</h2>
                      <div className="flex items-center gap-3 mt-1">
                         <p className="text-[10px] text-slate-400 uppercase tracking-widest">
                            {client.company || 'Private Client'}
@@ -116,15 +116,15 @@ export const ClientDetailsModal: React.FC<ClientDetailsModalProps> = ({
                      </div>
                   </div>
                </div>
-               <button onClick={onClose} className="text-slate-500 hover:text-white transition-colors">
+               <button onClick={onClose} className="text-slate-500 hover:text-white transition-colors self-end sm:self-auto">
                   <X className="w-8 h-8" />
                </button>
             </div>
 
-            <div className="flex-1 overflow-hidden flex flex-col lg:flex-row">
+            <div className="flex-1 overflow-hidden flex flex-col lg:flex-row min-w-0">
 
                {/* Left Panel: Client Info */}
-               <div className="lg:w-80 xl:w-96 border-r border-slate-100 bg-[#FAFAFA] overflow-y-auto p-8">
+               <div className="lg:w-80 xl:w-96 min-w-0 border-r border-slate-100 bg-[#FAFAFA] overflow-y-auto p-6 md:p-8">
                   <div className="flex justify-between items-center mb-8 border-b border-slate-200 pb-4">
                      <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">{t('cli.modal.edit')}</h3>
                      {!isEditing && (
@@ -260,16 +260,16 @@ export const ClientDetailsModal: React.FC<ClientDetailsModalProps> = ({
                </div>
 
                {/* Right Panel: Link History with Filters */}
-               <div className="flex-1 flex flex-col bg-white overflow-hidden">
+               <div className="flex-1 flex flex-col bg-white overflow-hidden min-w-0">
                   {/* Toolbar */}
-                  <div className="px-10 py-6 border-b border-slate-100 flex flex-col md:flex-row justify-between items-center gap-6 bg-white sticky top-0 z-10 shadow-sm">
+                  <div className="px-4 sm:px-6 lg:px-10 py-4 sm:py-6 border-b border-slate-100 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 sm:gap-6 bg-white sticky top-0 z-10 shadow-sm">
                      <h3 className="font-serif font-bold text-[#121212] text-2xl flex items-center">
                         <History className="w-6 h-6 mr-3 text-[#C2410C]" /> {t('cli.history.title')}
                      </h3>
 
                      <div className="flex flex-wrap items-center gap-4 w-full md:w-auto">
                         {/* Search inside history */}
-                        <div className="relative flex-1 md:w-48 group">
+                        <div className="relative flex-1 min-w-[180px] md:w-48 group">
                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 group-focus-within:text-[#C2410C]" />
                            <input
                               type="text"
@@ -321,7 +321,7 @@ export const ClientDetailsModal: React.FC<ClientDetailsModalProps> = ({
                   </div>
 
                   {/* History List */}
-                  <div className="flex-1 overflow-y-auto p-10 bg-[#FAFAFA]/30">
+                  <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-10 bg-[#FAFAFA]/30">
                      {clientOffers.length === 0 ? (
                         <div className="py-32 text-center text-slate-400 border border-dashed border-slate-200 bg-white flex flex-col items-center">
                            <Package className="w-16 h-16 mb-4 opacity-5" />
@@ -349,8 +349,8 @@ export const ClientDetailsModal: React.FC<ClientDetailsModalProps> = ({
                                     </div>
 
                                     {/* Info Panel */}
-                                    <div className="flex-1 p-6">
-                                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+                                    <div className="flex-1 p-6 min-w-0">
+                                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4 min-w-0">
                                           <div>
                                              <h4 className="font-serif font-bold text-xl text-[#121212] group-hover:text-[#C2410C] transition-colors leading-tight">
                                                 {stone?.typology.name || 'Unknown Material'}
@@ -365,7 +365,7 @@ export const ClientDetailsModal: React.FC<ClientDetailsModalProps> = ({
                                                 </span>
                                              </div>
                                           </div>
-                                          <div className="shrink-0">
+                                          <div className="shrink-0 w-full sm:w-auto">
                                              {isSold ? (
                                                 <span className="inline-flex items-center px-3 py-1 bg-emerald-50 text-emerald-700 text-[10px] font-bold uppercase tracking-[0.15em] border border-emerald-100">
                                                    {t('dash.status.sold')}
@@ -390,7 +390,7 @@ export const ClientDetailsModal: React.FC<ClientDetailsModalProps> = ({
                                           </div>
                                        </div>
 
-                                       <div className="flex flex-wrap gap-x-8 gap-y-4 items-center pt-4 border-t border-slate-50">
+                                       <div className="flex flex-wrap gap-x-8 gap-y-4 items-center pt-4 border-t border-slate-50 min-w-0">
                                           <div className="flex flex-col">
                                              <span className="text-[9px] text-slate-400 uppercase font-bold tracking-widest mb-0.5">{t('modal.tx.created')}</span>
                                              <span className="text-xs font-mono text-slate-600">{formatDate(offer.createdAt)}</span>
@@ -401,14 +401,14 @@ export const ClientDetailsModal: React.FC<ClientDetailsModalProps> = ({
                                                 <UserCircle className="w-3.5 h-3.5 mr-1.5 text-[#C2410C]" /> {getSellerName(offer)}
                                              </div>
                                           </div>
-                                          <div className="flex flex-col ml-auto text-right">
+                                          <div className="flex flex-col w-full sm:w-auto sm:ml-auto text-left sm:text-right">
                                              <span className="text-[9px] text-slate-400 uppercase font-bold tracking-widest mb-0.5">{t('dash.table.value')}</span>
                                              <span className="text-2xl font-serif text-[#121212] group-hover:text-[#C2410C] transition-colors">
                                                 {formatCurrency(offer.finalPrice * offer.quantityOffered)}
                                              </span>
                                           </div>
 
-                                          <div className="shrink-0 flex items-center gap-2 pl-6 ml-2 border-l border-slate-100">
+                                          <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto sm:pl-6 sm:ml-2 border-t sm:border-t-0 sm:border-l border-slate-100 pt-4 sm:pt-0">
                                              {/* Action Buttons */}
                                              {offer.status === 'active' && (
                                                 <>
